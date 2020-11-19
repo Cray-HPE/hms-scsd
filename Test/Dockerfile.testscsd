@@ -1,0 +1,65 @@
+# Copyright 2020 Hewlett Packard Enterprise Development LP
+
+# Dockerfile for testing HMS SCSD.
+
+FROM dtr.dev.cray.com/baseos/golang:1.14-alpine3.12 AS build-base
+
+RUN set -ex \
+    && apk update \
+    && apk add build-base
+
+FROM build-base AS base
+
+# Copy all the necessary files to the image.
+COPY cmd $GOPATH/src/stash.us.cray.com/HMS/hms-scsd/cmd
+COPY vendor $GOPATH/src/stash.us.cray.com/HMS/hms-scsd/vendor
+
+### Build Stage ###
+
+FROM base AS builder
+
+# Now build
+RUN set -ex \
+    && go build -v -i -o scsd stash.us.cray.com/HMS/hms-scsd/cmd/scsd
+
+### Final Stage ###
+
+FROM dtr.dev.cray.com/baseos/alpine:3.12
+LABEL maintainer="Cray, Inc."
+STOPSIGNAL SIGTERM
+EXPOSE 25309
+STOPSIGNAL SIGTERM
+
+RUN set -ex \
+    && apk update \
+    && apk add --no-cache curl
+
+# Setup environment variables.
+ENV VAULT_SKIP_VERIFY="true"
+
+ARG IN_CRAY_VAULT_JWT_FILE
+ARG IN_CRAY_VAULT_ROLE_FILE
+ARG IN_SCSD_TEST_K8S_AUTH_URL
+ARG IN_SCSD_TEST_VAULT_PKI_URL
+ARG IN_SCSD_TEST_VAULT_CA_URL
+
+ENV CRAY_VAULT_JWT_FILE=${IN_CRAY_VAULT_JWT_FILE}
+ENV CRAY_VAULT_ROLE_FILE=${IN_CRAY_VAULT_ROLE_FILE}
+ENV SCSD_TEST_K8S_AUTH_URL=${IN_SCSD_TEST_K8S_AUTH_URL}
+ENV SCSD_TEST_VAULT_PKI_URL=${IN_SCSD_TEST_VAULT_PKI_URL}
+ENV SCSD_TEST_VAULT_CA_URL=${IN_SCSD_TEST_VAULT_CA_URL}
+
+RUN if [ ! -z ${IN_CRAY_VAULT_JWT_FILE} ]; then mkdir -p `dirname ${IN_CRAY_VAULT_JWT_FILE}` ; echo jwt_xyzzy > ${IN_CRAY_VAULT_JWT_FILE} ;  fi
+
+RUN if [ ! -z $CRAY_VAULT_ROLE_FILE ]; then mkdir -p `dirname ${CRAY_VAULT_ROLE_FILE}` ; echo role_xyzzy > ${CRAY_VAULT_ROLE_FILE} ; fi
+
+RUN set -ex \
+    && apk update \
+    && apk add --no-cache curl
+
+# Get scsd from the builder stage.
+COPY --from=builder /go/scsd /usr/local/bin
+COPY .version /var/run/scsd_version.txt
+
+# Set up the command to start the service, the run the init script.
+CMD scsd

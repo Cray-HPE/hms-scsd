@@ -1,0 +1,190 @@
+# Copyright 2020 Hewlett Packard Enterprise Development LP
+
+version: '3'
+
+# Use a named network for ease in hook-up with other containers.
+
+networks:
+  ttest:
+    driver: bridge
+
+
+services:
+  # Fake State manager.  Responds to SCN subscriptions from hmnfd.
+  # This is used instead of the real State Manager for simplicity.
+  fakesm:
+    build:
+      context: ./
+      dockerfile: Dockerfile.fake-hsm
+    image: fake-hsm:${HTAG}_${HSUFFIX}
+    hostname: fake_hsm
+    container_name: fake_hsm
+    ports:
+      - "${FAKE_SM_PORT}:${FAKE_SM_PORT}"
+    environment:
+      - PORT=:${FAKE_SM_PORT}
+    networks: 
+      - ttest
+
+  # A collection of 8 fake Redfish endpoints
+
+  # x0c0s0b0 (mountain)
+  x0c0s0b0:
+    build:
+      context: ./
+      dockerfile: Dockerfile.fake-rfep
+    image: fake-rfep:${HTAG}_${HSUFFIX}
+    hostname: x0c0s0b0
+    container_name: x0c0s0b0
+    ports:
+      - "${X0C0S0B0_PORT}:${X0C0S0B0_PORT}"
+    environment:
+      - BMCPORT=:${X0C0S0B0_PORT}
+      - XNAME=x0c0s0b0
+      - NACCTS=1
+      - GOODACCT=1
+      - VENDOR=cray       
+    networks: 
+      - ttest
+
+  # x0c0s1b0 (mountain)
+  x0c0s1b0:
+    build:
+      context: ./
+      dockerfile: Dockerfile.fake-rfep
+    image: fake-rfep:${HTAG}_${HSUFFIX}
+    hostname: x0c0s1b0
+    container_name: x0c0s1b0
+    ports:
+      - "${X0C0S1B0_PORT}:${X0C0S1B0_PORT}"
+    environment:
+      - BMCPORT=:${X0C0S1B0_PORT}
+      - XNAME=x0c0s1b0
+      - NACCTS=2
+      - GOODACCT=2
+      - ETAGACCT=2
+      - BMCURL=1
+      - VENDOR=HPE
+    networks: 
+      - ttest
+
+  # x0c0s2b0 (mountain)
+  x0c0s2b0:
+    build:
+      context: ./
+      dockerfile: Dockerfile.fake-rfep
+    image: fake-rfep:${HTAG}_${HSUFFIX}
+    hostname: x0c0s2b0
+    container_name: x0c0s2b0
+    ports:
+      - "${X0C0S2B0_PORT}:${X0C0S2B0_PORT}"
+    environment:
+      - BMCPORT=:${X0C0S2B0_PORT}
+      - XNAME=x0c0s2b0
+      - NACCTS=2
+      - GOODACCT=1
+      - ETAGACCT=1
+      - VENDOR=cray       
+    networks: 
+      - ttest
+
+  # x0c0s3b0 (mountain)
+  x0c0s3b0:
+    build:
+      context: ./
+      dockerfile: Dockerfile.fake-rfep
+    image: fake-rfep:${HTAG}_${HSUFFIX}
+    hostname: x0c0s3b0
+    container_name: x0c0s3b0
+    ports:
+      - "${X0C0S3B0_PORT}:${X0C0S3B0_PORT}"
+    environment:
+      - BMCPORT=:${X0C0S3B0_PORT}
+      - XNAME=x0c0s3b0
+      - NACCTS=3
+      - GOODACCT=3
+      - ETAGACCT=3
+      - VENDOR=cray       
+    networks: 
+      - ttest
+
+  # x0c0s6b0 (mountain, part of bmcgroup)
+  x0c0s6b0:
+    build:
+      context: ./
+      dockerfile: Dockerfile.fake-rfep
+    image: fake-rfep:${HTAG}_${HSUFFIX}
+    hostname: x0c0s6b0
+    container_name: x0c0s6b0
+    ports:
+      - "${X0C0S6B0_PORT}:${X0C0S6B0_PORT}"
+    environment:
+      - BMCPORT=:${X0C0S6B0_PORT}
+      - XNAME=x0c0s6b0
+      - NACCTS=4
+      - GOODACCT=2
+      - VENDOR=cray       
+    networks: 
+      - ttest
+
+  # x0c0s7b0 (mountain, part of bmcgroup)
+  x0c0s7b0:
+    build:
+      context: ./
+      dockerfile: Dockerfile.fake-rfep
+    image: fake-rfep:${HTAG}_${HSUFFIX}
+    hostname: x0c0s7b0
+    container_name: x0c0s7b0
+    ports:
+      - "${X0C0S7B0_PORT}:${X0C0S7B0_PORT}"
+    environment:
+      - BMCPORT=:${X0C0S7B0_PORT}
+      - XNAME=x0c0s7b0
+      - NACCTS=2
+      - GOODACCT=1
+      - ETAGACCT=1
+      - VENDOR=cray       
+    networks: 
+      - ttest
+
+  # Fake vault daemon
+  vault:
+    build:
+      context: ./
+      dockerfile: Dockerfile.fake-vault
+    image: fake-vault:${HTAG}_${HSUFFIX}
+    hostname: vault
+    container_name: vault
+    networks:
+      - ttest
+
+  # SCSD
+  scsd:
+    build:
+      context: ./
+      dockerfile: Dockerfile.testscsd
+      args:
+        IN_CRAY_VAULT_JWT_FILE: ${CRAY_VAULT_JWT_FILE}
+        IN_CRAY_VAULT_ROLE_FILE: ${CRAY_VAULT_ROLE_FILE}
+        IN_SCSD_TEST_K8S_AUTH_URL: ${SCSD_TEST_K8S_AUTH_URL}
+        IN_SCSD_TEST_VAULT_PKI_URL: ${SCSD_TEST_VAULT_PKI_URL}
+        IN_SCSD_TEST_VAULT_CA_URL: ${SCSD_TEST_VAULT_CA_URL}
+    image: scsd:${HTAG}_${HSUFFIX}
+    hostname: scsd
+    container_name: scsd
+    ports:
+      - "${SCSD_PORT}:${SCSD_PORT}"
+    environment:
+      - VAULT_ENABLE=0
+      - SCSD_SMD_URL=http://fake_hsm:${FAKE_SM_PORT}/hsm/v1
+      - SCSD_LOG_LEVEL=TRACE
+      - SCSD_DEFAULT_HTTP=true
+      - SCSD_HTTP_LISTEN_PORT=:${SCSD_PORT}
+      - IN_CRAY_VAULT_JWT_FILE=:${CRAY_VAULT_JWT_FILE}
+      - IN_CRAY_VAULT_ROLE_FILE=:${CRAY_VAULT_ROLE_FILE}
+      - IN_SCSD_TEST_K8S_AUTH_URL=:${SCSD_TEST_K8S_AUTH_URL}
+      - IN_SCSD_TEST_VAULT_PKI_URL=:${SCSD_TEST_VAULT_PKI_URL}
+      - IN_SCSD_TEST_VAULT_CA_URL=:${SCSD_TEST_VAULT_CA_URL}
+    networks: 
+      - ttest
+
