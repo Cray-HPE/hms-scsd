@@ -1,0 +1,45 @@
+# Copyright 2020 Hewlett Packard Enterprise Development LP
+
+# Dockerfile for running API/functional TAVERN-based tests.
+
+# Author: mpkelly
+# Date: 26-February 2020
+
+FROM dtr.dev.cray.com/baseos/golang:1.14-alpine3.12 AS build-base
+LABEL maintainer="Cray, Inc."
+
+COPY Test/*.sh /usr/local/bin/
+
+# Run the main test script
+
+ARG IN_SCSD
+ARG IN_HSM
+ARG IN_X0C0S0B0_PORT
+ARG IN_X0C0S1B0_PORT
+ARG IN_X0C0S2B0_PORT
+ARG IN_X0C0S3B0_PORT
+ARG IN_X0C0S6B0_PORT
+ARG IN_X0C0S7B0_PORT
+ARG SCSD_VERSION
+ARG CRAY_VAULT_JWT_FILE
+ARG CRAY_VAULT_ROLE_FILE
+ARG SCSD_TEST_K8S_AUTH_URL
+ARG SCSD_TEST_VAULT_PKI_URL
+ARG SCSD_TEST_VAULT_CA_URL
+
+RUN apk update && apk add bash && apk add curl && apk add jq
+
+RUN mkdir -p /var/run && echo ${SCSD_VERSION} > /var/run/scsd_version.txt
+
+
+ENV SCSD=${IN_SCSD}
+ENV HSM=${IN_HSM}
+ENV X0C0S0B0_PORT=${IN_X0C0S0B0_PORT}
+ENV X0C0S1B0_PORT=${IN_X0C0S1B0_PORT}
+ENV X0C0S2B0_PORT=${IN_X0C0S2B0_PORT}
+ENV X0C0S3B0_PORT=${IN_X0C0S3B0_PORT}
+ENV X0C0S6B0_PORT=${IN_X0C0S6B0_PORT}
+ENV X0C0S7B0_PORT=${IN_X0C0S7B0_PORT}
+
+CMD ["sh", "-c", "runit.sh"]
+

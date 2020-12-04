@@ -1,0 +1,7 @@
+# Copyright 2020 Hewlett Packard Enterprise Development LP
+
+FROM cray/hms-scsd-build-base
+
+# Run unit tests...
+RUN set -ex \
+    && go test -v -o scsd stash.us.cray.com/HMS/hms-scsd/cmd/scsd

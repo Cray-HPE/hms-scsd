@@ -1,0 +1,29 @@
+# Copyright 2020 Hewlett Packard Enterprise Development LP
+
+# Dockerfile for building HMS fake Vault daemon
+# Author: mpkelly
+# Date: 11-August 2020
+
+# Base image contains everything needed for Go building, just build.
+
+FROM dtr.dev.cray.com/baseos/golang:1.14-alpine3.12 AS builder
+
+COPY Test/fake-vault.go ${GOPATH}/src/fake-vault/
+
+RUN set -ex && go build -v -i -o /usr/local/bin/fake-vault fake-vault
+
+### Final Stage ###
+
+FROM dtr.dev.cray.com/baseos/alpine:3.12
+LABEL maintainer="Cray, Inc."
+STOPSIGNAL SIGTERM
+
+
+# Copy the final binary.
+
+COPY --from=builder /usr/local/bin/fake-vault /usr/local/bin
+
+# Run the fake Vault daemon
+
+CMD ["sh", "-c", "fake-vault"]
+
