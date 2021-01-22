@@ -1,4 +1,24 @@
-// Copyright 2020 Hewlett Packard Enterprise Development LP
+// MIT License
+// 
+// (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+// OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+// OTHER DEALINGS IN THE SOFTWARE.
 
 package main
 
@@ -306,6 +326,13 @@ var port = ":20000"
 var httpsrv *http.Server
 
 
+func printReqHdrs(fname string, r *http.Request) {
+	for k,v := range(r.Header) {
+		log.Printf("%s():  URL: '%s', HDR: '%s'/'%s'",fname,r.URL.Path,k,v)
+	}
+}
+
+
 // RF CertificateService
 
 func (p *httpStuff) certificateService(w http.ResponseWriter, r *http.Request) {
@@ -317,6 +344,7 @@ func (p *httpStuff) certificateService(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+	printReqHdrs("certificateService",r)
 	w.Header().Set("Content-Type","application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(pld))
@@ -345,6 +373,7 @@ func (p *httpStuff) certificateLocations(w http.ResponseWriter, r *http.Request)
         return
     }
 
+	printReqHdrs("certificateLocations",r)
 	w.Header().Set("Content-Type","application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(pld))
@@ -357,6 +386,7 @@ func (p *httpStuff) certificateReplace(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+	printReqHdrs("certificateReplace",r)
 	var jdata CertificatePayload
 	body,err := ioutil.ReadAll(r.Body)
 	if (err != nil) {
@@ -445,6 +475,7 @@ func (p *httpStuff) Chassis(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+	printReqHdrs("Chassis",r)
 	w.Header().Set("Content-Type","application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(pld))
@@ -462,6 +493,7 @@ func restartServer() {
 //Chassis, pretends to be a mountain endpoint
 
 func (p *httpStuff) chassisEnclosure(w http.ResponseWriter, r *http.Request) {
+	printReqHdrs("chassisEnclosure",r)
 	pld := `{"Architecture":"This_Is_Mountain"}`
 	w.Header().Set("Content-Type","application/json")
 	w.WriteHeader(http.StatusOK)
@@ -471,6 +503,7 @@ func (p *httpStuff) chassisEnclosure(w http.ResponseWriter, r *http.Request) {
 //Chassis, pretends to be a river intel endpoint
 
 func (p *httpStuff) chassisRackmount(w http.ResponseWriter, r *http.Request) {
+	printReqHdrs("chassisRackmount",r)
 	pld := `{"Architecture":"This_Is_River_Intel"}`
 	w.Header().Set("Content-Type","application/json")
 	w.WriteHeader(http.StatusOK)
@@ -480,6 +513,7 @@ func (p *httpStuff) chassisRackmount(w http.ResponseWriter, r *http.Request) {
 //Chassis, pretends to be a river GB endpoint
 
 func (p *httpStuff) chassisSelf(w http.ResponseWriter, r *http.Request) {
+	printReqHdrs("chassisSelf",r)
 	pld := `{"Architecture":"This_Is_River_Gigabyte"}`
 	w.Header().Set("Content-Type","application/json")
 	w.WriteHeader(http.StatusOK)
@@ -506,6 +540,8 @@ func (p *httpStuff) rfroot(w http.ResponseWriter, r *http.Request) {
         w.WriteHeader(http.StatusMethodNotAllowed)
         return
     }
+
+	printReqHdrs("rfroot",r)
 
 	rdat := `{
    "@odata.id" : "/redfish/v1/",
@@ -661,6 +697,7 @@ func (p *httpStuff) acctAccounts(w http.ResponseWriter, r *http.Request) {
 		rdat = rdat1+rdat2+rdat10
 	}
 
+	printReqHdrs("acctAccounts",r)
 	w.Header().Set("Content-Type","application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(rdat))
@@ -682,7 +719,7 @@ func doAccount(num int, w http.ResponseWriter, r *http.Request) {
 	}
 
 	for k,v := range(r.Header) {
-		log.Printf("HDR: Accounts/%d - '%s', '%s'",num,k,v)
+		log.Printf("doAccount():  acct: %d, URL: '%s', HDR: '%s'/'%s'",num,r.URL.Path,k,v)
 	}
 
 	//Special case: If this is account 3, and NACCTS is 4, we have to return
@@ -791,6 +828,7 @@ func (p *httpStuff) Managers(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+	printReqHdrs("Managers",r)
 	var jdata rfManagers
 
 	jdata.Members = make([]rfManagerMember,1)
@@ -816,6 +854,7 @@ func (p *httpStuff) ManagersBMC(w http.ResponseWriter, r *http.Request) {
         w.WriteHeader(http.StatusMethodNotAllowed)
         return
     }
+	printReqHdrs("ManagersBMC",r)
 	var jdata rfManagersBMC
 
 	jdata.NetworkProtocol.ID = "/redfish/v1/Managers/"+burl+"/NetworkProtocol"
@@ -842,6 +881,7 @@ func (p *httpStuff) hpeSecurityService(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+	printReqHdrs("hpeSecurityService",r)
 	pld := `{"Links":{"HttpsCert":{"@odata.id":"/redfish/v1/Managers/1/SecurityService/HttpsCert"}}}`
 	w.Header().Set("Content-Type","application/json")
 	w.WriteHeader(http.StatusOK)
@@ -854,6 +894,7 @@ func (p *httpStuff) hpeSecurityServiceHttpsCert(w http.ResponseWriter, r *http.R
         w.WriteHeader(http.StatusMethodNotAllowed)
         return
     }
+	printReqHdrs("hpeSecurityServiceHttpsCert",r)
 
 	pld := `{
   "Actions": {
@@ -876,6 +917,7 @@ func (p *httpStuff) hpeImportCert(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+	printReqHdrs("hpeImportCert",r)
 	var jdata CertificatePayload
 	body,err := ioutil.ReadAll(r.Body)
 	err = json.Unmarshal(body,&jdata)
@@ -890,6 +932,7 @@ func (p *httpStuff) hpeImportCert(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *httpStuff) nwp_rcv(w http.ResponseWriter, r *http.Request) {
+	printReqHdrs("nwp_rcv",r)
     if (r.Method == "PATCH") {
 		var jdata RedfishNWProtocol
 		body,err := ioutil.ReadAll(r.Body)
