@@ -1,3 +1,26 @@
+// MIT License
+// 
+// (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+// OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+// OTHER DEALINGS IN THE SOFTWARE.
+
+
 package main
 
 import (
@@ -55,6 +78,9 @@ var Groups hsmGroupList
 var Components hsmComponentList
 
 func (p *httpStuff) hsmComponents(w http.ResponseWriter, r *http.Request) {
+	agent := r.Header.Get("User-Agent")
+	log.Printf("Sender: '%s'",agent)
+
 	if (r.Method == "GET") {
 		ba,baerr := json.Marshal(&Components)
 		if (baerr != nil) {
@@ -90,6 +116,9 @@ func (p *httpStuff) hsmComponents(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *httpStuff) hsmGroups(w http.ResponseWriter, r *http.Request) {
+	agent := r.Header.Get("User-Agent")
+	log.Printf("Sender: '%s'",agent)
+
 	if (r.Method == "GET") {
 		ba,baerr := json.Marshal(&Groups)
 		if (baerr != nil) {
@@ -125,6 +154,9 @@ func (p *httpStuff) hsmGroups(w http.ResponseWriter, r *http.Request) {
 
 
 func (p *httpStuff) subs_rcv(w http.ResponseWriter, r *http.Request) {
+    agent := r.Header.Get("User-Agent")
+    log.Printf("Sender: '%s'",agent)
+
     if (r.Method != "POST") {
         log.Printf("ERROR: request is not a POST.\n")
         w.WriteHeader(http.StatusMethodNotAllowed)
