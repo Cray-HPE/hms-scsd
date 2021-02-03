@@ -6,3 +6,5 @@ require (
 	github.com/mitchellh/go-wordwrap v1.0.0
 	github.com/ryanuber/columnize v2.1.0+incompatible
 )
+
+go 1.13
