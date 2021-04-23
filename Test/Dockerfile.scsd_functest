@@ -25,7 +25,7 @@
 # Author: mpkelly
 # Date: 26-February 2020
 
-FROM dtr.dev.cray.com/baseos/golang:1.14-alpine3.12 AS build-base
+FROM arti.dev.cray.com/baseos-docker-master-local/golang:1.14-alpine3.12 AS build-base
 LABEL maintainer="Cray, Inc."
 
 COPY Test/*.sh /usr/local/bin/
