@@ -180,7 +180,7 @@ echo " "
 echo "=============> Building test script container..."
 echo " "
 
-docker build --no-cache -f Dockerfile.scsd_functest \
+DOCKER_BUILDKIT=0 docker build --no-cache -f Dockerfile.scsd_functest \
              --tag scsd_functest:runme \
              --network=scsd_${HSUFFIX}_${brnet_suffix} \
              $addhosts \
