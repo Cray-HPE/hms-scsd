@@ -15,6 +15,7 @@ github.com/golang/snappy
 # github.com/google/uuid v1.1.1
 github.com/google/uuid
 # github.com/gorilla/mux v1.8.0
+## explicit
 github.com/gorilla/mux
 # github.com/hashicorp/errwrap v1.0.0
 github.com/hashicorp/errwrap
@@ -70,6 +71,7 @@ github.com/rcrowley/go-metrics
 # github.com/ryanuber/go-glob v1.0.0
 github.com/ryanuber/go-glob
 # github.com/sirupsen/logrus v1.7.0
+## explicit
 github.com/sirupsen/logrus
 # golang.org/x/crypto v0.0.0-20190404164418-38d8ce5564a5
 golang.org/x/crypto/ed25519
@@ -136,15 +138,20 @@ gopkg.in/square/go-jose.v2
 gopkg.in/square/go-jose.v2/cipher
 gopkg.in/square/go-jose.v2/json
 gopkg.in/square/go-jose.v2/jwt
-# stash.us.cray.com/HMS/hms-base v1.12.0
+# stash.us.cray.com/HMS/hms-base v1.13.0
+## explicit
 stash.us.cray.com/HMS/hms-base
-# stash.us.cray.com/HMS/hms-certs v1.2.0
+# stash.us.cray.com/HMS/hms-certs v1.3.0
+## explicit
 stash.us.cray.com/HMS/hms-certs/pkg/hms_certs
-# stash.us.cray.com/HMS/hms-compcredentials v1.10.0
+# stash.us.cray.com/HMS/hms-compcredentials v1.11.0
+## explicit
 stash.us.cray.com/HMS/hms-compcredentials
-# stash.us.cray.com/HMS/hms-securestorage v1.11.0
+# stash.us.cray.com/HMS/hms-securestorage v1.12.0
+## explicit
 stash.us.cray.com/HMS/hms-securestorage
-# stash.us.cray.com/HMS/hms-trs-app-api v1.5.0
+# stash.us.cray.com/HMS/hms-trs-app-api v1.6.0
+## explicit
 stash.us.cray.com/HMS/hms-trs-app-api/pkg/trs_http_api
 # stash.us.cray.com/HMS/hms-trs-kafkalib v1.4.0
 stash.us.cray.com/HMS/hms-trs-kafkalib/pkg/trs-kafkalib
