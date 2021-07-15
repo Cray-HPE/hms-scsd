@@ -1,4 +1,4 @@
-NAME ?= hms-scsd
+NAME ?= cray-scsd
 VERSION ?= $(shell cat .version)
 
 # Helm Chart
