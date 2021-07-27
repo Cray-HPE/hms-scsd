@@ -24,4 +24,4 @@ FROM cray/hms-scsd-build-base
 
 # Run test coverage...
 RUN set -ex \
-    && go test -cover -v stash.us.cray.com/HMS/hms-scsd/cmd/scsd
+    && go test -cover -v github.com/Cray-HPE/hms-scsd/cmd/scsd
