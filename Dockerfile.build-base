@@ -35,5 +35,5 @@ FROM build-base
 
 RUN go env -w GO111MODULE=auto
 
-COPY cmd $GOPATH/src/stash.us.cray.com/HMS/hms-scsd/cmd
-COPY vendor $GOPATH/src/stash.us.cray.com/HMS/hms-scsd/vendor
+COPY cmd $GOPATH/src/github.com/Cray-HPE/hms-scsd/cmd
+COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-scsd/vendor
