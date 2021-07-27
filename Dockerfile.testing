@@ -24,4 +24,4 @@ FROM cray/hms-scsd-build-base
 
 # Run unit tests...
 RUN set -ex \
-    && go test -v -o scsd stash.us.cray.com/HMS/hms-scsd/cmd/scsd
+    && go test -v -o scsd github.com/Cray-HPE/hms-scsd/cmd/scsd
