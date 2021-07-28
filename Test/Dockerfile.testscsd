@@ -33,8 +33,8 @@ FROM build-base AS base
 RUN go env -w GO111MODULE=auto
 
 # Copy all the necessary files to the image.
-COPY cmd $GOPATH/src/stash.us.cray.com/HMS/hms-scsd/cmd
-COPY vendor $GOPATH/src/stash.us.cray.com/HMS/hms-scsd/vendor
+COPY cmd $GOPATH/src/github.com/Cray-HPE/hms-scsd/cmd
+COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-scsd/vendor
 
 ### Build Stage ###
 
@@ -42,7 +42,7 @@ FROM base AS builder
 
 # Now build
 RUN set -ex \
-    && go build -v -i -o scsd stash.us.cray.com/HMS/hms-scsd/cmd/scsd
+    && go build -v -i -o scsd github.com/Cray-HPE/hms-scsd/cmd/scsd
 
 ### Final Stage ###
 
