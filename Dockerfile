@@ -53,7 +53,7 @@ EXPOSE 25309
 STOPSIGNAL SIGTERM
 
 RUN set -ex \
-    && apk update \
+    && apk -U upgrade \
     && apk add --no-cache curl
 
 # Setup environment variables.
