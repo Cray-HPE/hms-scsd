@@ -1,1 +1,3 @@
 .idea/
+kubernetes/.packaged/
+kubernetes/cray-hms-scsd/charts/
