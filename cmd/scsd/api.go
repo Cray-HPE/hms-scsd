@@ -32,9 +32,9 @@ import (
 	"net/http"
 	"strings"
 
+	base "github.com/Cray-HPE/hms-base"
 	trsapi "github.com/Cray-HPE/hms-trs-app-api/pkg/trs_http_api"
 	"github.com/gorilla/mux"
-	base "stash.us.cray.com/HMS/hms-base"
 )
 
 type Route struct {
