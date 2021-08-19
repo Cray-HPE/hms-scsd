@@ -34,12 +34,12 @@ import (
 	"syscall"
 	"time"
 
+	base "github.com/Cray-HPE/hms-base"
 	"github.com/Cray-HPE/hms-certs/pkg/hms_certs"
 	compcreds "github.com/Cray-HPE/hms-compcredentials"
 	sstorage "github.com/Cray-HPE/hms-securestorage"
 	trsapi "github.com/Cray-HPE/hms-trs-app-api/pkg/trs_http_api"
 	"github.com/sirupsen/logrus"
-	base "stash.us.cray.com/HMS/hms-base"
 )
 
 // Operational parameters
