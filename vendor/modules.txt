@@ -1,4 +1,4 @@
-# github.com/Cray-HPE/hms-base v1.15.0
+# github.com/Cray-HPE/hms-base v1.15.1
 ## explicit
 github.com/Cray-HPE/hms-base
 # github.com/Cray-HPE/hms-certs v1.3.2
@@ -155,6 +155,3 @@ gopkg.in/square/go-jose.v2
 gopkg.in/square/go-jose.v2/cipher
 gopkg.in/square/go-jose.v2/json
 gopkg.in/square/go-jose.v2/jwt
-# stash.us.cray.com/HMS/hms-base v1.13.0
-## explicit
-stash.us.cray.com/HMS/hms-base
