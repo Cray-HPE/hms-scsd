@@ -3,7 +3,7 @@ module github.com/Cray-HPE/hms-scsd
 go 1.16
 
 require (
-	github.com/Cray-HPE/hms-base v1.15.0
+	github.com/Cray-HPE/hms-base v1.15.1
 	github.com/Cray-HPE/hms-certs v1.3.2
 	github.com/Cray-HPE/hms-compcredentials v1.11.2
 	github.com/Cray-HPE/hms-securestorage v1.12.2
