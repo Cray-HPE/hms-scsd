@@ -22,11 +22,15 @@
 
 # Dockerfile for building HMS SCSD.
 
+### Build Base Stage ###
+
 FROM arti.dev.cray.com/baseos-docker-master-local/golang:1.16-alpine3.13 AS build-base
 
 RUN set -ex \
     && apk -U upgrade \
     && apk add build-base
+
+### Base Stage ###
 
 FROM build-base AS base
 
@@ -65,6 +69,9 @@ ENV VAULT_SKIP_VERIFY="true"
 # Get scsd from the builder stage.
 COPY --from=builder /go/scsd /usr/local/bin
 COPY .version /var/run/scsd_version.txt
+
+# nobody 65534:65534
+USER 65534:65534
 
 # Set up the command to start the service, the run the init script.
 CMD scsd
