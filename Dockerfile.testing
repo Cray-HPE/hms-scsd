@@ -20,8 +20,28 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-FROM cray/hms-scsd-build-base
+### Build Base Stage ###
+# Build base has the packages installed that we need.
+FROM arti.dev.cray.com/baseos-docker-master-local/golang:1.16-alpine3.13 AS build-base
+
+RUN set -ex \
+    && apk -U upgrade \
+    && apk add build-base
+
+### Base Stage ###
+
+FROM build-base as base
+
+RUN go env -w GO111MODULE=auto
+
+# Copy all the necessary files to the image.
+COPY cmd $GOPATH/src/github.com/Cray-HPE/hms-scsd/cmd
+COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-scsd/vendor
+
+### Final Stage ###
+
+FROM base
 
 # Run unit tests...
 RUN set -ex \
-    && go test -v -o scsd github.com/Cray-HPE/hms-scsd/cmd/scsd
+    && go test -cover -v -o scsd github.com/Cray-HPE/hms-scsd/cmd/scsd

@@ -83,5 +83,8 @@ RUN set -ex \
 COPY --from=builder /go/scsd /usr/local/bin
 COPY .version /var/run/scsd_version.txt
 
+# nobody 65534:65534
+USER 65534:65534
+
 # Set up the command to start the service, the run the init script.
 CMD scsd

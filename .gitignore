@@ -1,3 +1,19 @@
 .idea/
+
+# helm files
 kubernetes/.packaged/
 kubernetes/cray-hms-scsd/charts/
+
+# runIntegration.sh creates the following soft links to the real files under Test/
+Dockerfile.fake-hsm
+Dockerfile.fake-rfep
+Dockerfile.fake-vault
+Dockerfile.scsd_functest
+Dockerfile.testscsd
+docker-compose-functest.yaml
+
+# runIntegration.sh generates these log files
+scsdtest_scsd_*.logs*
+
+# vim files
+*.swp
