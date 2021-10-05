@@ -26,7 +26,7 @@
 
 source portFix.sh
 
-curl -D hout -X POST  http://${SCSD}/v1/bmc/setcert/x0c0s0b0:${X0C0S0B0_PORT}?Force=false\&Domain=cabinet | jq > out.txt
+curl -D hout -X POST  http://${SCSD}/v1/bmc/setcert/${X_S0_HOST}:${X_S0_PORT}?Force=false\&Domain=cabinet | jq > out.txt
 cat out.txt
 echo " "
 

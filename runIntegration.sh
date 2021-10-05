@@ -32,46 +32,92 @@
 # Once complete, the results of the test suite is printed to stdout and this
 # script will exit with 0 on success, non-zero on failure.
 
-testtag=scsdtest
-tagsuffix=${RANDOM}_${RANDOM}
-brnet_suffix=ttest
-export PROJ=scsd_${tagsuffix}
-export HTAG=${testtag}
-export HSUFFIX=${tagsuffix}
+set_properties() {
+    testtag=scsdtest
+    tagsuffix=${RANDOM}_${RANDOM}
+    brnet_suffix=ttest
+    export PROJ=scsd_${tagsuffix}
+    export HTAG=${testtag}
+    export HSUFFIX=${tagsuffix}
 
-# get safe ports to use, avoiding others using them.  This method is not
-# perfect but should work 99.9% of the time.
+    # get safe ports to use, avoiding others using them.  This method is not
+    # perfect but should work 99.9% of the time.
 
-BASEPORT=25100
-nrut=`pgrep -c -f runIntegrationTest.sh`
-(( PORTBASE = BASEPORT + nrut ))
+    export SCSD_RUN_ID=$(($RANDOM % 100))
+    BASEPORT=$(($SCSD_RUN_ID * 200 + 25100))
+    if [[ "$SCSD_RUN_ID" == "0" ]]; then
+        export S_PREFIX=""
+    else
+        export S_PREFIX=$SCSD_RUN_ID
+    fi
 
-(( SCSD_PORT     = PORTBASE ))
-(( FAKE_SM_PORT  = PORTBASE+10 ))
-(( X0C0S0B0_PORT = PORTBASE+100 ))
-(( X0C0S1B0_PORT = PORTBASE+101 ))
-(( X0C0S2B0_PORT = PORTBASE+102 ))
-(( X0C0S3B0_PORT = PORTBASE+103 ))
-(( X0C0S6B0_PORT = PORTBASE+106 ))
-(( X0C0S7B0_PORT = PORTBASE+107 ))
+    nrut=`pgrep -c -f runIntegrationTest.sh`
+    (( PORTBASE = BASEPORT + nrut ))
 
+    (( SCSD_PORT     = PORTBASE ))
+    (( FAKE_SM_PORT  = PORTBASE+10 ))
+    (( X_S0_PORT = PORTBASE+100 ))
+    (( X_S1_PORT = PORTBASE+101 ))
+    (( X_S2_PORT = PORTBASE+102 ))
+    (( X_S3_PORT = PORTBASE+103 ))
+    (( X_S6_PORT = PORTBASE+106 ))
+    (( X_S7_PORT = PORTBASE+107 ))
 
-export SCSD_PORT
-export FAKE_SM_PORT
-export X0C0S0B0_PORT
-export X0C0S1B0_PORT
-export X0C0S2B0_PORT
-export X0C0S3B0_PORT
-export X0C0S6B0_PORT
-export X0C0S7B0_PORT
+    export SCSD_PORT
+    export FAKE_SM_PORT
+    export X_S0_PORT
+    export X_S1_PORT
+    export X_S2_PORT
+    export X_S3_PORT
+    export X_S6_PORT
+    export X_S7_PORT
 
-export CRAY_VAULT_JWT_FILE=/tmp/k8stoken
-export CRAY_VAULT_ROLE_FILE=/tmp/k8stoken
-export SCSD_TEST_K8S_AUTH_URL="http://vault:8200/v1/auth/kubernetes/login"
-export SCSD_TEST_VAULT_PKI_URL="http://vault:8200/v1/pki_common/issue/pki-common"
-export SCSD_TEST_VAULT_CA_URL="http://vault:8200/v1/pki_common/ca_chain"
+    export SCSD_HOST="scsd_"$SCSD_RUN_ID
+    export FAKE_SM_HOST="fake_hsm_"$SCSD_RUN_ID
+    export VAULT_HOST="vault_"$SCSD_RUN_ID
+    export X_S0_HOST="x0c0s"$S_PREFIX"0b0"
+    export X_S1_HOST="x0c0s"$S_PREFIX"1b0"
+    export X_S2_HOST="x0c0s"$S_PREFIX"2b0"
+    export X_S3_HOST="x0c0s"$S_PREFIX"3b0"
+    export X_S6_HOST="x0c0s"$S_PREFIX"6b0"
+    export X_S7_HOST="x0c0s"$S_PREFIX"7b0"
 
-logfilename=scsdtest_${PROJ}.logs
+    export CRAY_VAULT_JWT_FILE=/tmp/k8stoken
+    export CRAY_VAULT_ROLE_FILE=/tmp/k8stoken
+    export SCSD_TEST_K8S_AUTH_URL="http://${VAULT_HOST}:8200/v1/auth/kubernetes/login"
+    export SCSD_TEST_VAULT_PKI_URL="http://${VAULT_HOST}:8200/v1/pki_common/issue/pki-common"
+    export SCSD_TEST_VAULT_CA_URL="http://${VAULT_HOST}:8200/v1/pki_common/ca_chain"
+
+    logfilename=scsdtest_${PROJ}.logs
+}
+
+print_properties() {
+    echo "PROJ=$PROJ"
+    echo "SCSD_RUN_ID=$SCSD_RUN_ID"
+    echo "BASEPORT=$BASEPORT"
+    echo "S_PREFIX=$S_PREFIX"
+    echo "SCSD_HOST=$SCSD_HOST"
+    echo "FAKE_SM_HOST=$FAKE_SM_HOST"
+    echo "VAULT_HOST=$VAULT_HOST"
+    echo "X_S0_HOST=$X_S0_HOST"
+    echo "X_S1_HOST=$X_S1_HOST"
+    echo "X_S2_HOST=$X_S2_HOST"
+    echo "X_S3_HOST=$X_S3_HOST"
+    echo "X_S6_HOST=$X_S6_HOST"
+    echo "X_S7_HOST=$X_S7_HOST"
+}
+
+start_marker_container () {
+    max_expected_run_time=600 # 10 minutes
+    export MARKER_CONTAINER=$(\
+        docker run -d -it --rm \
+            --label "scsd_integration_project=$PROJ" \
+            --label "scsd_run_id=$SCSD_RUN_ID" \
+            --name "scsd-test-$PROJ" \
+            arti.dev.cray.com/baseos-docker-master-local/alpine:3.13 \
+            sleep $max_expected_run_time
+    )
+}
 
 cleanup_containers() {
     # Get rid of the interim containers
@@ -83,7 +129,31 @@ cleanup_containers() {
     for fff in `docker images | grep ${HTAG}_${HSUFFIX} | awk '{printf("%s\n",$3)}'`; do
         docker image rm -f ${fff}
     done
+
+    docker container stop --time 1 $MARKER_CONTAINER
+    echo "Stopped marker container: $MARKER_CONTAINER"
 }
+
+set_properties
+found_unique_ids="false"
+for ((i=0; i<5; i++)); do
+    if [[ $(docker ps -q --filter label="scsd_integration_project=$PROJ") ]] ||
+        [[ $(docker ps -q --filter label="scsd_run_id=$SCSD_RUN_ID") ]]; then
+        # The ids are being used by a different run of the tests.
+        # Try picking different ids
+        echo "WARNING: IDs in use: proj=$PROJ and scsd_run_id=$SCSD_RUN_ID"
+        echo "Getting a new set of IDs"
+        set_properties
+    else
+        found_unique_ids="true"
+        break;
+    fi
+done
+if [[ "$found_unique_ids" == "false" ]]; then
+    echo "WARNING: Failed to find unique IDs. Continuing with the tests, but they may fail with conflicts in the docker names, hostnames, and port numbers."
+fi
+start_marker_container
+print_properties
 
 # It's possible we don't have docker-compose, so if necessary bring our own.
 
@@ -184,26 +254,44 @@ DOCKER_BUILDKIT=0 docker build --no-cache -f Dockerfile.scsd_functest \
              --tag scsd_functest:runme \
              --network=scsd_${HSUFFIX}_${brnet_suffix} \
              $addhosts \
-             --build-arg IN_SCSD=scsd:${SCSD_PORT} \
-             --build-arg IN_HSM=fake_hsm:${FAKE_SM_PORT} \
-             --build-arg IN_X0C0S0B0_PORT=${X0C0S0B0_PORT} \
-             --build-arg IN_X0C0S1B0_PORT=${X0C0S1B0_PORT} \
-             --build-arg IN_X0C0S2B0_PORT=${X0C0S2B0_PORT} \
-             --build-arg IN_X0C0S3B0_PORT=${X0C0S3B0_PORT} \
-             --build-arg IN_X0C0S6B0_PORT=${X0C0S6B0_PORT} \
-             --build-arg IN_X0C0S7B0_PORT=${X0C0S7B0_PORT} \
+             --build-arg IN_SCSD=${SCSD_HOST}:${SCSD_PORT} \
+             --build-arg IN_HSM=${FAKE_SM_HOST}:${FAKE_SM_PORT} \
+             --build-arg IN_X_S0_PORT=${X_S0_PORT} \
+             --build-arg IN_X_S1_PORT=${X_S1_PORT} \
+             --build-arg IN_X_S2_PORT=${X_S2_PORT} \
+             --build-arg IN_X_S3_PORT=${X_S3_PORT} \
+             --build-arg IN_X_S6_PORT=${X_S6_PORT} \
+             --build-arg IN_X_S7_PORT=${X_S7_PORT} \
+             --build-arg SCSD_HOST=${SCSD_HOST} \
+             --build-arg FAKE_SM_HOST=${FAKE_SM_HOST} \
+             --build-arg VAULT_HOST=${VAULT_HOST} \
+             --build-arg X_S0_HOST=${X_S0_HOST} \
+             --build-arg X_S1_HOST=${X_S1_HOST} \
+             --build-arg X_S2_HOST=${X_S2_HOST} \
+             --build-arg X_S3_HOST=${X_S3_HOST} \
+             --build-arg X_S6_HOST=${X_S6_HOST} \
+             --build-arg X_S7_HOST=${X_S7_HOST} \
              --build-arg SCSD_VERSION=`cat .version` . > ${logfilename}.buildit 2>&1
 
-docker run --attach STDOUT --attach STDERR \
+docker run --rm --attach STDOUT --attach STDERR \
              --network=scsd_${HSUFFIX}_${brnet_suffix} \
-             --env IN_SCSD=scsd:${SCSD_PORT} \
-             --env IN_HSM=fake_hsm:${FAKE_SM_PORT} \
-             --env IN_X0C0S0B0_PORT=${X0C0S0B0_PORT} \
-             --env IN_X0C0S1B0_PORT=${X0C0S1B0_PORT} \
-             --env IN_X0C0S2B0_PORT=${X0C0S2B0_PORT} \
-             --env IN_X0C0S3B0_PORT=${X0C0S3B0_PORT} \
-             --env IN_X0C0S6B0_PORT=${X0C0S6B0_PORT} \
-             --env IN_X0C0S7B0_PORT=${X0C0S7B0_PORT} \
+             --env IN_SCSD=${SCSD_HOST}:${SCSD_PORT} \
+             --env IN_HSM=${FAKE_SM_HOST}:${FAKE_SM_PORT} \
+             --env IN_X_S0_PORT=${X_S0_PORT} \
+             --env IN_X_S1_PORT=${X_S1_PORT} \
+             --env IN_X_S2_PORT=${X_S2_PORT} \
+             --env IN_X_S3_PORT=${X_S3_PORT} \
+             --env IN_X_S6_PORT=${X_S6_PORT} \
+             --env IN_X_S7_PORT=${X_S7_PORT} \
+             --env SCSD_HOST=${SCSD_HOST} \
+             --env FAKE_SM_HOST=${FAKE_SM_HOST} \
+             --env VAULT_HOST=${VAULT_HOST} \
+             --env X_S0_HOST=${X_S0_HOST} \
+             --env X_S1_HOST=${X_S1_HOST} \
+             --env X_S2_HOST=${X_S2_HOST} \
+             --env X_S3_HOST=${X_S3_HOST} \
+             --env X_S6_HOST=${X_S6_HOST} \
+             --env X_S7_HOST=${X_S7_HOST} \
              --env SCSD_VERSION=`cat .version` scsd_functest:runme > ${logfilename}.runit 2>&1
 
 test_rslt=$?
@@ -231,7 +319,7 @@ echo " "
 echo "================================================="
 if [[ ${test_rslt} -ne 0 ]]; then
     echo "SCSD test(s) FAILED."
-	echo " "
+    echo " "
     echo "LOGS:"
     cat ${logfilename}
     echo " "

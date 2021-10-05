@@ -24,7 +24,7 @@
 
 # This script applies a cert to 2 different BMCs, one Cray and one HPE.
 
-pldx='{"Force":false,"CertDomain":"Cabinet","Targets":["x0c0s7b0:XP7","x0c0s1b0:XP1"]}'
+pldx='{"Force":false,"CertDomain":"Cabinet","Targets":["X_S7_HOST:XP7","X_S1_HOST:XP1"]}'
 
 source portFix.sh
 pld=`portFix "$pldx"`
