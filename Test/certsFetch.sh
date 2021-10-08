@@ -24,7 +24,7 @@
 
 # This script fetches certs for 2 BMCs in the x0 domain
 
-pldx='{"Domain":"Cabinet","DomainIDs":["x0c0s0b0","x0c7s7b1"]}'
+pldx='{"Domain":"Cabinet","DomainIDs":["X_S0_HOST","x0c7s7b1"]}'
 
 source portFix.sh
 pld=`portFix "$pldx"`

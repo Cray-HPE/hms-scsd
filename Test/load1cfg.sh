@@ -30,7 +30,7 @@ fi
 
 # POST to load a single target's configs
 
-curl -D hout -X POST -d '{"Force":false,"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}' http://${SCSD}/v1/bmc/cfg/x0c0s0b0:${X0C0S0B0_PORT}
+curl -D hout -X POST -d '{"Force":false,"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}' http://${SCSD}/v1/bmc/cfg/${X_S0_HOST}:${X_S0_PORT}
 echo " "
 
 cat hout
