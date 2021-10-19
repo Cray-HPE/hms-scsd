@@ -39,28 +39,28 @@ if [ -z $HSM ]; then
     echo "ENV var 'HSM' not set, exiting."
     exit 1
 fi
-if [ -z $X0C0S0B0_PORT ]; then
-    echo "ENV var 'X0C0S0B0_PORT' not set, exiting."
+if [ -z $X_S0_PORT ]; then
+    echo "ENV var 'X_S0_PORT' not set, exiting."
     exit 1
 fi
-if [ -z $X0C0S1B0_PORT ]; then
-    echo "ENV var 'X0C0S1B0_PORT' not set, exiting."
+if [ -z $X_S1_PORT ]; then
+    echo "ENV var 'X_S1_PORT' not set, exiting."
     exit 1
 fi
-if [ -z $X0C0S2B0_PORT ]; then
-    echo "ENV var 'X0C0S2B0_PORT' not set, exiting."
+if [ -z $X_S2_PORT ]; then
+    echo "ENV var 'X_S2_PORT' not set, exiting."
     exit 1
 fi
-if [ -z $X0C0S3B0_PORT ]; then
-    echo "ENV var 'X0C0S3B0_PORT' not set, exiting."
+if [ -z $X_S3_PORT ]; then
+    echo "ENV var 'X_S3_PORT' not set, exiting."
     exit 1
 fi
-if [ -z $X0C0S6B0_PORT ]; then
-    echo "ENV var 'X0C0S6B0_PORT' not set, exiting."
+if [ -z $X_S6_PORT ]; then
+    echo "ENV var 'X_S6_PORT' not set, exiting."
     exit 1
 fi
-if [ -z $X0C0S7B0_PORT ]; then
-    echo "ENV var 'X0C0S7B0_PORT' not set, exiting."
+if [ -z $X_S7_PORT ]; then
+    echo "ENV var 'X_S7_PORT' not set, exiting."
     exit 1
 fi
 
@@ -98,38 +98,38 @@ if [[ $? != 1 ]]; then
     exit 1
 fi
 
-echo "CHECKING FOR x0c0s0b0..."
-isReady http://x0c0s0b0:${X0C0S0B0_PORT}/redfish/v1/
+echo "CHECKING FOR ${X_S0_HOST}..."
+isReady http://${X_S0_HOST}:${X_S0_PORT}/redfish/v1/
 if [[ $? != 1 ]]; then
     echo "Can't continue, exiting."
     exit 1
 fi
-echo "CHECKING FOR x0c0s1b0..."
-isReady http://x0c0s1b0:${X0C0S1B0_PORT}/redfish/v1/
+echo "CHECKING FOR ${X_S1_HOST}..."
+isReady http://${X_S1_HOST}:${X_S1_PORT}/redfish/v1/
 if [[ $? != 1 ]]; then
     echo "Can't continue, exiting."
     exit 1
 fi
-echo "CHECKING FOR x0c0s2b0..."
-isReady http://x0c0s2b0:${X0C0S2B0_PORT}/redfish/v1/
+echo "CHECKING FOR ${X_S2_HOST}..."
+isReady http://${X_S2_HOST}:${X_S2_PORT}/redfish/v1/
 if [[ $? != 1 ]]; then
     echo "Can't continue, exiting."
     exit 1
 fi
-echo "CHECKING FOR x0c0s3b0..."
-isReady http://x0c0s3b0:${X0C0S3B0_PORT}/redfish/v1/
+echo "CHECKING FOR ${X_S3_HOST}..."
+isReady http://${X_S3_HOST}:${X_S3_PORT}/redfish/v1/
 if [[ $? != 1 ]]; then
     echo "Can't continue, exiting."
     exit 1
 fi
-echo "CHECKING FOR x0c0s6b0..."
-isReady http://x0c0s6b0:${X0C0S6B0_PORT}/redfish/v1/
+echo "CHECKING FOR ${X_S6_HOST}..."
+isReady http://${X_S6_HOST}:${X_S6_PORT}/redfish/v1/
 if [[ $? != 1 ]]; then
     echo "Can't continue, exiting."
     exit 1
 fi
-echo "CHECKING FOR x0c0s7b0..."
-isReady http://x0c0s7b0:${X0C0S7B0_PORT}/redfish/v1/
+echo "CHECKING FOR ${X_S7_HOST}..."
+isReady http://${X_S7_HOST}:${X_S7_PORT}/redfish/v1/
 if [[ $? != 1 ]]; then
     echo "Can't continue, exiting."
     exit 1

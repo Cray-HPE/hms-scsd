@@ -27,7 +27,7 @@ if [ -z $HSM ]; then
     exit 1
 fi
 
-pldx='{"Components": [ {"ID":"x0c0s0b0:XP0","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"x0c0s1b0:XP1","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"x0c0s2b0:XP2","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"x0c0s3b0:XP3","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"x0c0s4b0:XP4","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"x0c0s5b0:XP5","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"x0c0s6b0:XP6","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"x0c0s7b0:XP7","Type":"NodeBMC","State":"On","Flag":"OK"} ]}'
+pldx='{"Components": [ {"ID":"X_S0_HOST:XP0","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S1_HOST:XP1","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S2_HOST:XP2","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S3_HOST:XP3","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"x0c0s4b0:XP4","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"x0c0s5b0:XP5","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"X_S6_HOST:XP6","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"X_S7_HOST:XP7","Type":"NodeBMC","State":"On","Flag":"OK"} ]}'
 
 source portFix.sh
 pld=`portFix "$pldx"`
@@ -43,7 +43,7 @@ if (( scode != 200 )); then
 	exit 1
 fi
 
-pldx='[{"label":"bmcgroup","description":"group of bmcs","tags":["bmctag"],"members":{"ids":["x0c0s6b0:XP6","x0c0s7b0:XP7"]}}]'
+pldx='[{"label":"bmcgroup","description":"group of bmcs","tags":["bmctag"],"members":{"ids":["X_S6_HOST:XP6","X_S7_HOST:XP7"]}}]'
 pld=`portFix "$pldx"`
 
 curl -D hout -X POST -d "$pld" http://${HSM}/hsm/v1/groups
