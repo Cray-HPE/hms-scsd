@@ -54,10 +54,10 @@ import (
 // VENDOR  'cray' or 'hpe'.  Determines the behavior of Certificate Service.
 //
 // BMCPORT Determines the port used in the host:port of the app instance.
-//         Defaults to 20000 e.g. http://x0c0s0b0:2000/redfish/v1/...
+//         Defaults to 20000 e.g. http://${X_S0_HOST}:2000/redfish/v1/...
 //
 // XNAME   Determines which BMC XName the app is pretending to be.  Defaults is
-//         x0c0s0b0.
+//         ${X_S0_HOST}.
 //
 // BADACCT Used for debugging, to force AccountService data to be incorrect.
 //
@@ -1032,7 +1032,7 @@ func startHTTPServer() *http.Server {
 
 
 func main() {
-	xname := "x0c0s0b0"
+	xname := "${X_S0_HOST}"
 	port = ":20000"
 	envstr := os.Getenv("BMCURL")
 	if (envstr != "") {
