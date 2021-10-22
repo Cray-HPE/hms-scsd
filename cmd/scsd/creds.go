@@ -985,7 +985,6 @@ func doCredsGet(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		//Get list of XNames from HSM.
-logger.Tracef("AAA HSM URL: '%s'",appParams.SmdURL + "/State/Components?type=NodeBMC&type=ChassisBMC&type=RouterBMC&type=CabinetBMC&stateonly=true")
 		rsp, err := doHSMGet(appParams.SmdURL + "/State/Components?type=NodeBMC&type=ChassisBMC&type=RouterBMC&type=CabinetBMC&stateonly=true")
 		if err != nil {
 			sendErrorRsp(w,"Can't get HSM component data",
@@ -1020,7 +1019,6 @@ logger.Tracef("AAA HSM URL: '%s'",appParams.SmdURL + "/State/Components?type=Nod
 	//on larger systems.  Nothing we can really do about that.
 
 	for ii := 0; ii < len(xnames); ii ++ {
-logger.Tracef("XName: .%s.",xnames[ii])
 		creds, err := compCredStore.GetCompCred(xnames[ii])
 		if err != nil {
 			logger.Errorf("Error getting credentials for '%s': %v",
@@ -1030,8 +1028,6 @@ logger.Tracef("XName: .%s.",xnames[ii])
 				StatusMsg: "No credentials found.",
 			})
 		} else {
-logger.Tracef("GOT CREDS: .%v.",creds)
-logger.Tracef("GOT CREDS: uname: .%s. pw: .%s.",creds.Username,creds.Password)
 			un := "<empty>"
 			pw := "<empty>"
 			if (creds.Username != "") {
