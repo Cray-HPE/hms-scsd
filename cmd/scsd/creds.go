@@ -66,6 +66,19 @@ type credsPostSingle struct {
 	Creds credsData `jtag:"Creds"`
 }
 
+
+type bmcCredsData struct {
+	Xname      string `json:"Xname"`
+	Username   string `json:"Username,omitempty"`
+	Password   string `json:"Password,omitempty"`
+	StatusCode int    `json:"StatusCode"`
+	StatusMsg  string `json:"StatusMsg"`
+}
+
+type bmcCredsReturn struct {
+	Targets []bmcCredsData `json:"Targets"`
+}
+
 //Redfish account data
 
 type rfAcctSvcData struct {
@@ -922,3 +935,128 @@ func doCredsPostOne(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(ba)
 }
+
+func doCredsGet(w http.ResponseWriter, r *http.Request) {
+	var xnames []string
+	var retData bmcCredsReturn
+
+	if (appParams.VaultEnable == nil) || !(*appParams.VaultEnable) {
+		logger.Tracef("doCredsGet(), Vault is disabled, no creds available.")
+		sendErrorRsp(w,"Vault not available",
+			"ERROR: Vault access is disabled.",
+			r.URL.Path,http.StatusGone)
+		return
+	}
+
+	//Get the params.  If none, we get all BMC creds.
+
+	qvals := r.URL.Query()
+	targlist,ok := qvals["targets"]
+
+	if (ok && ((len(targlist) == 0) || (targlist[0] == ""))) {
+		logger.Errorf("ERROR: 'targets' query parameter is empty.")
+		sendErrorRsp(w,"Invalid query parameter",
+			"ERROR: URL query parameter is empty.",
+			r.URL.Path,http.StatusBadRequest)
+		return
+	}
+
+	if (ok) {
+		xlist := strings.Split(targlist[0],",")
+		elist := []string{}
+
+		//Verify the name formats
+		for ii := 0; ii < len(xlist); ii++ {
+			xn := base.VerifyNormalizeCompID(xlist[ii])
+			if (xn == "") {
+				logger.Errorf("Invalid XName: '%s'",xlist[ii])
+				elist = append(elist,xlist[ii])
+			} else {
+				xnames = append(xnames,xn)
+			}
+		}
+
+		if (len(elist) != 0) {
+			bxn := strings.Join(elist,",")
+			sendErrorRsp(w,"Bad XName(s) entered",
+				fmt.Sprintf("ERROR: Invalid Xnames: %s.",bxn),
+				r.URL.Path,http.StatusInternalServerError)
+			return
+		}
+	} else {
+		//Get list of XNames from HSM.
+logger.Tracef("AAA HSM URL: '%s'",appParams.SmdURL + "/State/Components?type=NodeBMC&type=ChassisBMC&type=RouterBMC&type=CabinetBMC&stateonly=true")
+		rsp, err := doHSMGet(appParams.SmdURL + "/State/Components?type=NodeBMC&type=ChassisBMC&type=RouterBMC&type=CabinetBMC&stateonly=true")
+		if err != nil {
+			sendErrorRsp(w,"Can't get HSM component data",
+				"ERROR: problem getting component info from HSM.",
+				r.URL.Path,http.StatusInternalServerError)
+			return
+		}
+		if rsp == nil {
+			sendErrorRsp(w,"No HSM component data",
+				"ERROR: Nil response data from HSM.",
+				r.URL.Path,http.StatusInternalServerError)
+			return
+		}
+
+		var compData hsmComponentList
+		err = json.Unmarshal(rsp, &compData)
+		if err != nil {
+			sendErrorRsp(w,"Can't unmarshall HSM component data",
+				"ERROR: Problem unmarshaling HSM data.",
+				r.URL.Path,http.StatusInternalServerError)
+			return
+		}
+
+		for ii := 0; ii < len(compData.Components); ii++ {
+			if goodHSMState(compData.Components[ii].State) {
+				xnames = append(xnames,compData.Components[ii].ID)
+			}
+		}
+	}
+
+	//For each XName, get the BMC creds from vault.  NOTE: this is SLOW
+	//on larger systems.  Nothing we can really do about that.
+
+	for ii := 0; ii < len(xnames); ii ++ {
+logger.Tracef("XName: .%s.",xnames[ii])
+		creds, err := compCredStore.GetCompCred(xnames[ii])
+		if err != nil {
+			logger.Errorf("Error getting credentials for '%s': %v",
+				xnames[ii],err)
+			retData.Targets = append(retData.Targets,bmcCredsData{Xname: xnames[ii],
+				StatusCode: http.StatusInternalServerError,
+				StatusMsg: "No credentials found.",
+			})
+		} else {
+logger.Tracef("GOT CREDS: .%v.",creds)
+logger.Tracef("GOT CREDS: uname: .%s. pw: .%s.",creds.Username,creds.Password)
+			un := "<empty>"
+			pw := "<empty>"
+			if (creds.Username != "") {
+				un = creds.Username
+			}
+			if (creds.Password != "") {
+				pw = creds.Password
+			}
+
+			retData.Targets = append(retData.Targets,bmcCredsData{Xname: xnames[ii],
+				Username: un, Password: pw, StatusCode: http.StatusOK,
+				StatusMsg: "OK",
+			})
+		}
+	}
+
+	ba, berr := json.Marshal(&retData)
+	if berr != nil {
+		sendErrorRsp(w,"Return data marshal error", "ERROR: problem marshaling return data.",
+			r.URL.Path,http.StatusInternalServerError)
+			return
+	}
+
+	w.Header().Set(CT_TYPE, CT_APPJSON)
+	w.WriteHeader(http.StatusOK)
+	w.Write(ba)
+}
+
