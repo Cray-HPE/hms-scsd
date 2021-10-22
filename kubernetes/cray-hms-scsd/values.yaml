@@ -13,6 +13,7 @@ cray-service:
   type: "Deployment"
   nameOverride: "cray-scsd"
   fullnameOverride: "cray-scsd"
+  replicaCount: 3
   containers:
     cray-scsd:
       name: "cray-scsd"
