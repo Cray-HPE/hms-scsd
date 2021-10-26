@@ -303,15 +303,17 @@ func fetchTargAccount(taskList []trsapi.HttpTask, username []string, retEtags *[
 		max := -1
 		acctMaxURL := ""
 		for jj := 0; jj < len(acctMembers.Members); jj++ {
-			toks := strings.Split(acctMembers.Members[jj].ID,"/")
+			//iLO bug: URIs can have trailing '/' sometimes, must trim.
+			uri := strings.TrimRight(acctMembers.Members[jj].ID,"/")
+			toks := strings.Split(uri, "/")
 			ord,err := strconv.Atoi(toks[len(toks)-1])
 			if (err != nil) {
 				return fmt.Errorf("ERROR: Can't get account number from '%s'",
-							acctMembers.Members[jj].ID)
+							uri)
 			}
 			if (ord > max) {
 				max = ord
-				acctMaxURL = acctMembers.Members[jj].ID
+				acctMaxURL = uri
 				logger.Tracef("fetchTargAccount(3) Replacing: %s, max: %d, ID: '%s'",
 					targ,max,acctMaxURL)
 			}
