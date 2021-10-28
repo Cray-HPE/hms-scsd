@@ -24,7 +24,7 @@
 
 # This script creates 2 cabinet-level certs from 3 BMC xnames.
 
-pldx='{"Domain":"Cabinet","DomainIDs":["x0c0s0b0","x0c1s1b1", "x1c2s3b0"]}'
+pldx='{"Domain":"Cabinet","DomainIDs":["X_S0_HOST","x0c1s1b1", "x1c2s3b0"]}'
 
 source portFix.sh
 pld=`portFix "$pldx"`

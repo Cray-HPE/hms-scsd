@@ -30,7 +30,7 @@ fi
 
 # POST to get a dump of current configs
 
-curl -D hout http://${SCSD}/v1/bmc/cfg/x0c0s0b0:${X0C0S0B0_PORT}?params=NTPServerInfo+SyslogServerInfo+SSHKey+SSHConsoleKey
+curl -D hout http://${SCSD}/v1/bmc/cfg/${X_S0_HOST}:${X_S0_PORT}?params=NTPServerInfo+SyslogServerInfo+SSHKey+SSHConsoleKey
 echo " "
 
 cat hout

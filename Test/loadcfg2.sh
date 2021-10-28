@@ -30,7 +30,7 @@ fi
 
 # POST to get a dump of current configs
 
-pldx='{"Force":true,"Targets":["x0c0s0b0:XP0","x0c0s1b0:XP1"],"Params":{"NTPServerInfo":{"NTPServers":["sms-mmm-xxx10"],"Port":345,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-ppp-zzz10"],"Port":567,"ProtocolEnabled":true},"SSHKey":"wwwwxxxx","SSHConsoleKey":"yyyyzzzz"}}'
+pldx='{"Force":true,"Targets":["X_S0_HOST:XP0","X_S1_HOST:XP1"],"Params":{"NTPServerInfo":{"NTPServers":["sms-mmm-xxx10"],"Port":345,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-ppp-zzz10"],"Port":567,"ProtocolEnabled":true},"SSHKey":"wwwwxxxx","SSHConsoleKey":"yyyyzzzz"}}'
 
 source portFix.sh
 pld=`portFix "$pldx"`
