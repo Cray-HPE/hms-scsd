@@ -881,4 +881,8 @@ When this is to be done, the following steps are needed:
 3. Re-generate the TLS cabinet-level certs as in step 1 above.
 Place the TLS certs onto the Redfish BMCs as in step 2 above.
 
+### SCSD CT Testing
 
+This repository builds and publishes hms-scsd-ct-test RPMs along with the service itself containing tests that verify SCSD on the
+NCNs of live Shasta systems. The tests require the hms-ct-test-base RPM to also be installed on the NCNs in order to execute.
+The version of the test RPM installed on the NCNs should always match the version of SCSD deployed on the system.
