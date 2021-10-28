@@ -27,7 +27,7 @@ if [ -z $SCSD ]; then
     exit 1
 fi
 
-pldx='{ "Force":false, "Targets": [ { "Xname": "x0c0s0b0:XP0", "Creds": { "Username":"root", "Password":"aaaaaa" } }, { "Xname": "x0c0s1b0:XP1", "Creds": { "Username":"root", "Password":"bbbbbb" } }, { "Xname": "x0c0s2b0:XP2", "Creds": { "Username":"root", "Password":"cccccc" } }, { "Xname": "x0c0s3b0:XP3", "Creds": { "Username":"root", "Password":"dddddd" } }, { "Xname": "x0c0s6b0:XP6", "Creds": { "Username":"root", "Password":"eeeeee" } } ] }'
+pldx='{ "Force":false, "Targets": [ { "Xname": "X_S0_HOST:XP0", "Creds": { "Username":"root", "Password":"aaaaaa" } }, { "Xname": "X_S1_HOST:XP1", "Creds": { "Username":"root", "Password":"bbbbbb" } }, { "Xname": "X_S2_HOST:XP2", "Creds": { "Username":"root", "Password":"cccccc" } }, { "Xname": "X_S3_HOST:XP3", "Creds": { "Username":"root", "Password":"dddddd" } }, { "Xname": "X_S6_HOST:XP6", "Creds": { "Username":"root", "Password":"eeeeee" } } ] }'
 
 source portFix.sh
 pld=`portFix "$pldx"`

@@ -23,7 +23,7 @@
 # OTHER DEALINGS IN THE SOFTWARE.
 
 
-pldx='{"Force":false, "Username":"root", "Password":"zzaabb", "Targets":["x0c0s0b0:XP0","x0c0s1b0:XP1","x0c0s2b0:XP2","x0c0s3b0:XP3"]}'
+pldx='{"Force":false, "Username":"root", "Password":"zzaabb", "Targets":["X_S0_HOST:XP0","X_S1_HOST:XP1","X_S2_HOST:XP2","X_S3_HOST:XP3"]}'
 
 source portFix.sh
 pld=`portFix "$pldx"`

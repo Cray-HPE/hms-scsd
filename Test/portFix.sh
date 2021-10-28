@@ -26,40 +26,69 @@ if [ -z $SCSD ]; then
     echo "MISSING SCSD ENV VAR."
     exit 1
 fi
-if [ -z $X0C0S0B0_PORT ]; then
-    echo "MISSING X0C0S0B0_PORT ENV VAR."
+if [ -z $X_S0_PORT ]; then
+    echo "MISSING X_S0_PORT ENV VAR."
     exit 1
 fi
-if [ -z $X0C0S1B0_PORT ]; then
-    echo "MISSING X0C0S1B0_PORT ENV VAR."
+if [ -z $X_S1_PORT ]; then
+    echo "MISSING X_S1_PORT ENV VAR."
     exit 1
 fi
-if [ -z $X0C0S2B0_PORT ]; then
-    echo "MISSING X0C0S2B0_PORT ENV VAR."
+if [ -z $X_S2_PORT ]; then
+    echo "MISSING X_S2_PORT ENV VAR."
     exit 1
 fi
-if [ -z $X0C0S3B0_PORT ]; then
-    echo "MISSING X0C0S3B0_PORT ENV VAR."
+if [ -z $X_S3_PORT ]; then
+    echo "MISSING X_S3_PORT ENV VAR."
     exit 1
 fi
-if [ -z $X0C0S6B0_PORT ]; then
-    echo "MISSING X0C0S6B0_PORT ENV VAR."
+if [ -z $X_S6_PORT ]; then
+    echo "MISSING X_S6_PORT ENV VAR."
     exit 1
 fi
-if [ -z $X0C0S7B0_PORT ]; then
-    echo "MISSING X0C0S7B0_PORT ENV VAR."
+if [ -z $X_S7_PORT ]; then
+    echo "MISSING X_S7_PORT ENV VAR."
+    exit 1
+fi
+if [ -z $X_S0_HOST ]; then
+    echo "MISSING X_S0_HOST ENV VAR."
+    exit 1
+fi
+if [ -z $X_S1_HOST ]; then
+    echo "MISSING X_S1_HOST ENV VAR."
+    exit 1
+fi
+if [ -z $X_S2_HOST ]; then
+    echo "MISSING X_S2_HOST ENV VAR."
+    exit 1
+fi
+if [ -z $X_S3_HOST ]; then
+    echo "MISSING X_S3_HOST ENV VAR."
+    exit 1
+fi
+if [ -z $X_S6_HOST ]; then
+    echo "MISSING X_S6_HOST ENV VAR."
+    exit 1
+fi
+if [ -z $X_S7_HOST ]; then
+    echo "MISSING X_S7_HOST ENV VAR."
     exit 1
 fi
 
 portFix () {
     local pld
-	pld=`echo $1 | sed "s/XP0/$X0C0S0B0_PORT/g" | \
-                   sed "s/XP1/$X0C0S1B0_PORT/g" | \
-                   sed "s/XP2/$X0C0S2B0_PORT/g" | \
-                   sed "s/XP3/$X0C0S3B0_PORT/g" | \
-                   sed "s/XP6/$X0C0S6B0_PORT/g" | \
-                   sed "s/XP7/$X0C0S7B0_PORT/g" | \
+	pld=`echo $1 | sed "s/XP0/$X_S0_PORT/g" | \
+                   sed "s/XP1/$X_S1_PORT/g" | \
+                   sed "s/XP2/$X_S2_PORT/g" | \
+                   sed "s/XP3/$X_S3_PORT/g" | \
+                   sed "s/XP6/$X_S6_PORT/g" | \
+                   sed "s/XP7/$X_S7_PORT/g" | \
+                   sed "s/X_S0_HOST/$X_S0_HOST/g" | \
+                   sed "s/X_S1_HOST/$X_S1_HOST/g" | \
+                   sed "s/X_S2_HOST/$X_S2_HOST/g" | \
+                   sed "s/X_S3_HOST/$X_S3_HOST/g" | \
+                   sed "s/X_S6_HOST/$X_S6_HOST/g" | \
+                   sed "s/X_S7_HOST/$X_S7_HOST/g" | \
                    sed 's/"/\\"/g'`
     echo $pld
 }
-
