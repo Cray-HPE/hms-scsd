@@ -18,7 +18,8 @@ cray-service:
     cray-scsd:
       name: "cray-scsd"
       image:
-        repository: "cray/cray-scsd"
+        repository: "artifactory.algol60.net/csm-docker/stable/cray-scsd"
+        tag: 1.9.0
       ports:
         - name: http
           containerPort: 25309
@@ -43,8 +44,8 @@ cray-service:
         # Remove this to have hmnfd use ETCD.  The etcd operator will
         # provide the hmnfd container with ETCD_HOST and ETCD_PORT to
         # allow it to determine the KV URL.
-        #- name: KV_URL
-        #  value: "mem:"
+        # - name: KV_URL
+        #   value: "mem:"
       livenessProbe:
         httpGet:
           port: 25309
@@ -71,4 +72,3 @@ cray-service:
     enabled: true
     uri: " "
     prefix: /apis/scsd
-

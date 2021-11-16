@@ -5,4 +5,3 @@ metadata:
   name: scsd-cacert-info
 data:
   CA_URI: "{{ .Values.hms_ca_uri }}"
-

@@ -1,5 +1,17 @@
-apiVersion: v1
-description: "Kubernetes resources for cray-hms-scsd"
+apiVersion: v2
 name: "cray-hms-scsd"
-home: "HMS/hms-scsd"
-version: 1.9.0
+version: 1.10.0
+description: "Kubernetes resources for cray-hms-scsd"
+home: "https://github.com/Cray-HPE/hms-scsd"
+sources:
+  - "https://github.com/Cray-HPE/hms-scsd"
+dependencies:
+  - name: cray-service
+    version: "~7.0.0"
+    repository: https://artifactory.algol60.net/artifactory/csm-helm-charts
+maintainers:
+  - name: Hardware Management
+    url: https://github.com/orgs/Cray-HPE/teams/hardware-management
+appVersion: "1.10.0"
+annotations:
+  artifacthub.io/images: ""
