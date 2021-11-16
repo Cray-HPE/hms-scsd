@@ -45,7 +45,7 @@ info:
 
     ### /bmc/creds/{xname}
 
-    Configure access credentials for a single BMC or controller.
+    Configure or fetch (with authorization) access credentials for a single BMC or controller.
 
     ### /bmc/globalcreds
 
@@ -353,6 +353,42 @@ paths:
           description: Endpoint not found
         '405':
           description: 'Invalid method, only GET,POST is allowed'
+
+  /bmc/creds:
+    parameters:
+      - in: query
+        name: targets
+        required: false
+        description: Comma separated list of XNames.  No query string results in fetching creds for all known BMCs.
+        schema:
+          $ref: '#/components/schemas/xname_list'
+      - in: query
+        name: type
+        required: false
+        description: Target component type.  A maximum of one type is allowed.  If no type is specified, all known BMC types are returned.
+        schema:
+          type: string
+          example: NodeBMC
+    get:
+      tags:
+        - creds
+      summary: Fetch controller login credentials for specified targets.
+      description: >-
+        Fetch controller login credentials for a specified targets.  Targets
+        are specified as a comma-separated list of xnames.
+      responses:
+        '200':
+          description: OK.  The data was succesfully set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/creds_fetch_rsp'
+        '404':
+          description: Endpoint not found
+        '405':
+          description: 'Invalid method, only GET, POST is allowed'
+
+
   /bmc/globalcreds:
     post:
       tags:
@@ -493,7 +529,7 @@ paths:
           description: Endpoint not found
         '405':
           description: 'Invalid method, only POST is allowed'
-  /bmc/setcert/{xname}:
+  '/bmc/setcert/{xname}':
     parameters:
       - in: path
         name: xname
@@ -586,6 +622,10 @@ components:
         ^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$
       description: The xname of this piece of hardware
       example: x0c0s0b0
+    xname_list:
+      type: string
+      description: Comma separated list of xnames
+      example: 'x1000c0s0b0,x1000c0s1b0'
     ntp_server_info_kw:
       type: string
       description: NTP server
@@ -782,6 +822,27 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/xname'
+    creds_fetch_rsp:
+      type: array
+      items:
+        $ref: '#/components/schemas/creds_fetch_rsp_elmt'
+    creds_fetch_rsp_elmt:
+      type: object
+      properties:
+        Xname:
+          $ref: '#/components/schemas/xname'
+        Username:
+          type: string
+          example: "admin"
+        Password:
+          type: string
+          example: "pwstring"
+        StatusCode:
+          type: integer
+          example: 200
+        StatusMsg:
+          type: string
+          example: "OK"
     bmc_managecerts_request:
       type: object
       properties:

@@ -301,6 +301,28 @@ POST Response:
 }
 ```
 
+### /v1/bmc/creds/{xname} (POST)
+
+Fetches the BMC creds of selected targets.  Targets are specified as
+URL query parameters.
+
+** Query Parameters **
+
+```
+GET /v1/bmc/creds?targets=list&type=type
+
+list     Comma-separated list of BMC XNames.  If ommitted, 
+         all BMCs are targeted.
+
+type     Component type.  Can be one of:
+
+         NodeBMC
+         RouterBMC
+         ChassisBMC
+
+         If ommitted, all of these types are targeted.
+```
+
 ### /v1/bmc/globalcreds (POST only)
 
 This interface allows the caller to set the same access creds on all target BMCs' admin accounts.  
