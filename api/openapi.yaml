@@ -372,10 +372,15 @@ paths:
     get:
       tags:
         - creds
-      summary: Fetch controller login credentials for specified targets.
+      summary: Fetch controller login credentials for specified targets and types.
       description: >-
         Fetch controller login credentials for a specified targets.  Targets
-        are specified as a comma-separated list of xnames.
+        are specified as a comma-separated list of xnames.  A component type
+        may also be specified.  The xname list is 'ANDed' with the component
+        type; any xname that has a type other than the specified type will
+        be discarded.   If no type is specified, all BMC types are used.
+        If no query parameters are specified at all, all BMCs in the system
+        are used.
       responses:
         '200':
           description: OK.  The data was succesfully set
