@@ -66,6 +66,27 @@ type credsPostSingle struct {
 	Creds credsData `jtag:"Creds"`
 }
 
+
+type bmcCredsData struct {
+	Xname      string `json:"Xname"`
+	Username   string `json:"Username,omitempty"`
+	Password   string `json:"Password,omitempty"`
+	StatusCode int    `json:"StatusCode"`
+	StatusMsg  string `json:"StatusMsg"`
+}
+
+type bmcCredsReturn struct {
+	Targets []bmcCredsData `json:"Targets"`
+}
+
+// Used by HSM query endpoints
+
+type hsmComponentQuery struct {
+	ComponentIDs []string `json:"ComponentIDs`
+	Type         []string `json:"type,omitempty"`
+	StateOnly    bool     `json:"stateonly,omitempty"`
+}
+
 //Redfish account data
 
 type rfAcctSvcData struct {
@@ -922,3 +943,172 @@ func doCredsPostOne(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(ba)
 }
+
+func doCredsGet(w http.ResponseWriter, r *http.Request) {
+	var xnames,retXnames []string
+	var compType string
+	var retData bmcCredsReturn
+
+	if (appParams.VaultEnable == nil) || !(*appParams.VaultEnable) {
+		logger.Tracef("doCredsGet(), Vault is disabled, no creds available.")
+		sendErrorRsp(w,"Vault not available",
+			"ERROR: Vault access is disabled.",
+			r.URL.Path,http.StatusGone)
+		return
+	}
+
+	//Get the params.  If none, we get all BMC creds.
+
+	qvals := r.URL.Query()
+	targlist,ok := qvals["targets"]
+	typelist,tlok := qvals["type"]
+
+	if (ok && ((len(targlist) == 0) || (targlist[0] == ""))) {
+		sendErrorRsp(w,"Invalid query parameter",
+			"ERROR: URL query parameter is empty.",
+			r.URL.Path,http.StatusBadRequest)
+		return
+	}
+
+	if (ok) {
+		xlist := strings.Split(targlist[0],",")
+		elist := []string{}
+
+		//Verify the name formats
+		for ii := 0; ii < len(xlist); ii++ {
+			xn := base.VerifyNormalizeCompID(xlist[ii])
+			if (xn == "") {
+				logger.Errorf("Invalid XName: '%s'",xlist[ii])
+				elist = append(elist,xlist[ii])
+			} else {
+				xnames = append(xnames,xn)
+			}
+		}
+
+		if (len(elist) != 0) {
+			bxn := strings.Join(elist,",")
+			sendErrorRsp(w,"Bad XName(s) entered",
+				fmt.Sprintf("ERROR: Invalid Xnames: %s.",bxn),
+				r.URL.Path,http.StatusInternalServerError)
+			return
+		}
+	}
+
+	if (tlok) {
+		//We'll only allow one type
+		toks := strings.Split(typelist[0],",")
+		if (len(toks) > 1) {
+			sendErrorRsp(w,"Invalid query parameter 'type'",
+				"ERROR: URL query parameter 'type' can only be a single value.",
+				r.URL.Path,http.StatusBadRequest)
+			return
+		}
+		compType = base.VerifyNormalizeType(toks[0])
+		if (compType == "") {
+			sendErrorRsp(w,"Invalid query parameter 'type'",
+				"ERROR: URL query parameter 'type' is invalid component type.",
+				r.URL.Path,http.StatusBadRequest)
+			return
+		}
+	}
+
+	//Get list of XNames from HSM.
+
+	urlTail := ""
+	var rsp []byte
+	var rerr error
+
+	if (len(xnames) == 0) {
+		urlTail = "/State/Components"
+		if (compType == "") {
+			urlTail = urlTail + "?type=NodeBMC&type=ChassisBMC&type=RouterBMC&type=CabinetBMC&stateonly=true"
+		} else {
+			urlTail = urlTail + "?type=" + compType + "&stateonly=true"
+		}
+		rsp, rerr = doHSMGet(appParams.SmdURL + urlTail)
+	} else {
+		urlTail = "/State/Components/Query"
+		jdata := hsmComponentQuery{ComponentIDs: xnames, StateOnly: true,}
+		if (compType != "") {
+			jdata.Type = []string{compType,}
+		}
+		ba,baerr := json.Marshal(&jdata)
+		if (baerr != nil) {
+			sendErrorRsp(w,"Error marshalling HSM query data",
+				"ERROR: problem marshalling HSM query data.",
+				r.URL.Path,http.StatusInternalServerError)
+			return
+		}
+		rsp, rerr = doHSMPutPostPatchDel(appParams.SmdURL + urlTail, http.MethodPost, ba)
+	}
+	if (rerr != nil) {
+		sendErrorRsp(w,"Can't get HSM component data",
+			"ERROR: problem getting component info from HSM.",
+			r.URL.Path,http.StatusInternalServerError)
+		return
+	}
+	if (rsp == nil) {
+		sendErrorRsp(w,"No HSM component data",
+			"ERROR: Nil response data from HSM.",
+			r.URL.Path,http.StatusInternalServerError)
+		return
+	}
+
+	var compData hsmComponentList
+	rerr = json.Unmarshal(rsp, &compData)
+	if (rerr != nil) {
+		sendErrorRsp(w,"Can't unmarshall HSM component data",
+			"ERROR: Problem unmarshaling HSM data.",
+			r.URL.Path,http.StatusInternalServerError)
+		return
+	}
+
+	for ii := 0; ii < len(compData.Components); ii++ {
+		if (base.IsHMSTypeController(base.GetHMSType(compData.Components[ii].ID))) {
+			if (goodHSMState(compData.Components[ii].State)) {
+				retXnames = append(retXnames,compData.Components[ii].ID)
+			}
+		}
+	}
+
+	//For each XName, get the BMC creds from vault.  NOTE: this is SLOW
+	//on larger systems.  Nothing we can really do about that.
+
+	for ii := 0; ii < len(retXnames); ii ++ {
+		creds, err := compCredStore.GetCompCred(retXnames[ii])
+		if (err != nil) {
+			logger.Errorf("Error getting credentials for '%s': %v",
+				retXnames[ii],err)
+			retData.Targets = append(retData.Targets,bmcCredsData{Xname: retXnames[ii],
+				StatusCode: http.StatusInternalServerError,
+				StatusMsg: "No credentials found.",
+			})
+		} else {
+			un := "<empty>"
+			pw := "<empty>"
+			if (creds.Username != "") {
+				un = creds.Username
+			}
+			if (creds.Password != "") {
+				pw = creds.Password
+			}
+
+			retData.Targets = append(retData.Targets,bmcCredsData{Xname: retXnames[ii],
+				Username: un, Password: pw, StatusCode: http.StatusOK,
+				StatusMsg: "OK",
+			})
+		}
+	}
+
+	ba, berr := json.Marshal(&retData)
+	if (berr != nil) {
+		sendErrorRsp(w,"Return data marshal error", "ERROR: problem marshaling return data.",
+			r.URL.Path,http.StatusInternalServerError)
+			return
+	}
+
+	w.Header().Set(CT_TYPE, CT_APPJSON)
+	w.WriteHeader(http.StatusOK)
+	w.Write(ba)
+}
+

@@ -194,6 +194,11 @@ func generateRoutes() Routes {
 			API_GLB_CREDS,
 			doGlobalCredsPost,
 		},
+		Route{"doCredsGet",
+			strings.ToUpper("Get"),
+			API_CREDS,
+			doCredsGet,
+		},
 		Route{"doBMCCreateCertsPost",
 			strings.ToUpper("Post"),
 			API_CRT_CERTS,
@@ -482,6 +487,35 @@ func doHSMGet(url string) ([]byte, error) {
 
 	return rspPayload, nil
 }
+
+func doHSMPutPostPatchDel(url string, method string, pld []byte) ([]byte, error) {
+	if hsmClient == nil {
+		hsmTransport = &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
+		hsmClient = &http.Client{Transport: hsmTransport}
+	}
+	req, _ := http.NewRequest(strings.ToUpper(method), url, bytes.NewBuffer(pld))
+	base.SetHTTPUserAgent(req, serviceName)
+	rsp, err := hsmClient.Do(req)
+	if err != nil {
+		logger.Errorf("Problem contacting state manager: %v", err)
+		return nil, err
+	}
+	rspPayload, plerr := ioutil.ReadAll(rsp.Body)
+	if plerr != nil {
+		logger.Errorf("Problem reading request body: %v", plerr)
+		return nil, plerr
+	}
+
+	if !statusCodeOK(rsp.StatusCode) {
+		emsg := fmt.Errorf("Bad return status from state manager: %d",
+			rsp.StatusCode)
+		logger.Println(emsg)
+		return nil, emsg
+	}
+
+	return rspPayload, nil
+}
+
 
 // Given an HSM state returns if it is a viable state.
 
