@@ -7,6 +7,13 @@
 #   tag: "" (default = "latest")
 #   pullPolicy: "" (default = "IfNotPresent")
 
+global:
+  appVersion: 1.10.0
+
+image:
+  repository: artifactory.algol60.net/csm-docker/stable/cray-scsd
+  pullPolicy: IfNotPresent
+
 hms_ca_uri: ""
 
 cray-service:
@@ -19,7 +26,6 @@ cray-service:
       name: "cray-scsd"
       image:
         repository: "artifactory.algol60.net/csm-docker/stable/cray-scsd"
-        tag: 1.9.0
       ports:
         - name: http
           containerPort: 25309
