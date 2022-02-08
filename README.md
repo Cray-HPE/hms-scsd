@@ -27,544 +27,76 @@ Network Protocol parameters set on BMCs include:
 * NTP server 
 * Syslog server
 
-### v1/bmc/dumpcfg  (POST)
+Note that at this time these are only settable on Olympus BMCs.  COTS BMCs
+don't always support all of these, depending on the vendor; a near-future
+enhancement will allow for setting whatever a COTS BMC will support.
 
-Get the current Network Protocol parameters and  boot order for the target BMCs in the payload.  Note that all fields are only applicable to Olympus BMCs.  Trying to set them for COTS BMCs will be ignored, and fetching them for COTS BMCs will return empty strings.  JSON payload data for POST operations to set parameters can omit parameters as desired.  So, for example, if only the NTP server info is to be set, only the "NTPServer" key/value has to be present.
+The SCSD API allows for bulk listing and setting of Network Protocol parameters,
+as well as fetching and setting of these parameters for a single target.
 
-**Payload**
-
-```
-POST (to fetch current info from targets):
- 
-{
-    "Force": true,
-    "Targets": [
-        "x0c0s0b0",
-        "x0c0s1b0"
-    ],
-    "Params": [
-        "NTPServerInfo",
-        "SyslogServerInfo",
-        "SSHKey",
-        "SSHConsoleKey"
-    ]
-}
- 
- 
-Return data:
-{
-    "Targets": [
-    {
-        "StatusCode": 200,
-        "StatusMsg": "OK",
-        "Xname": "x0c0s0b0",
-        "Params":
-        {
-              "NTPServerInfo":
-              {
-                  "NTPServers": "sms-ncn-w001",
-                  "Port": 123,
-                  "ProtocolEnabled": true
-              },
-              "SyslogServerInfo":
-              {
-                  "SyslogServers": "sms-ncn-w001",
-                  "Port":514,
-                  "ProtocolEnabled": true
-              },
-              "SSHKey": "xxxxyyyyzzzz",
-              "SSHConsoleKey": "aaaabbbbcccc"
-        }
-    },
-    {
-        "StatusCode": 200,
-        "StatusMsg": "OK",
-        "Xname": "x0c0s0b0",
-        "Params":
-        {
-              "NTPServerInfo":
-              {
-                  "NTPServers": "sms-ncn-w001",
-                  "Port": 123,
-                  "ProtocolEnabled": true
-              },
-              "SyslogServerInfo":
-              {
-                  "SyslogServers": "sms-ncn-w001",
-                  "Port":514,
-                  "ProtocolEnabled": true
-              },
-              "SSHKey": "xxxxyyyyzzzz",
-              "SSHConsoleKey": "aaaabbbbcccc"
-         }
-    }
-    ]
-}
-```
-
-### /v1/bmc/loadcfg (POST)
-
-Set the Syslog, NTP server info or SSH key on a set of target BMCs.
-
-**Payloads:**
-
-```
-POST (to set params on targets):
- 
-{
-    "Force": false,
-    "Targets": [
-        "x0c0s0b0",
-        "x0c0s1b0"
-    ],
-    "Params":
-    {
-        "NTPServerInfo":
-        {
-            "NTPServers": "sms-ncn-w001",
-            "Port": 123,
-            "ProtocolEnabled": true
-        },
-        "SyslogServerInfo":
-        {
-            "SyslogServers": "sms-ncn-w001",
-            "Port":514,
-            "ProtocolEnabled": true
-        },
-        "SSHKey": "xxxxyyyyzzzz",
-        "SSHConsoleKey": "aaaabbbbcccc"
-    }
-}
- 
-POST Response:
- 
-{
-    "Targets": [
-        {
-            "Xname": "x0c0s0b0",
-            "StatusCode": 200,
-            "StatusMsg": "OK"
-        },
-        {
-            "Xname": "x0c0s1b0",
-            "StatusCode": 405,
-            "StatusMsg": "Only GET operations permitted"
-        }
-    ]
-}
-```
-
-### v1/bmc/cfg/{xname}  (GET/POST)
-
-Same as *v1/bmc/nwprotocol*, but for a specific XName.   If no query parameters are specified in the URL, all NW protocol data is returned for the target, otherwise only the specified data is returned.
-
-**Payloads:**
-
-```
-GET  /v1/bmc/cfg/x0c0s0b0n0?params=Force+NTPServerInfo+SyslogServerInfo+SSHKey+SSHConsoleKey
- 
-GET Response:
- 
-{
-    "Force": true,
-    "Params":
-    {
-        "NTPServerInfo":
-        {
-            "NTPServers": "sms-ncn-w001",
-            "Port": 123,
-            "ProtocolEnabled": true
-        },
-        "SyslogServerInfo":
-        {
-            "SyslogServers": "sms-ncn-w001",
-            "Port":514,
-            "ProtocolEnabled": true
-        },
-        "SSHKey": "xxxxyyyyzzzz",
-        "SSHConsoleKey": "aaaabbbbcccc"
-    }
-}
- 
-POST /v1/bmc/nwp/cfg/x0c0s0b0n0:
- 
-{
-    "Force": true,
-    "Params":
-    {
-        "NTPServerInfo":
-        {
-            "NTPServers": "sms-ncn-w001",
-            "Port": 123,
-            "ProtocolEnabled": true
-        },
-        "SyslogServerInfo":
-        {
-            "SyslogServers": "sms-ncn-w001",
-            "Port":514,
-            "ProtocolEnabled": true
-        },
-        "SSHKey": "xxxxyyyyzzzz",
-        "SSHConsoleKey": "aaaabbbbcccc"
-    }
-}
- 
-POST Response:
- 
-{
-    "StatusMsg": "OK"
-}
-```
+Please refer to the swagger doc in this repo: api/openapi.yaml, in the *nwp*
+section for more details on the API and payloads.
 
 
 ## BMC Credentials
 
 BMC credentials are username/password pairs used for Redfish administrative accounts.  BMC Redfish access used by Shasta requires the use of the administrative account and thus Shasta SW is responsible for setting and using the correct account credentials for BMC Redfish access.
 
-BMC admin account passwords are created by the admin and set on the BMCs using SCSD using the following APIs.
+BMC admin account passwords are created by the admin and set on the BMCs using 
+the SCSD API.
 
+The API has the ability to set credentials for collections of BMCs or
+individual ones.  It also has the capability to fetch credentials for 
+a collection of BMCs.
 
-### /v1/bmc/discreetcreds (POST)
+When setting creds for a collection of BMCs, there are 2 endpoints: one
+that sets a different username/password for each target BMC, and one that
+sets the same username/password for all target BMCs.  This gives maximum
+ease and flexibility to the admin.
 
-This endpoint is used for setting redfish credentials for BMCs.  Note that this is different than SSH keys (only used on Olympus BMCs) – these credentials are for Redfish access, not SSH access into a BMC.   
+Please refer to the swagger doc in this repo: api/openapi.yaml, in the *creds*
+section for more details on the API and payloads.
 
-This API allows the setting of different creds for each target within one call.  See */v1/bmc/globalcreds* for a mechanism to set multiple BMCs' creds to the same value.
-
-Note that it is not possible to "fetch" creds via this API.  Only setting them is allowed, for security reasons.
-
-To set a group of BMCs' creds, set up a group in Hardware State Manager and use the group ID rather than BMC xname(s).
-
-**Payloads:**
-
-```
-POST (to set creds on targets):
- 
-{
-    "Force": false,
-    "Targets": [
-        {
-            "Xname": "x0c0s0b0",
-            "Creds": {
-                "Username": "root",
-                "Password": "admin-pw"
-            }
-        },
-        {
-            "Xname": "x0c0s1b0",
-            "Creds": {
-                "Username": "root",
-                "Password": "admin-pw"
-            }
-        }
-    ]
-}
- 
- 
-POST response:
-{
-    "Targets": [
-        {
-            "Xname": "x0c0s0b0",
-            "StatusCode": 200,
-            "StatusMsg": "OK"
-        },
-        {
-            "Xname": "x0c0s1b0",
-            "StatusCode": 405,
-            "StatusMsg": "Only POST operations permitted"
-        }
-    ]
-}
-```
-
-### /v1/bmc/creds/{xname} (POST)
-
-Same as */v1/bmc/discreetcreds*, but for a single target.
-
-**Payloads:**
-
-```
-POST:
- 
-{
-    "Force": true,
-    "Creds": {
-        "Username": "root",
-        "Password": "admin-pw"
-    }
-}
- 
-POST Response:
- 
-{
-    "StatusMsg": "OK"
-}
-```
-
-### /v1/bmc/creds/{xname} (POST)
-
-Fetches the BMC creds of selected targets.  Targets are specified as
-URL query parameters.
-
-** Query Parameters **
-
-```
-GET /v1/bmc/creds?targets=list&type=type
-
-list     Comma-separated list of BMC XNames.  If ommitted, 
-         all BMCs are targeted.
-
-type     Component type.  Can be one of:
-
-         NodeBMC
-         RouterBMC
-         ChassisBMC
-
-         If ommitted, all of these types are targeted.
-```
-
-### /v1/bmc/globalcreds (POST only)
-
-This interface allows the caller to set the same access creds on all target BMCs' admin accounts.  
-
-**Payloads:**
-
-```
-POST (to set the same creds on all targets):
- 
-{
-    "Force": false,
-    "Username": "user",
-    "Password": "user-pw",
-    "Targets": [
-        "x0c0s0b0",
-        "x0c0s1b0"
-    ]
-}
- 
- 
-POST response:
- 
-{
-    "Targets": [
-        {
-            "Xname": "x0c0s0b0",
-            "StatusCode": 200,
-            "StatusMsg": "OK"
-        },
-        {
-            "Xname": "x0c0s1b0",
-            "StatusCode": 200,
-            "StatusMsg": "OK"
-        }
-    ]
-}
-```
 
 ## TLS Cert Management
 
-To facilitate validated HTTPS communications to Redfish BMCs, TLS certs need to be created and placed onto the BMCs.  The following APIs provide the means to create, fetch, delete, and place TLS certs onto target BMCs.
+To facilitate validated HTTPS communications to Redfish BMCs, TLS certs need 
+to be created and placed onto the BMCs.  The SCSD API provides the means to 
+create, fetch, delete, and place TLS certs onto target BMCs.
+
+The typical use case is that the admin will first want to create TLS certs for a
+target set of BMCs using one SCSD API, and then apply the generated certs to 
+the target BMCs with a different API.  Thus, this is not a single operation.
+
+This is because generating the certs involves using the Shasta certificate 
+trust chain service, which has nothing to do with the actual hardware.  Once
+this is done, then the generated certs can be used.
+
+Please refer to the swagger doc in this repo: api/openapi.yaml, in the *certs*
+section for more details on the API and payloads.
 
 
-### /v1/bmc/createcerts
+## Service Health and Version
 
-This API creates TLS cert/key pairs for a set of BMCs.  It does not apply these certs to BMCs -- it only creates them and places them into Vault secure storage for later use.
+Includes *health*, *liveness* and *readiness* APIs.  These are used by 
+the Kubernetes cluster manager to assess the health of a microservice.
 
-TLS certs are created to cover "domains".  The most common domain is the cabinet/rack domain.  The admin creates a single TLS cert per cabinet/rack which can later be applied to any BMC in that cabinet.  Other domains are possible -- chassis, blade, and BMC; however the "lower" the domain, the more TLS certs must be created to cover the system.
+The *health* endpoint checks various sub-systems and reports them in the
+returned JSON payload.
 
+The *liveness* endpoint returns a favorable return status with no JSON
+payload, proving the service is running and is responsive.
 
-**Payloads:**
+The *readiness* endpoint returns a favorable return status with no JSON
+payload if all supporting sub-systems are operational (e.g., vault and TRS),
+and an error return status if not.
 
-```
+The *version* endpoint returns the current build version of SCSD in a JSON
+payload.
 
-POST request:
+Please refer to the swagger doc in this repo: api/openapi.yaml, in the
+*version* and *cli_ignore* sections for more details on these API and payloads.
 
-{
-  "Domain": "Cabinet",
-  "DomainIDs": [
-    "x0",
-    "x1"
-  ]
-}
-
-POST response:
-
-{
-  "DomainIDs": [
-    {
-      "ID": "x0",
-      "StatusCode": 200,
-      "StatusMsg": "OK"
-    },
-    {
-      "ID": "x1",
-      "StatusCode": 200,
-      "StatusMsg": "OK"
-    }
-  ]
-}
-```
-
-### /v1/bmc/deletecerts
-
-This API deletes previously created TLS cert/key pairs.  It does not remove these certs from BMCs -- it only deletes them from Vault secure storage.
-
-**Payloads:**
-
-```
-
-POST request:
-
-{
-  "Domain": "Cabinet",
-  "DomainIDs": [
-    "x1"
-  ]
-}
-
-POST response:
-
-{
-  "DomainIDs": [
-    {
-      "ID": "x1",
-      "StatusCode": 200,
-      "StatusMsg": "OK"
-    }
-  ]
-}
-```
-
-### /v1/bmc/fetchcerts
-
-This API fetches previously-created TLS cert/key pairs from Vault secure storage -- not the BMCs themselves -- and displays them.  The payload specifies the domain and the targets, which can be any BMCs within that domain.  For example, if a cabinet-level cert was generated, the simplest thing to do is fetch the cert for that cabinet using that cabinet's XName, since all BMCs in the cabinet have the same cert.
-
-**Payload:**
-
-```
-
-POST request:
-
-{
-  "Domain": "Cabinet",
-  "DomainIDs": [
-    "x0"
-  ]
-}
-
-POST response:
-
-{
-  "DomainIDs": [
-    {
-      "ID": "x0",
-      "StatusCode": 200,
-      "StatusMsg": "OK",
-      "Cert": {
-        "CertType": "PEM",
-        "CertData": "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
-      }
-    }
-  ]
-}
-```
-
-### /v1/bmc/setserts
-
-This API applies previously-generated TLS certs onto BMCs.  The following example will set a cabinet-domain cert, previously generated, onto a single BMC.
-
-**Payloads:**
-
-```
-
-POST request:
-
-{
-  "Force": false,
-  "CertDomain": "Cabinet",
-  "Targets": [
-    "x0c0s0b0"
-  ]
-}
-
-POST response:
-
-{
-  "Targets": [
-    {
-      "ID": "x0c0s0b0",
-      "StatusCode": 200,
-      "StatusMsg": "OK"
-    }
-  ]
-}
-```
-
-### /v1/bmc/setcert/{xname}
-
-Same as */v1/bmc/setserts*, but for a single BMC.  URL query parameters can include:
-
-* Force -- Don't check with State Manager for target BMC state -- just do it.
-* Domain -- Set cert domain.  Default is cabinet.
-
-```
-
-POST /v1/bmc/setcert/x0c0s0b0?Force=false,Domain=Cabinet
-
-POST response is the HTTP status code.  200 == cert was successfully set.
-
-```
-
-
-## Service Health
-
-Includes *health*, *liveness* and *readiness* APIs.
-
-
-### /v1/health (GET only)
-
-Get the current health status of SCSD.
-
-**Payload:**
-
-```
-{
-    "TaskRunnerStatus": "Status String",
-    "TaskRunnerMode": "Local"
-}
-```
-
-### /v1/readiness (GET only)
-
-Get the current readiness status of SCSD.  Note that there is no payload; the return is one of:
-
-* 201 (No Content) - ready
-* 503 (Service Unavailable)
-
-
-### /v1/liveness (GET only)
-
-Get the current liveness state of SCSD.   Note that there is no payload; the return is one of:
-
-* 405 (Not allowed)
-* 404 (Not available, returned due to service not exiting)
-* 201 (No Content) - alive
-
-
-### /v1/version (GET only)
-
-Get the current build version.  Will be v1.maj.min format.
-
-**Payload:**
-
-```
-GET:
- 
- 
-{
-    "Version": "v1.2.3"
-}
-```
 
 ## CLI
 
@@ -818,7 +350,7 @@ First create a JSON file containing all cabinet level cert creation info:
 Save this to 'cert_create.json'
 ```
 
-```bash
+```
 # cray scsd bmc createcerts create --format json cert_create.json
 {
   "DomainIDs": [
