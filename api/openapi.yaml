@@ -612,11 +612,29 @@ paths:
       description: Get readiness status of the service
       x-private: true
       responses:
-        '204':
+        '200':
           description: >-
             [No
             Content](http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.2.5)
             Network API call success
+        '503':
+          description: The service is not taking HTTP requests
+  /health:
+    get:
+      tags:
+        - cli_ignore
+      summary: Get readiness status of the service
+      description: Get readiness status of the service
+      x-private: true
+      responses:
+        '200':
+          description: OK. All health parameters are operational.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/health'
+        '500':
+          description: The service encountered an error when gathering health information
         '503':
           description: The service is not taking HTTP requests
 components:
@@ -941,6 +959,9 @@ components:
           enum:
             - Local
             - Worker
+        VaultStatus:
+          type: string
+          example: Connected
     Problem7807:
       description: >-
         RFC 7807 compliant error payload.  All fields are optional except the
