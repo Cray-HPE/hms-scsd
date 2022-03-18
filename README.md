@@ -12,6 +12,9 @@ Various BMC parameters are set during the system HW discovery process.   There w
 
 ## Operation
 
+![SCSD Block Diagram](scsd_block_diagram.png "HBTD Block Diagram")
+
+
 The SCSD service will present a REST API to facilitate parameter get/set operations.  It will typically contact the Hardware State Manager to verify targets as being correct and in a valid state.  Once it has a list of targets, SCSD will perform the needed Redfish operations in parallel.  Any credentials needed will be fetched from Vault secure storage.
 
 *NOTE: in all POST operation payloads there is an optional "Force" field.  If present, and set to 'true', then the Hardware State Manager will not be utilized; the Redfish operations will be attempted without verifying they are present or in a good state.   If the "Force" field is not present or is present but set to 'false', target states will be verified, and any targets not in acceptable states will not be included in the operation.*
