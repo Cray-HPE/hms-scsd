@@ -523,7 +523,7 @@ Example:   cray scsd syslog update --syslog sms-ncn-w001:514 x0c0s0n0b0
 <p>cray scsd bmc update --syslog sms-ncn-w001:514 x0c0s0n0b0</p>
 <p>cray scsd bmcgroup create -f my_xname_array.json partition_1_bmcgroup</p>
 <p>cray scsd bmctemplate update --syslog sms-ncn-w001:514 default_partition_1</p>
-<p>cray scsd bmc update --login root --password initial0 x0c0s0n0b0</p>
+<p>cray scsd bmc update --login root --password ******* x0c0s0n0b0</p>
 <p><br />
 </p>
 <div class="smallfont" data-align="left" style="color: #666666; width: 98%; margin-bottom: 10px;">
