@@ -1,6 +1,6 @@
 // MIT License
 //
-// (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -24,6 +24,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -125,6 +126,12 @@ type acctID struct {
 	index   int
 	baseURL string
 	IDs     []int
+}
+
+// Payload to send for HSM discovery
+type discoverPayload struct {
+	Xnames []string `json:"xnames"`
+	Force  bool     `json:"force"`
 }
 
 // Fix an Etag so we discard any decorations.
@@ -627,6 +634,7 @@ func doDiscreetCredsPost(w http.ResponseWriter, r *http.Request) {
 
 	retData.Targets = make([]loadCfgPostRspElem, len(taskList))
 
+	var discoveryTargets []string
 	numBad := 0
 	for ii := 0; ii < len(taskList); ii++ {
 		ecode := getStatusCode(&taskList[ii])
@@ -634,6 +642,7 @@ func doDiscreetCredsPost(w http.ResponseWriter, r *http.Request) {
 		tdMap[targ].statusCode = ecode
 		if statusCodeOK(ecode) {
 			logger.Infof("INFO: RF creds for '%s' successfully updated.", targ)
+			discoveryTargets = append(discoveryTargets, targ)
 			errStr := updateCreds(targ, unArray[ii], pwArray[ii])
 			if errStr != "" {
 				tdMap[targ].statusCode = http.StatusPreconditionFailed
@@ -683,6 +692,8 @@ func doDiscreetCredsPost(w http.ResponseWriter, r *http.Request) {
 			http.StatusInternalServerError)
 		return
 	}
+
+	doHSMDiscover(discoveryTargets)
 
 	w.Header().Set(CT_TYPE, CT_APPJSON)
 	w.WriteHeader(http.StatusOK)
@@ -776,12 +787,14 @@ func doGlobalCredsPost(w http.ResponseWriter, r *http.Request) {
 
 	retData.Targets = make([]loadCfgPostRspElem, len(taskList))
 
+	var discoveryTargets []string
 	numBad := 0
 	for ii := 0; ii < len(taskList); ii++ {
 		ecode := getStatusCode(&taskList[ii])
 		targ := targFromTask(&taskList[ii])
 		if statusCodeOK(ecode) {
 			logger.Infof("INFO: RF creds for '%s' successfully updated.", targ)
+			discoveryTargets = append(discoveryTargets, targ)
 			errStr := updateCreds(targ, jdata.Username, jdata.Password)
 			if errStr != "" {
 				logger.Errorf(errStr)
@@ -820,6 +833,7 @@ func doGlobalCredsPost(w http.ResponseWriter, r *http.Request) {
 			retData.Targets = append(retData.Targets, elm)
 		}
 	}
+	doHSMDiscover(discoveryTargets)
 
 	ba, berr := json.Marshal(&retData)
 	if berr != nil {
@@ -840,6 +854,9 @@ func doCredsPostOne(w http.ResponseWriter, r *http.Request) {
 
 	mvars := mux.Vars(r)
 	XName := base.NormalizeHMSCompID(mvars["xname"])
+
+	var discoveryTargets []string
+	discoveryTargets = append(discoveryTargets, XName)
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -938,6 +955,7 @@ func doCredsPostOne(w http.ResponseWriter, r *http.Request) {
 			http.StatusInternalServerError)
 		return
 	}
+	doHSMDiscover(discoveryTargets)
 
 	w.Header().Set(CT_TYPE, CT_APPJSON)
 	w.WriteHeader(http.StatusOK)
@@ -1112,3 +1130,44 @@ func doCredsGet(w http.ResponseWriter, r *http.Request) {
 	w.Write(ba)
 }
 
+func doHSMDiscover(xnames []string) ([]byte, error) {
+	if len(xnames) == 0 {
+		return nil, nil
+	}
+	if hsmClient == nil {
+		hsmTransport = &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
+		hsmClient = &http.Client{Transport: hsmTransport}
+	}
+	url := appParams.SmdURL + "/Inventory/Discover"
+
+	var payloadS discoverPayload
+	payloadS.Xnames = xnames
+	payloadS.Force = true
+	payload, marErr := json.Marshal(payloadS)
+	if marErr != nil {
+		logger.Errorf("attemtped to marshal JSON payload but failed: %s", marErr)
+		return nil, marErr
+	}
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	base.SetHTTPUserAgent(req, serviceName)
+	req.Header.Add("Content-Type", "application/json")
+	rsp, err := hsmClient.Do(req)
+	if err != nil {
+		logger.Errorf("Problem contacting state manager: %v", err)
+		return nil, err
+	}
+	rspPayload, plerr := ioutil.ReadAll(rsp.Body)
+	if plerr != nil {
+		logger.Errorf("Problem reading request body: %v", plerr)
+		return nil, plerr
+	}
+
+	if !statusCodeOK(rsp.StatusCode) {
+		emsg := fmt.Errorf("Bad return status from state manager: %d",
+			rsp.StatusCode)
+		logger.Println(emsg)
+		return nil, emsg
+	}
+
+	return rspPayload, nil
+}
