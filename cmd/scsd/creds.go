@@ -1134,24 +1134,20 @@ func doHSMDiscover(xnames []string) ([]byte, error) {
 	if len(xnames) == 0 {
 		return nil, nil
 	}
-	logger.Error("********** IN HSM DISCOVER ****************")
 	if hsmClient == nil {
 		hsmTransport = &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
 		hsmClient = &http.Client{Transport: hsmTransport}
 	}
 	url := appParams.SmdURL + "/Inventory/Discover"
-	logger.Error(url)
 
 	var payloadS discoverPayload
 	payloadS.Xnames = xnames
 	payloadS.Force = true
-	//	payload := "{\"xnames\":[\"" + xname + "\"], \"force\":true}"
 	payload, marErr := json.Marshal(payloadS)
 	if marErr != nil {
 		logger.Errorf("attemtped to marshal JSON payload but failed: %s", marErr)
 		return nil, marErr
 	}
-	logger.Error(string(payload))
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(payload))
 	base.SetHTTPUserAgent(req, serviceName)
 	req.Header.Add("Content-Type", "application/json")
@@ -1172,7 +1168,6 @@ func doHSMDiscover(xnames []string) ([]byte, error) {
 		logger.Println(emsg)
 		return nil, emsg
 	}
-	logger.Error(string(rspPayload))
 
 	return rspPayload, nil
 }
