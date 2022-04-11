@@ -1,6 +1,8 @@
+#!/bin/bash
+
 # MIT License
 #
-# (C) Copyright [2021-2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -20,27 +22,28 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# Service
-NAME ?= cray-scsd
-VERSION ?= $(shell cat .version)
+if [ -z $SCSD ]; then
+    echo "MISSING SCSD ENV VAR."
+    exit 1
+fi
 
+pldx='{"Force": false, "Targets":["bmcgroup","X_S1_HOST:XP1","X_S2_HOST:XP2","X_S3_HOST:XP3"],"Params":["NTPServerInfo","SyslogServerInfo","SSHKey","SSHConsoleKey"]}'
 
-all : image unittest integration ct snyk ct_image
+source portFix.sh
+pld=`portFix "$pldx"`
 
-image:
-	docker build ${NO_CACHE} --pull ${DOCKER_ARGS} --tag '${NAME}:${VERSION}' .
+# POST to get a dump of current configs
 
-unittest:
-	./runUnitTest.sh
+curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/dumpcfg | jq > out.txt
+cat out.txt
+echo " "
 
-integration:
-	./runIntegration.sh
+cat hout
+scode=`cat hout | grep HTTP | awk '{print $2}'`
+if (( scode != 200 )); then
+	echo "Bad status code from HSM global config dump: ${scode}"
+	exit 1
+fi
 
-snyk:
-	./runSnyk.sh
+exit 0
 
-ct:
-	./runCT.sh
-
-ct_image:
-	docker build --no-cache -f test/ct/Dockerfile test/ct/ --tag hms-bss-test:${VERSION}

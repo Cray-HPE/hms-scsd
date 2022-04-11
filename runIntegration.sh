@@ -26,7 +26,7 @@
 # containing a fake HSM, 6 fake Redfish endpoints, and SCSD itself.
 #
 # Once created, a container will be created which contains test scripts.
-# The scripts use CURL calls into SCSD to perform the various endpoint 
+# The scripts use CURL calls into SCSD to perform the various endpoint
 # operations.
 #
 # Once complete, the results of the test suite is printed to stdout and this
@@ -114,7 +114,7 @@ start_marker_container () {
             --label "scsd_integration_project=$PROJ" \
             --label "scsd_run_id=$SCSD_RUN_ID" \
             --name "scsd-test-$PROJ" \
-            arti.dev.cray.com/baseos-docker-master-local/alpine:3.13 \
+            artifactory.algol60.net/docker.io/alpine:3.15 \
             sleep $max_expected_run_time
     )
 }
@@ -199,21 +199,22 @@ if [ $# -ge 1 -a "$1" == "down" ]; then
     exit 0
 fi
 
-echo " "
-echo "=============> Building sym links..."
-echo " "
-
-for fff in Dockerfile.testscsd Dockerfile.fake-hsm Dockerfile.fake-rfep Dockerfile.scsd_functest Dockerfile.fake-vault docker-compose-functest.yaml; do
-    echo "Linking: ${fff}..."
-    ln -s Test/${fff}
-done
+#echo " "
+#echo "=============> Building sym links..."
+#echo " "
+#
+#for fff in Dockerfile.testscsd Dockerfile.fake-hsm Dockerfile.fake-rfep Dockerfile.scsd_functest Dockerfile.fake-vault docker-compose-functest.yaml; do
+#    echo "Linking: ${fff}..."
+#    ln -s test/integration/${fff}
+#done
 
 
 echo " "
 echo "=============> Building docker composed environment..."
 echo " "
 
-${DCOMPOSE} build  > ${logfilename}.dcbuild 2>&1
+#${DCOMPOSE} build  > ${logfilename}.dcbuild 2>&1
+${DCOMPOSE} build
 if [[ $? -ne 0 ]]; then
     echo "Docker compose build FAILED, exiting."
     exit 1
@@ -230,7 +231,7 @@ fi
 
 container_network=`docker network ls --filter "name=${HSUFFIX}_${brnet_suffix}" --format "{{.Name}}"`
 echo "Bridge network name: ${container_network}"
-addhosts=`docker network inspect ${container_network} | Test/getnets.py`
+addhosts=`docker network inspect ${container_network} | test/integration/getnets.py`
 
 if [[ "${addhosts}" == "" ]]; then
     ${DCOMPOSE} logs > ${logfilename} 2>&1
@@ -250,7 +251,7 @@ echo " "
 echo "=============> Building test script container..."
 echo " "
 
-DOCKER_BUILDKIT=0 docker build --no-cache -f Dockerfile.scsd_functest \
+DOCKER_BUILDKIT=0 docker build --no-cache -f test/integration/Dockerfile.scsd_functest \
              --tag scsd_functest:runme \
              --network=scsd_${HSUFFIX}_${brnet_suffix} \
              $addhosts \
@@ -271,7 +272,8 @@ DOCKER_BUILDKIT=0 docker build --no-cache -f Dockerfile.scsd_functest \
              --build-arg X_S3_HOST=${X_S3_HOST} \
              --build-arg X_S6_HOST=${X_S6_HOST} \
              --build-arg X_S7_HOST=${X_S7_HOST} \
-             --build-arg SCSD_VERSION=`cat .version` . > ${logfilename}.buildit 2>&1
+             --build-arg SCSD_VERSION=`cat .version` .
+             #--build-arg SCSD_VERSION=`cat .version` . > ${logfilename}.buildit 2>&1
 
 docker run --rm --attach STDOUT --attach STDERR \
              --network=scsd_${HSUFFIX}_${brnet_suffix} \
@@ -292,7 +294,8 @@ docker run --rm --attach STDOUT --attach STDERR \
              --env X_S3_HOST=${X_S3_HOST} \
              --env X_S6_HOST=${X_S6_HOST} \
              --env X_S7_HOST=${X_S7_HOST} \
-             --env SCSD_VERSION=`cat .version` scsd_functest:runme > ${logfilename}.runit 2>&1
+             --env SCSD_VERSION=`cat .version` scsd_functest:runme
+             #--env SCSD_VERSION=`cat .version` scsd_functest:runme > ${logfilename}.runit 2>&1
 
 test_rslt=$?
 
@@ -329,4 +332,3 @@ fi
 echo "================================================="
 
 exit ${test_rslt}
-

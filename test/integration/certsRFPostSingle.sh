@@ -1,6 +1,8 @@
+#!/bin/bash
+
 # MIT License
 #
-# (C) Copyright [2021-2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -20,27 +22,19 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# Service
-NAME ?= cray-scsd
-VERSION ?= $(shell cat .version)
+# This script applies a cert to a BMC using the {xname} in URL.
 
+source portFix.sh
 
-all : image unittest integration ct snyk ct_image
+curl -D hout -X POST  http://${SCSD}/v1/bmc/setcert/${X_S0_HOST}:${X_S0_PORT}?Force=false\&Domain=cabinet | jq > out.txt
+cat out.txt
+echo " "
 
-image:
-	docker build ${NO_CACHE} --pull ${DOCKER_ARGS} --tag '${NAME}:${VERSION}' .
+scode=`cat hout | grep HTTP | awk '{print $2}'`
+if (( scode != 200 )); then
+	echo "Bad status code from BMC single cert replace: ${scode}"
+	exit 1
+fi
 
-unittest:
-	./runUnitTest.sh
+exit 0
 
-integration:
-	./runIntegration.sh
-
-snyk:
-	./runSnyk.sh
-
-ct:
-	./runCT.sh
-
-ct_image:
-	docker build --no-cache -f test/ct/Dockerfile test/ct/ --tag hms-bss-test:${VERSION}

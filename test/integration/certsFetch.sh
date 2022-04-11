@@ -1,6 +1,8 @@
+#!/bin/bash
+
 # MIT License
 #
-# (C) Copyright [2021-2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -20,27 +22,29 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# Service
-NAME ?= cray-scsd
-VERSION ?= $(shell cat .version)
+# This script fetches certs for 2 BMCs in the x0 domain
 
+pldx='{"Domain":"Cabinet","DomainIDs":["X_S0_HOST","x0c7s7b1"]}'
 
-all : image unittest integration ct snyk ct_image
+source portFix.sh
+pld=`portFix "$pldx"`
 
-image:
-	docker build ${NO_CACHE} --pull ${DOCKER_ARGS} --tag '${NAME}:${VERSION}' .
+curl -D hout -X POST -d "$pld"  http://${SCSD}/v1/bmc/fetchcerts | jq > out.txt
+cat out.txt
+echo " "
 
-unittest:
-	./runUnitTest.sh
+scode=`cat hout | grep HTTP | awk '{print $2}'`
+scode2=`cat out.txt | grep StatusCode | grep -v 200`
+if [[ $scode -ne 200 || "${scode2}" != "" ]]; then
+	echo "Bad status code from cert fetch: ${scode}"
+	exit 1
+fi
 
-integration:
-	./runIntegration.sh
+crt=`cat out.txt | grep BEGIN`
+if [[ "${crt}" == "" ]]; then
+	echo "No certficate info seen in fetched data."
+	exit 1
+fi
 
-snyk:
-	./runSnyk.sh
+exit 0
 
-ct:
-	./runCT.sh
-
-ct_image:
-	docker build --no-cache -f test/ct/Dockerfile test/ct/ --tag hms-bss-test:${VERSION}
