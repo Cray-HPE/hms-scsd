@@ -1,0 +1,1685 @@
+// MIT License
+//
+// (C) Copyright [2022] Hewlett Packard Enterprise Development LP
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+// THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+// OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+// ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+// OTHER DEALINGS IN THE SOFTWARE.
+
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+
+	trsapi "github.com/Cray-HPE/hms-trs-app-api/pkg/trs_http_api"
+	"github.com/Cray-HPE/hms-xname/xnametypes"
+	"github.com/gorilla/mux"
+)
+
+type Bios struct {
+	common   *BiosCommon
+	cray     *BiosCray
+	gigabyte *BiosGigabyte
+	hpe      *BiosHpe
+	intel    *BiosIntel
+}
+
+type BiosCommon struct {
+	xname            string
+	bmcXname         string
+	targets          []targInfo
+	nodeNumber       int
+	manufacturerType manufacturerType
+	systemUri        string
+	biosUri          string
+	chassis          *rfChassis
+	systems          *rfSystems
+	system           *rfSystem
+}
+
+type BiosHpe struct {
+	current   *rfBiosHpe
+	future    *rfBiosHpe
+	futureUri string
+}
+
+type BiosGigabyte struct {
+	current        *rfBiosGigabyte
+	future         *rfBiosSDGigabyte
+	futureUri      string
+	biosAttributes *rfBiosAttributesRegistry
+}
+
+type BiosCray struct {
+	current   *rfBiosCray
+	future    *rfBiosSDCray
+	futureUri string
+}
+
+type BiosHpeRegistries struct {
+	biosRegistryUri          string
+	biosRegistryEnUri        string // english uri
+	registries               *rfRegistries
+	biosAttributesRegistries *rfBiosAttributesRegistries
+	biosAttributes           *rfBiosAttributesRegistry
+}
+
+type BiosIntel struct {
+	current *rfBiosIntel
+}
+
+type BiosTpmState struct {
+	Current TpmState `json:"Current"`
+	Future  TpmState `json:"Future"`
+}
+
+type BiosTpmStatePatch struct {
+	Future TpmState `json:"Future"`
+}
+
+// SCSD rest interface values
+type TpmState string
+
+const (
+	TpmStateEnabled    TpmState = "Enabled"
+	TpmStateDisabled   TpmState = "Disabled"
+	TpmStateNotPresent TpmState = "NotPresent"
+)
+
+// BIOS Attribute Names from the redfish interface
+type BiosAttributeName string
+
+const (
+	TpmStateAttributeCray     BiosAttributeName = "TPM State" // todo change to real name once it is known
+	TpmStateAttributeGigabyte BiosAttributeName = "TPM State"
+	TpmStateAttributeHpe      BiosAttributeName = "TpmState"
+	TpmStateAttributeIntel    BiosAttributeName = "TpmOperation"
+)
+
+// BIOS Attribute Values from the redfish interface
+const (
+	EnabledCray      string = "Enabled"
+	DisabledCray     string = "Disabled"
+	EnabledGigabyte  string = "Enabled"
+	DisabledGigabyte string = "Disabled"
+	EnabledHpe       string = "PresentEnabled" // these values are for TPM State new const may be needed for other Attributes
+	DisabledHpe      string = "PresentDisabled"
+	NotPresentHpe    string = "NotPresent"
+	EnabledIntel     int    = 1
+	DisabledIntel    int    = 0
+)
+
+type rfManagers struct {
+	Members []rfManagersMembers
+}
+
+type rfManagersMembers struct {
+	ID string `json:"@odata.id"`
+}
+
+type rfSystems struct {
+	Members []rfSystemsMember
+}
+
+type rfSystemsMember struct {
+	ID string `json:"@odata.id"`
+}
+
+type rfSystem struct {
+	Bios rfBios `json:"Bios"`
+}
+
+type rfBios struct {
+	ID string `json:"@odata.id"`
+}
+
+type rfBiosIntel struct {
+	Attributes rfBiosIntelAttributes
+}
+type rfBiosIntelAttributes struct {
+	TpmOperation       int
+	Tpm2Operation      int
+	Tpm2FwUpdateEnable int
+}
+
+type rfBiosHpe struct {
+	Attributes rfBiosHpeAttributes
+}
+
+type rfBiosHpeAttributes struct {
+	TpmState string
+}
+
+type PatchAttributeName struct {
+	cray     BiosAttributeName
+	gigabyte BiosAttributeName
+	hpe      BiosAttributeName
+	intel    BiosAttributeName
+}
+
+type PatchAttributeValue struct {
+	cray     interface{}
+	gigabyte interface{}
+	hpe      interface{}
+	intel    interface{}
+}
+
+/*
+Example for rfBiosGigabyte from /redfish/v1/Systems/Self/Bios
+{
+  "@Redfish.Settings": {
+    "@odata.type": "#Settings.v1_2_1.Settings",
+    "SettingsObject": {
+      "@odata.id": "/redfish/v1/Systems/Self/Bios/SD"
+    }
+  },
+  "@odata.etag": "W/\"1652393956\"",
+  "Attributes": {
+    "FBO001": "UEFI",
+	...
+	"GBT0140": "5",
+	...
+	"NWSK004": 4,
+	...
+  }
+}
+*/
+type rfBiosGigabyte struct {
+	Settings   rfRedfishSettings      `json:"@Redfish.Settings"`
+	ETag       string                 `json:"@odata.etag"`
+	Attributes map[string]interface{} `json:"Attributes"` // the values can be either string or int
+}
+
+/*
+Example for rfBiosSDGigabyte from /redfish/v1/Systems/Self/Bios
+The Attributes map will only contain the values that are going to change on reboot.
+The Attributes field is not present when there are no changes.
+{
+  "@odata.etag": "W/\"1652393956\"",
+  "Attributes": {
+	"TCG001": "Disabled"
+  }
+}
+*/
+type rfBiosSDGigabyte struct {
+	ETag       string                 `json:"@odata.etag"`
+	Attributes map[string]interface{} `json:"Attributes"` // this can be nil. the values can be either string or int
+}
+
+type rfBiosCray struct {
+	ETag       string                         `json:"@odata.etag"`
+	Attributes map[string]rfBiosAttributeCray `json:"Attributes"`
+}
+
+type rfBiosAttributeCray struct {
+	AllowedValues []interface{} `json:"AllowedValues"`
+	DataType      string        `json:"DataType"`
+	CurrentValue  interface{}   `json:"current_value"`
+}
+
+type rfBiosSDCray struct {
+	ETag       string                 `json:"@odata.etag"`
+	Attributes map[string]interface{} `json:"Attributes"`
+}
+
+type rfRedfishSettings struct {
+	Type           string           `json:"@odata.type"`
+	SettingsObject rfSettingsObject `json:"SettingsObject"`
+}
+
+type rfSettingsObject struct {
+	ID string `json:"@odata.id"`
+}
+
+type rfRegistries struct {
+	Members []rfManagersMembers
+}
+
+type rfRegistriesMembers struct {
+	ID string `json:"@odata.id"`
+}
+
+type rfBiosAttributesRegistries struct {
+	Location []rfRegistriesLocations
+}
+type rfRegistriesLocations struct {
+	Language string `json:"Language"`
+	Uri      string `json:"Uri"`
+}
+
+/*
+Gigabyte example for rfBiosAttributesRegistry from /redfish/v1/Registries/BiosAttributeRegistry.json
+{
+  "RegistryEntries": {
+    "Attributes": [
+      {
+        "AttributeName": "TCG001",
+        "DefaultValue": "Enabled",
+        "DisplayName": "  TPM State",
+        "HelpText": "Enable/Disable Security Device. NOTE: Your Computer will reboot during restart in order to change State of the Device.",
+        "ReadOnly": false,
+        "Type": "Enumeration",
+        "Value": [
+          {
+            "ValueDisplayName": "Disabled",
+            "ValueName": "Disabled"
+          },
+          {
+            "ValueDisplayName": "Enabled",
+            "ValueName": "Enabled"
+          }
+        ]
+      },
+    ]
+}
+*/
+type rfBiosAttributesRegistry struct {
+	RegistryEntries rfRegistryEntry `json:"RegistryEntries"`
+}
+type rfRegistryEntry struct {
+	Attributes []rfRegistryAttribute `json:"Attributes"`
+}
+type rfRegistryAttribute struct {
+	AttributeName string            `json:"AttributeName"`
+	DisplayName   string            `json:"DisplayName"`
+	Type          string            `json:"Type"`
+	Value         []rfRegistryValue `json:"Value"`
+}
+type rfRegistryValue struct {
+	ValueName        string `json:"ValueName"`
+	ValueDisplayName string `json:"ValueDisplayName"`
+}
+
+type manufacturerType int
+
+const (
+	unknown manufacturerType = iota
+	cray
+	gigabyte
+	hpe
+	intel
+)
+
+func toXnames(targets []targInfo) []string {
+	xnames := make([]string, len(targets), len(targets))
+	for i, target := range targets {
+		xnames[i] = target.target
+	}
+	return xnames
+}
+
+func getManufacturerType(chassis *rfChassis) manufacturerType {
+	for _, member := range chassis.Members {
+		switch {
+		case strings.EqualFold(member.ID, "/redfish/v1/Chassis/Enclosure"):
+			return cray
+		case strings.EqualFold(member.ID, "/redfish/v1/Chassis/Self"):
+			return gigabyte
+		case strings.EqualFold(member.ID, "/redfish/v1/Chassis/1"):
+			return hpe
+		case strings.EqualFold(member.ID, "/redfish/v1/Chassis/RackMount"):
+			return intel
+		}
+	}
+	return unknown
+}
+
+func getRedfish(targets []targInfo, uri string) (tasks []trsapi.HttpTask, err error, httpCode int) {
+	tasks, _, err, httpCode = getRedfishNoCheck(targets, uri)
+
+	err = checkStatusCodes(tasks)
+	if err != nil {
+		err = fmt.Errorf("ERROR: Call failed %s. %v", uri, err)
+		return tasks, err, http.StatusInternalServerError
+	}
+
+	return tasks, nil, http.StatusOK
+}
+
+func getRedfishNoCheck(targets []targInfo, uri string) (tasks []trsapi.HttpTask, codes map[string]int, err error, httpCode int) {
+	codes = make(map[string]int)
+	xnames := toXnames(targets)
+
+	var sourceTL trsapi.HttpTask
+	sourceTL.Timeout = time.Duration(appParams.HTTPTimeout) * time.Second
+	sourceTL.Request, _ = http.NewRequest("GET", "", nil)
+	tasks = tloc.CreateTaskList(&sourceTL, len(targets))
+	populateTaskList(tasks, xnames, uri, http.MethodGet, nil)
+
+	err = doOp(tasks)
+	if err != nil {
+		err = fmt.Errorf("ERROR: Call failed %s. %v", uri, err)
+		return tasks, codes, err, http.StatusInternalServerError
+	}
+
+	for _, task := range tasks {
+		code := getStatusCode(&task)
+		codes[task.Request.Host] = code
+	}
+
+	return tasks, codes, nil, http.StatusOK
+}
+
+func patchRedfish(targets []targInfo, uri string, requestBody []byte) (tasks []trsapi.HttpTask, err error, httpCode int) {
+	return patchRedfishEtag(targets, uri, requestBody, []string{})
+}
+
+func patchRedfishEtag(targets []targInfo, uri string, requestBody []byte, etags []string) (tasks []trsapi.HttpTask, err error, httpCode int) {
+	httpCode = http.StatusOK
+
+	xnames := toXnames(targets)
+
+	var sourceTL trsapi.HttpTask
+	sourceTL.Timeout = time.Duration(appParams.HTTPTimeout) * time.Second
+	sourceTL.Request, _ = http.NewRequest("PATCH", "", nil)
+	tasks = tloc.CreateTaskList(&sourceTL, len(targets))
+	populateTaskList(tasks, xnames, uri, http.MethodPatch, requestBody)
+
+	if len(tasks) == len(etags) {
+		for i, task := range tasks {
+			task.Request.Header.Set("If-Match", etags[i])
+		}
+	} else if len(etags) > 0 {
+		err = fmt.Errorf(
+			"ERROR: Mismatched number of etags (%d) with the number of tasks (%d). Patch %s for xnames: %v",
+			len(etags), len(tasks), uri, xnames)
+		return tasks, err, http.StatusInternalServerError
+	}
+
+	err = doOp(tasks)
+	if err != nil {
+		err = fmt.Errorf("ERROR: Patch call %s failed for xnames: %v with error: %v", uri, xnames, err)
+		return tasks, err, http.StatusInternalServerError
+	}
+
+	err = checkStatusCodes(tasks)
+	if err != nil {
+		err = fmt.Errorf("ERROR: Patch call %s returned failure status for xnames: %v with error: %v", uri, xnames, err)
+		return tasks, err, http.StatusInternalServerError
+	}
+
+	return tasks, nil, httpCode
+}
+
+// todo switch to using systems to determine manufacture
+func parseChassisResponse(tasks []trsapi.HttpTask) (responses map[string]*rfChassis, err error, code int) {
+	funcName := "parseChassisResponse"
+	responses = make(map[string]*rfChassis)
+
+	for _, task := range tasks {
+		host := task.Request.Host
+		var chassis rfChassis
+		err = grabTaskRspData(funcName, &task, &chassis)
+		if err != nil {
+			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
+			return responses, err, http.StatusInternalServerError
+		}
+		responses[host] = &chassis
+	}
+	return responses, nil, http.StatusOK
+}
+
+// todo remove if not used. It might be needed by intel
+func parseManagersResponse(tasks []trsapi.HttpTask) (responses map[string]*rfManagers, err error, code int) {
+	funcName := "parseManagersResponse"
+	responses = make(map[string]*rfManagers)
+
+	for _, task := range tasks {
+		host := task.Request.Host
+		var managers rfManagers
+		err = grabTaskRspData(funcName, &task, &managers)
+		if err != nil {
+			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
+			return responses, err, http.StatusInternalServerError
+		}
+		responses[host] = &managers
+	}
+	return responses, nil, http.StatusOK
+}
+
+func parseSystemsResponse(tasks []trsapi.HttpTask) (responses map[string]*rfSystems, err error, code int) {
+	funcName := "parseSystemsResponse"
+	responses = make(map[string]*rfSystems)
+
+	for _, task := range tasks {
+		host := task.Request.Host
+		var systems rfSystems
+		err = grabTaskRspData(funcName, &task, &systems)
+		if err != nil {
+			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
+			return responses, err, http.StatusInternalServerError
+		}
+		responses[host] = &systems
+	}
+	return responses, nil, http.StatusOK
+}
+
+func parseSystemResponse(tasks []trsapi.HttpTask) (responses map[string]*rfSystem, err error, code int) {
+	funcName := "parseSystemResponse"
+	responses = make(map[string]*rfSystem)
+
+	for _, task := range tasks {
+		host := task.Request.Host
+		var system rfSystem
+		err = grabTaskRspData(funcName, &task, &system)
+		if err != nil {
+			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
+			return responses, err, http.StatusInternalServerError
+		}
+		responses[host] = &system
+	}
+	return responses, nil, http.StatusOK
+}
+
+func parseBiosIntelResponse(tasks []trsapi.HttpTask) (responses map[string]*rfBiosIntel, err error, code int) {
+	funcName := "parseBiosIntelResponse"
+	responses = make(map[string]*rfBiosIntel)
+
+	for _, task := range tasks {
+		host := task.Request.Host
+		var bios rfBiosIntel
+		err = grabTaskRspData(funcName, &task, &bios)
+		if err != nil {
+			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
+			return responses, err, http.StatusInternalServerError
+		}
+		responses[host] = &bios
+	}
+	return responses, nil, http.StatusOK
+}
+
+func parseBiosHpeResponse(tasks []trsapi.HttpTask) (responses map[string]*rfBiosHpe, err error, code int) {
+	funcName := "parseBiosHpeResponse"
+	responses = make(map[string]*rfBiosHpe)
+
+	for _, task := range tasks {
+		host := task.Request.Host
+		var bios rfBiosHpe
+		err = grabTaskRspData(funcName, &task, &bios)
+		if err != nil {
+			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
+			return responses, err, http.StatusInternalServerError
+		}
+		responses[host] = &bios
+	}
+	return responses, nil, http.StatusOK
+}
+
+func parseBiosGigabyteResponse(tasks []trsapi.HttpTask) (responses map[string]*rfBiosGigabyte, err error, code int) {
+	funcName := "parseBiosGigabyteResponse"
+	responses = make(map[string]*rfBiosGigabyte)
+
+	for _, task := range tasks {
+		host := task.Request.Host
+		var bios rfBiosGigabyte
+		err = grabTaskRspData(funcName, &task, &bios)
+		if err != nil {
+			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
+			return responses, err, http.StatusInternalServerError
+		}
+		if bios.Attributes == nil {
+			bios.Attributes = make(map[string]interface{})
+		}
+		responses[host] = &bios
+	}
+	return responses, nil, http.StatusOK
+}
+
+func parseBiosSDGigabyteResponse(tasks []trsapi.HttpTask) (responses map[string]*rfBiosSDGigabyte, err error, code int) {
+	funcName := "parseBiosSDGigabyteResponse"
+	responses = make(map[string]*rfBiosSDGigabyte)
+
+	for _, task := range tasks {
+		host := task.Request.Host
+		var bios rfBiosSDGigabyte
+		err = grabTaskRspData(funcName, &task, &bios)
+		if err != nil {
+			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
+			return responses, err, http.StatusInternalServerError
+		}
+		if bios.Attributes == nil {
+			bios.Attributes = make(map[string]interface{})
+		}
+		responses[host] = &bios
+	}
+	return responses, nil, http.StatusOK
+}
+
+func parseBiosCrayResponse(tasks []trsapi.HttpTask) (responses map[string]*rfBiosCray, err error, code int) {
+	funcName := "parseBiosCrayResponse"
+	responses = make(map[string]*rfBiosCray)
+
+	for _, task := range tasks {
+		host := task.Request.Host
+		var bios rfBiosCray
+		err = grabTaskRspData(funcName, &task, &bios)
+		if err != nil {
+			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
+			return responses, err, http.StatusInternalServerError
+		}
+		if bios.Attributes == nil {
+			bios.Attributes = make(map[string]rfBiosAttributeCray)
+		}
+		responses[host] = &bios
+	}
+	return responses, nil, http.StatusOK
+}
+
+func parseBiosSDCrayResponse(tasks []trsapi.HttpTask) (responses map[string]*rfBiosSDCray, err error, code int) {
+	funcName := "parseBiosSDCrayResponse"
+	responses = make(map[string]*rfBiosSDCray)
+
+	for _, task := range tasks {
+		host := task.Request.Host
+		var bios rfBiosSDCray
+		err = grabTaskRspData(funcName, &task, &bios)
+		if err != nil {
+			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
+			return responses, err, http.StatusInternalServerError
+		}
+		if bios.Attributes == nil {
+			bios.Attributes = make(map[string]interface{})
+		}
+		responses[host] = &bios
+	}
+	return responses, nil, http.StatusOK
+}
+
+func parseRegistriesResponse(tasks []trsapi.HttpTask) (responses map[string]*rfRegistries, err error, code int) {
+	funcName := "parseRegistriesResponse"
+	responses = make(map[string]*rfRegistries)
+
+	for _, task := range tasks {
+		host := task.Request.Host
+		var registries rfRegistries
+		err = grabTaskRspData(funcName, &task, &registries)
+		if err != nil {
+			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
+			return responses, err, http.StatusInternalServerError
+		}
+		responses[host] = &registries
+	}
+	return responses, nil, http.StatusOK
+}
+
+func parseBiosAttributesRegistriesResponse(tasks []trsapi.HttpTask) (responses map[string]*rfBiosAttributesRegistries, err error, code int) {
+	funcName := "parseBiosAttributesRegistriesResponse"
+	responses = make(map[string]*rfBiosAttributesRegistries)
+
+	for _, task := range tasks {
+		host := task.Request.Host
+		var registries rfBiosAttributesRegistries
+		err = grabTaskRspData(funcName, &task, &registries)
+		if err != nil {
+			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
+			return responses, err, http.StatusInternalServerError
+		}
+		responses[host] = &registries
+	}
+	return responses, nil, http.StatusOK
+}
+
+func parseBiosAttributesRegistryResponse(tasks []trsapi.HttpTask) (responses map[string]*rfBiosAttributesRegistry, err error, code int) {
+	funcName := "parseBiosAttributesRegistryResponse"
+	responses = make(map[string]*rfBiosAttributesRegistry)
+
+	for _, task := range tasks {
+		host := task.Request.Host
+		var registries rfBiosAttributesRegistry
+		err = grabTaskRspData(funcName, &task, &registries)
+		if err != nil {
+			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
+			return responses, err, http.StatusInternalServerError
+		}
+		responses[host] = &registries
+	}
+	return responses, nil, http.StatusOK
+}
+
+func getSystemUri(xname string, nodeNumber int, manufacturer manufacturerType, systems *rfSystems) (uri string, err error, httpCode int) {
+	httpCode = http.StatusOK
+	switch manufacturer {
+	case hpe:
+		hpeId := nodeNumber + 1
+		suffix := "/" + strconv.Itoa(hpeId)
+		for _, member := range systems.Members {
+			if strings.HasSuffix(member.ID, suffix) {
+				return member.ID, nil, httpCode
+			}
+		}
+	case cray:
+		suffix := "/node" + strconv.Itoa(nodeNumber)
+		for _, member := range systems.Members {
+			if strings.HasSuffix(strings.ToLower(member.ID), suffix) {
+				return member.ID, nil, httpCode
+			}
+		}
+	case gigabyte:
+		if nodeNumber == 0 {
+			suffix := "/self"
+			for _, member := range systems.Members {
+				if strings.HasSuffix(strings.ToLower(member.ID), suffix) {
+					return member.ID, nil, httpCode
+				}
+			}
+		}
+	case intel:
+		if len(systems.Members) > nodeNumber && nodeNumber >= 0 {
+			return systems.Members[nodeNumber].ID, nil, httpCode
+		}
+	}
+
+	uris := make([]string, len(systems.Members))
+	for i, member := range systems.Members {
+		uris[i] = member.ID
+	}
+	err = fmt.Errorf("Error: Could not find redfish system URI that matches the node %s. Known system URIs %v", xname, uris)
+	return "", err, http.StatusNotFound
+}
+
+func getNodeNumber(xname string) (int, error) {
+	xnameType := xnametypes.GetHMSType(xname)
+	if xnameType != xnametypes.Node {
+		err := fmt.Errorf("Error: Xname %s is not of the type Node, but is instead %s", xname, xnameType.String())
+		return 0, err
+	}
+
+	regex, err := xnametypes.GetHMSTypeRegex(xnameType)
+	if err != nil {
+		return 0, err
+	}
+
+	matchedGroups := regex.FindSubmatch([]byte(xname))
+	if matchedGroups == nil {
+		err := fmt.Errorf("Error: Xname %s did not match the pattern %s", xname, regex.String())
+		return 0, err
+	}
+
+	if len(matchedGroups) < 6 {
+		err := fmt.Errorf(
+			"Error: Less than 6 matched groups for xname %s using the pattern %s.",
+			xname, regex.String())
+		return 0, err
+	}
+
+	nodeNumberStr := string(matchedGroups[5])
+	nodeNumber, err := strconv.Atoi(nodeNumberStr)
+	if err != nil {
+		wrappedErr := fmt.Errorf(
+			"Error: Unable to parse, %s, as an integer for xname %s using group 5 of the pattern %s. Conversion error: %s",
+			nodeNumberStr, xname, regex.String(), err.Error())
+		return 0, wrappedErr
+	}
+
+	return nodeNumber, nil
+}
+
+func validateXname(xname string) (normalizedXname string, err error, httpCode int) {
+	if !xnametypes.IsHMSCompIDValid(xname) {
+		err = fmt.Errorf("ERROR: %s is an invalid xname", xname)
+		httpCode = http.StatusBadRequest
+		return
+	}
+
+	normalizedXname = xnametypes.NormalizeHMSCompID(xname)
+
+	xnameType := xnametypes.GetHMSType(xname)
+	if xnameType != xnametypes.Node {
+		exampleString := "xXcCsSbBnN"
+		t := xnametypes.GetHMSCompRecognitionTable()
+		if value, found := t[strings.ToLower(xnametypes.Node.String())]; found {
+			exampleString = value.ExampleString
+		}
+
+		err = fmt.Errorf("ERROR: %s is not the xname of a node. The xname should match: %s", xname, exampleString)
+		httpCode = http.StatusBadRequest
+		return
+	}
+
+	return
+}
+
+func getAttribute(name string, attributes *rfBiosAttributesRegistry) (attribute rfRegistryAttribute, found bool) {
+	n := strings.ToLower(name)
+	for _, attribute = range attributes.RegistryEntries.Attributes {
+		displayName := strings.ToLower(strings.TrimSpace(attribute.DisplayName))
+		if n == displayName {
+			return attribute, true
+		}
+	}
+	return attribute, false
+}
+
+func getBiosCommon(xname string) (bios *BiosCommon, err error, httpCode int) {
+	httpCode = http.StatusOK
+	bios = &BiosCommon{
+		xname:    xname,
+		bmcXname: xnametypes.GetHMSCompParent(xname),
+	}
+
+	bios.nodeNumber, err = getNodeNumber(xname)
+	if err != nil {
+		httpCode = http.StatusBadRequest
+		return
+	}
+
+	xnames := []string{bios.bmcXname}
+
+	bios.targets, err = hsmVerify(makeTargData(xnames), true, true) // verify with hsm and fill in extra data
+	if err != nil {
+		err = fmt.Errorf("ERROR: Problem verifying target states: %v.", err)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+
+	// ---- /redfish/v1/Chassis ----
+
+	chassisTasks, err, httpCode := getRedfish(bios.targets, RFCHASSIS_API)
+	if err != nil {
+		return
+	}
+
+	chassisMap, err, httpCode := parseChassisResponse(chassisTasks)
+	if err != nil {
+		return
+	}
+
+	ok := false
+	bios.chassis, ok = chassisMap[bios.bmcXname]
+	if !ok {
+		err = fmt.Errorf("ERROR: missing bios chassis data for %s from %s %s", bios.xname, bios.bmcXname, RFCHASSIS_API)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+
+	// ---- /redfish/v1/Systems ----
+
+	systemsTasks, err, httpCode := getRedfish(bios.targets, RFSYSTEMS_API)
+	if err != nil {
+		return
+	}
+
+	systemsMap, err, httpCode := parseSystemsResponse(systemsTasks)
+	if err != nil {
+		return
+	}
+
+	bios.systems, ok = systemsMap[bios.bmcXname]
+	if !ok {
+		err = fmt.Errorf("ERROR: missing bios systems data for %s from %s %s", bios.xname, bios.bmcXname, RFSYSTEMS_API)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+
+	bios.manufacturerType = getManufacturerType(bios.chassis)
+	if bios.manufacturerType == unknown {
+		members := make([]string, len(bios.chassis.Members))
+		for i, member := range bios.chassis.Members {
+			members[i] = member.ID
+		}
+		logger.Errorf("Unknown manufacturer for %s where its chassis has these members: %v", bios.xname, members)
+		err = fmt.Errorf("ERROR: BIOS calls not supported for this type of hardware. xname: %s ", bios.xname)
+		httpCode = http.StatusNotImplemented
+		return
+	}
+
+	bios.systemUri, err, httpCode = getSystemUri(xname, bios.nodeNumber, bios.manufacturerType, bios.systems)
+	if err != nil {
+		return
+	}
+
+	// ---- /redfish/v1/Systems/1 ----
+	// ---- /redfish/v1/Systems/Node0 ----
+	// ---- /redfish/v1/Systems/Node1 ----
+	// ---- /redfish/v1/Systems/Self ----
+	// ---- /redfish/v1/Systems/BQWF73500342 ----
+
+	systemTasks, err, httpCode := getRedfish(bios.targets, bios.systemUri)
+	if err != nil {
+		return
+	}
+
+	systemMap, err, httpCode := parseSystemResponse(systemTasks)
+	if err != nil {
+		return
+	}
+
+	bios.system, ok = systemMap[bios.bmcXname]
+	if !ok {
+		err = fmt.Errorf("ERROR: missing bios system data for %s from %s %s", bios.xname, bios.bmcXname, bios.systemUri)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+
+	bios.biosUri = bios.system.Bios.ID
+
+	return
+}
+
+func getBiosHpe(biosCommon *BiosCommon) (biosHpe *BiosHpe, err error, httpCode int) {
+	httpCode = http.StatusOK
+	biosHpe = &BiosHpe{}
+
+	// ---- /redfish/v1/Systems/1/Bios ----
+
+	biosTasks, err, httpCode := getRedfish(biosCommon.targets, biosCommon.biosUri)
+	if err != nil {
+		return
+	}
+
+	biosCurrentMap, err, httpCode := parseBiosHpeResponse(biosTasks)
+	if err != nil {
+		return
+	}
+
+	ok := false
+	biosHpe.current, ok = biosCurrentMap[biosCommon.bmcXname]
+	if !ok {
+		err = fmt.Errorf(
+			"ERROR: missing bios data for %s from %s %s",
+			biosCommon.xname, biosCommon.bmcXname, biosCommon.biosUri)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+
+	biosHpe.futureUri = biosCommon.biosUri + "/Settings"
+
+	// ---- /redfish/v1/Systems/1/Bios/Settings ----
+
+	biosFutureTasks, err, httpCode := getRedfish(biosCommon.targets, biosHpe.futureUri)
+	if err != nil {
+		return
+	}
+
+	biosFutureMap, err, httpCode := parseBiosHpeResponse(biosFutureTasks)
+	if err != nil {
+		return
+	}
+
+	biosHpe.future, ok = biosFutureMap[biosCommon.bmcXname]
+	if !ok {
+		err = fmt.Errorf(
+			"ERROR: missing future bios data for %s from %s %s",
+			biosCommon.xname, biosCommon.bmcXname, biosCommon.biosUri)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+
+	return
+}
+
+func getBiosRegistriesHpe(biosCommon *BiosCommon) (biosRegistries *BiosHpeRegistries, err error, httpCode int) {
+	httpCode = http.StatusOK
+	biosRegistries = &BiosHpeRegistries{}
+
+	// ---- /redfish/v1/Registries ----
+
+	tasks, err, httpCode := getRedfish(biosCommon.targets, RFREGISTRIES_API)
+	if err != nil {
+		return
+	}
+
+	registriesMap, err, httpCode := parseRegistriesResponse(tasks)
+	if err != nil {
+		return
+	}
+
+	ok := false
+	biosRegistries.registries, ok = registriesMap[biosCommon.bmcXname]
+	if !ok {
+		err = fmt.Errorf(
+			"ERROR: missing registries for %s from %s %s",
+			biosCommon.xname, biosCommon.bmcXname, RFREGISTRIES_API)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+
+	for _, member := range biosRegistries.registries.Members {
+		// looking for a uri like: /redfish/v1/Registries/BiosAttributeRegistryA43.v1_2_40
+		if strings.HasPrefix(strings.ToLower(member.ID), "/redfish/v1/registries/biosattributeregistry") {
+			biosRegistries.biosRegistryUri = member.ID
+			break
+		}
+	}
+
+	if biosRegistries.biosRegistryUri == "" {
+		err = fmt.Errorf(
+			"ERROR: Could not find bios registries for %s from %s %s. Known registries %v",
+			biosCommon.xname, biosCommon.bmcXname, RFREGISTRIES_API, biosRegistries.registries.Members)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+
+	// ---- /redfish/v1/Registries/BiosAttributeRegistryA43.v1_2_40 ----
+
+	tasks, err, httpCode = getRedfish(biosCommon.targets, biosRegistries.biosRegistryUri)
+	if err != nil {
+		return
+	}
+
+	registriesBiosAttributes, err, httpCode := parseBiosAttributesRegistriesResponse(tasks)
+	if err != nil {
+		return
+	}
+
+	biosAttributesRegistries, ok := registriesBiosAttributes[biosCommon.bmcXname]
+	if !ok {
+		err = fmt.Errorf(
+			"ERROR: missing registries for %s from %s %s",
+			biosCommon.xname, biosCommon.bmcXname, biosRegistries.biosRegistryUri)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+	biosRegistries.biosAttributesRegistries = biosAttributesRegistries
+
+	for _, location := range biosAttributesRegistries.Location {
+		if strings.ToLower(location.Language) == "en" {
+			biosRegistries.biosRegistryEnUri = location.Uri
+			break
+		}
+	}
+
+	if biosRegistries.biosRegistryEnUri == "" {
+		err = fmt.Errorf(
+			"ERROR: Could not find bios registries english uri for %s from %s %s. Known registries %v",
+			biosCommon.xname, biosCommon.bmcXname, biosRegistries.biosRegistryUri, biosAttributesRegistries.Location)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+
+	// ---- /redfish/v1/registrystore/registries/en/biosattributeregistrya43.v1_2_40 ----
+
+	tasks, err, httpCode = getRedfish(biosCommon.targets, biosRegistries.biosRegistryEnUri)
+	if err != nil {
+		return
+	}
+
+	registriesBiosAttributesEn, err, httpCode := parseBiosAttributesRegistryResponse(tasks)
+	if err != nil {
+		return
+	}
+
+	biosAttributes, ok := registriesBiosAttributesEn[biosCommon.bmcXname]
+	if !ok {
+		err = fmt.Errorf(
+			"ERROR: missing registries bios attributes for %s from %s %s",
+			biosCommon.xname, biosCommon.bmcXname, biosRegistries.biosRegistryEnUri)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+	biosRegistries.biosAttributes = biosAttributes
+
+	return
+}
+
+func patchBiosHpe(biosCommon *BiosCommon, name PatchAttributeName, value PatchAttributeValue) (err error, httpCode int) {
+	biosHpe, err, httpCode := getBiosHpe(biosCommon)
+	if err != nil {
+		return
+	}
+
+	futureValue := fmt.Sprintf("%v", value.hpe)
+	attributeName := string(name.hpe)
+
+	biosHpeRegistries, err, httpCode := getBiosRegistriesHpe(biosCommon)
+	if err != nil {
+		return
+	}
+
+	hardwareSupportsFutureValue := false
+	for _, attribute := range biosHpeRegistries.biosAttributes.RegistryEntries.Attributes {
+		if strings.ToLower(attribute.AttributeName) == strings.ToLower(attributeName) {
+			for _, value := range attribute.Value {
+				if value.ValueName == futureValue {
+					hardwareSupportsFutureValue = true
+					break
+				}
+			}
+			break
+		}
+	}
+
+	if !hardwareSupportsFutureValue {
+		// todo change message to contain the value that was passed to the scsd interface
+		// instead of the value being passed to redfish
+		err = fmt.Errorf("ERROR: Hardware does not support Future state %s", futureValue)
+		httpCode = http.StatusMethodNotAllowed
+		return
+	}
+
+	rfRequestBody := "{\"Attributes\":{\"" + attributeName + "\":\"" + futureValue + "\"}}"
+
+	tasks, err, httpCode := patchRedfish(biosCommon.targets, biosHpe.futureUri, []byte(rfRequestBody))
+	if err != nil {
+		return
+	}
+
+	for _, task := range tasks {
+		statusCode := getStatusCode(&task)
+		if !statusCodeOK(statusCode) {
+			err = fmt.Errorf("ERROR: Redfish patch failed %s %d", biosHpe.futureUri, statusCode)
+			httpCode = http.StatusInternalServerError
+			return
+		}
+	}
+	return
+}
+
+func getBiosGigabyte(biosCommon *BiosCommon) (biosGigabyte *BiosGigabyte, err error, httpCode int) {
+	httpCode = http.StatusOK
+	biosGigabyte = &BiosGigabyte{}
+
+	// ---- /redfish/v1/Systems/Self/Bios ----
+
+	biosTasks, err, httpCode := getRedfish(biosCommon.targets, biosCommon.biosUri)
+	if err != nil {
+		return
+	}
+
+	biosCurrentMap, err, httpCode := parseBiosGigabyteResponse(biosTasks)
+	if err != nil {
+		return
+	}
+
+	ok := false
+	biosGigabyte.current, ok = biosCurrentMap[biosCommon.bmcXname]
+	if !ok {
+		err = fmt.Errorf(
+			"ERROR: missing bios data for %s from %s %s",
+			biosCommon.xname, biosCommon.bmcXname, biosCommon.biosUri)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+
+	biosGigabyte.futureUri = biosGigabyte.current.Settings.SettingsObject.ID
+	if biosGigabyte.futureUri == "" {
+		biosGigabyte.futureUri = biosCommon.biosUri + "/SD"
+	}
+
+	// ---- /redfish/v1/Systems/Self/Bios/SD ----
+
+	biosFutureTasks, codes, err, httpCode := getRedfishNoCheck(biosCommon.targets, biosGigabyte.futureUri)
+	if err != nil {
+		return
+	}
+
+	code, ok := codes[biosCommon.bmcXname]
+	if !ok {
+		err = fmt.Errorf(
+			"ERROR: missing http return code for %s from %s %s",
+			biosCommon.xname, biosCommon.bmcXname, biosGigabyte.futureUri)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+
+	if !statusCodeOK(code) && code != http.StatusNotFound {
+		err = fmt.Errorf(
+			"ERROR: Unexpected http return code, %d, for %s from %s %s",
+			code, biosCommon.xname, biosCommon.bmcXname, biosGigabyte.futureUri)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+
+	if code == http.StatusNotFound {
+		// If there are no pending changes to the bios the /SD redfish call can return 404
+		biosGigabyte.future = &rfBiosSDGigabyte{
+			Attributes: make(map[string]interface{}),
+		}
+	} else {
+		var biosFutureMap map[string]*rfBiosSDGigabyte
+		biosFutureMap, err, httpCode = parseBiosSDGigabyteResponse(biosFutureTasks)
+		if err != nil {
+			return
+		}
+
+		biosGigabyte.future, ok = biosFutureMap[biosCommon.bmcXname]
+		if !ok {
+			err = fmt.Errorf(
+				"ERROR: missing future bios data for %s from %s %s",
+				biosCommon.xname, biosCommon.bmcXname, biosCommon.biosUri)
+			httpCode = http.StatusInternalServerError
+			return
+		}
+	}
+
+	// ---- /redfish/v1/Registries/BiosAttributeRegistry.json ----
+
+	registryUri := "/redfish/v1/Registries/BiosAttributeRegistry.json"
+	registryTasks, err, httpCode := getRedfish(biosCommon.targets, registryUri)
+	if err != nil {
+		return
+	}
+
+	registryMap, err, httpCode := parseBiosAttributesRegistryResponse(registryTasks)
+	if err != nil {
+		return
+	}
+
+	biosGigabyte.biosAttributes, ok = registryMap[biosCommon.bmcXname]
+	if !ok {
+		err = fmt.Errorf(
+			"ERROR: missing bios attribute registry data for %s from %s %s",
+			biosCommon.xname, biosCommon.bmcXname, registryUri)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+
+	return
+}
+
+func patchBiosGigabyte(biosCommon *BiosCommon, attributeName PatchAttributeName, attrbiuteValue PatchAttributeValue) (err error, httpCode int) {
+	biosGigabyte, err, httpCode := getBiosGigabyte(biosCommon)
+
+	name := string(attributeName.gigabyte)
+	futureValue := fmt.Sprintf("%v", attrbiuteValue.gigabyte)
+
+	attribute, found := getAttribute(name, biosGigabyte.biosAttributes)
+	if !found {
+		err = fmt.Errorf("%s not supported in the BIOS", name)
+		httpCode = http.StatusMethodNotAllowed
+		return
+	}
+
+	foundValueDefined := false
+	for _, value := range attribute.Value {
+		if value.ValueName == futureValue {
+			foundValueDefined = true
+			break
+		}
+	}
+	if !foundValueDefined {
+		logger.Errorf(
+			"Tried to set %s with redfish value %s, but redfish only supports %v", name, futureValue, attribute.Value)
+		err = fmt.Errorf(
+			"BIOS for the field %s does not support %s", name, futureValue)
+		httpCode = http.StatusMethodNotAllowed
+		return
+	}
+
+	rfRequestBody := "{\"Attributes\":{\"" + attribute.AttributeName + "\":\"" + futureValue + "\"}}"
+
+	etag := biosGigabyte.future.ETag
+	if etag == "" {
+		// when SD (i.e. the future settings) is not avialble the If-Match header should match anything
+		// gigabyte will reject any patch request that does not have a If-Match header
+		etag = "*"
+	}
+	tasks, err, httpCode := patchRedfishEtag(biosCommon.targets, biosGigabyte.futureUri, []byte(rfRequestBody), []string{etag})
+	if err != nil {
+		return
+	}
+
+	for _, task := range tasks {
+		statusCode := getStatusCode(&task)
+		if !statusCodeOK(statusCode) {
+			err = fmt.Errorf("ERROR: Redfish patch failed %s %d", biosGigabyte.futureUri, statusCode)
+			httpCode = http.StatusInternalServerError
+			return
+		}
+	}
+
+	return
+}
+
+func getBiosCray(biosCommon *BiosCommon) (biosCray *BiosCray, err error, httpCode int) {
+	httpCode = http.StatusOK
+	biosCray = &BiosCray{}
+
+	// ---- /redfish/v1/Systems/Node0/Bios ----
+	// ---- /redfish/v1/Systems/Node1/Bios ----
+
+	biosTasks, err, httpCode := getRedfish(biosCommon.targets, biosCommon.biosUri)
+	if err != nil {
+		return
+	}
+
+	biosCurrentMap, err, httpCode := parseBiosCrayResponse(biosTasks)
+	if err != nil {
+		return
+	}
+
+	ok := false
+	biosCray.current, ok = biosCurrentMap[biosCommon.bmcXname]
+	if !ok {
+		err = fmt.Errorf(
+			"ERROR: missing bios data for %s from %s %s",
+			biosCommon.xname, biosCommon.bmcXname, biosCommon.biosUri)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+
+	biosCray.futureUri = biosCommon.biosUri + "/SD"
+
+	// ---- /redfish/v1/Systems/Node0/Bios/SD ----
+	// ---- /redfish/v1/Systems/Node1/Bios/SD ----
+
+	biosFutureTasks, codes, err, httpCode := getRedfishNoCheck(biosCommon.targets, biosCray.futureUri)
+	if err != nil {
+		return
+	}
+
+	code, ok := codes[biosCommon.bmcXname]
+	if !ok {
+		err = fmt.Errorf(
+			"ERROR: missing http return code for %s from %s %s",
+			biosCommon.xname, biosCommon.bmcXname, biosCray.futureUri)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+
+	if !statusCodeOK(code) && code != http.StatusNotFound {
+		err = fmt.Errorf(
+			"ERROR: Unexpected http return code, %d, for %s from %s %s",
+			code, biosCommon.xname, biosCommon.bmcXname, biosCray.futureUri)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+
+	if code == http.StatusNotFound {
+		// If there are no pending changes to the bios the /SD redfish call can return 404
+		biosCray.future = &rfBiosSDCray{
+			Attributes: make(map[string]interface{}),
+		}
+	} else {
+		var biosFutureMap map[string]*rfBiosSDCray
+		biosFutureMap, err, httpCode = parseBiosSDCrayResponse(biosFutureTasks)
+		if err != nil {
+			return
+		}
+
+		biosCray.future, ok = biosFutureMap[biosCommon.bmcXname]
+		if !ok {
+			err = fmt.Errorf(
+				"ERROR: missing future bios data for %s from %s %s",
+				biosCommon.xname, biosCommon.bmcXname, biosCommon.biosUri)
+			httpCode = http.StatusInternalServerError
+			return
+		}
+	}
+
+	return
+}
+
+func patchBiosCray(biosCommon *BiosCommon, attributeName PatchAttributeName, attrbiuteValue PatchAttributeValue) (err error, httpCode int) {
+	biosCray, err, httpCode := getBiosCray(biosCommon)
+
+	name := string(attributeName.cray)
+	futureValue := fmt.Sprintf("%v", attrbiuteValue.cray)
+
+	attribute, found := biosCray.current.Attributes[name]
+	if !found {
+		err = fmt.Errorf("%s not supported in the BIOS", name)
+		httpCode = http.StatusMethodNotAllowed
+		return
+	}
+
+	foundValueDefined := false
+	for _, value := range attribute.AllowedValues {
+		if value == futureValue {
+			foundValueDefined = true
+			break
+		}
+	}
+	if !foundValueDefined {
+		logger.Errorf(
+			"Tried to set %s with redfish value %s, but redfish only supports %v",
+			name, futureValue, attribute.AllowedValues)
+		err = fmt.Errorf("BIOS %s value %s is not supported", name, futureValue)
+		httpCode = http.StatusMethodNotAllowed
+		return
+	}
+
+	rfRequestBody := "{\"Attributes\":{\"" + name + "\":\"" + futureValue + "\"}}"
+
+	etag := biosCray.future.ETag
+	if etag == "" {
+		// when SD (i.e. the future settings) is not avialble the If-Match header should match anything
+		// gigabyte will reject any patch request that does not have a If-Match header
+		etag = "*"
+	}
+	tasks, err, httpCode := patchRedfishEtag(biosCommon.targets, biosCray.futureUri, []byte(rfRequestBody), []string{etag})
+	if err != nil {
+		return
+	}
+
+	for _, task := range tasks {
+		statusCode := getStatusCode(&task)
+		if !statusCodeOK(statusCode) {
+			err = fmt.Errorf("ERROR: Redfish patch failed %s %d", biosCray.futureUri, statusCode)
+			httpCode = http.StatusInternalServerError
+			return
+		}
+	}
+
+	return
+}
+
+func getBiosIntel(biosCommon *BiosCommon) (biosIntel *BiosIntel, err error, httpCode int) {
+	httpCode = http.StatusOK
+	biosIntel = &BiosIntel{}
+
+	// ---- /redfish/v1/Systems/BQWF73500342/Bios ----
+
+	biosTasks, err, httpCode := getRedfish(biosCommon.targets, biosCommon.biosUri)
+	if err != nil {
+		return
+	}
+
+	biosCurrentMap, err, httpCode := parseBiosIntelResponse(biosTasks)
+	if err != nil {
+		return
+	}
+
+	ok := false
+	biosIntel.current, ok = biosCurrentMap[biosCommon.bmcXname]
+	if !ok {
+		err = fmt.Errorf(
+			"ERROR: missing bios data for %s from %s %s",
+			biosCommon.xname, biosCommon.bmcXname, biosCommon.biosUri)
+		httpCode = http.StatusInternalServerError
+		return
+	}
+
+	return
+}
+
+func getBios(r *http.Request) (bios *Bios, err error, httpCode int) {
+	bios = &Bios{}
+
+	mvars := mux.Vars(r)
+	xnameOriginal := mvars["xname"]
+
+	xname, err, httpCode := validateXname(xnameOriginal)
+	if err != nil {
+		return
+	}
+
+	bios.common, err, httpCode = getBiosCommon(xname)
+	if err != nil {
+		return
+	}
+
+	switch bios.common.manufacturerType {
+	case cray:
+		bios.cray, err, httpCode = getBiosCray(bios.common)
+	case gigabyte:
+		bios.gigabyte, err, httpCode = getBiosGigabyte(bios.common)
+	case hpe:
+		bios.hpe, err, httpCode = getBiosHpe(bios.common)
+	case intel:
+		bios.intel, err, httpCode = getBiosIntel(bios.common)
+	default:
+		logger.Errorf(
+			"Getting BIOS has not been implmented for the hardware. type: %d, xname: %s",
+			bios.common.manufacturerType, xname)
+		err = fmt.Errorf("Modifications not supported by BMC at %s", xname)
+		httpCode = http.StatusNotImplemented
+	}
+	return
+}
+
+func patchBios(r *http.Request, attributeName PatchAttributeName, attributeValue PatchAttributeValue) (err error, httpCode int) {
+	mvars := mux.Vars(r)
+	xnameOriginal := mvars["xname"]
+
+	xname, err, httpCode := validateXname(xnameOriginal)
+	if err != nil {
+		return
+	}
+
+	biosCommon, err, httpCode := getBiosCommon(xname)
+	if err != nil {
+		return
+	}
+
+	switch biosCommon.manufacturerType {
+	case cray:
+		// todo implement once castle supports showing tpm via the redfish bios interface
+		logger.Errorf(
+			"Modifications for %s has not been implmented for cray hardware. xname: %s",
+			attributeName.cray, xname)
+		err = fmt.Errorf("Modifications not supported by BMC at %s", xname)
+		httpCode = http.StatusNotImplemented
+
+		// todo here is the code that likely implements this
+		// err, httpCode = patchBiosCray(biosCommon, attributeName, attributeValue)
+	case gigabyte:
+		err, httpCode = patchBiosGigabyte(biosCommon, attributeName, attributeValue)
+	case hpe:
+		err, httpCode = patchBiosHpe(biosCommon, attributeName, attributeValue)
+	case intel:
+		// todo implement this
+		logger.Errorf(
+			"Modifications for %s has not been implmented for intel hardware. xname: %s",
+			attributeName.intel, xname)
+		err = fmt.Errorf("Modifications not supported by BMC at %s", xname)
+		httpCode = http.StatusNotImplemented
+	default:
+		logger.Errorf(
+			"Modifications for %s has not been implmented for hardware. type: %d, xname: %s",
+			attributeName.intel, biosCommon.manufacturerType, xname)
+		err = fmt.Errorf("Modifications not supported by BMC at %s", xname)
+		httpCode = http.StatusNotImplemented
+	}
+	return
+}
+
+// TPM State functions
+
+func toTpmStateHpe(bios *BiosHpe) BiosTpmState {
+	state := BiosTpmState{
+		Current: TpmStateNotPresent,
+		Future:  TpmStateNotPresent,
+	}
+
+	switch bios.current.Attributes.TpmState {
+	case EnabledHpe:
+		state.Current = TpmStateEnabled
+	case DisabledHpe:
+		state.Current = TpmStateDisabled
+	case NotPresentHpe:
+		state.Current = TpmStateNotPresent
+	}
+
+	switch bios.future.Attributes.TpmState {
+	case EnabledHpe:
+		state.Future = TpmStateEnabled
+	case DisabledHpe:
+		state.Future = TpmStateDisabled
+	case NotPresentHpe:
+		state.Future = TpmStateNotPresent
+	}
+
+	return state
+}
+
+func toTpmStateValueGigabyte(value interface{}) TpmState {
+	str := fmt.Sprintf("%v", value)
+	switch str {
+	case EnabledGigabyte:
+		return TpmStateEnabled
+	case DisabledGigabyte:
+		return TpmStateDisabled
+	default:
+		return TpmStateNotPresent
+	}
+}
+
+func toTpmStateGigabyte(bios *BiosGigabyte) BiosTpmState {
+	state := BiosTpmState{
+		Current: TpmStateNotPresent,
+		Future:  TpmStateNotPresent,
+	}
+	attributeName := string(TpmStateAttributeGigabyte)
+	attribute, found := getAttribute(attributeName, bios.biosAttributes)
+	if found {
+		value, ok := bios.current.Attributes[attribute.AttributeName]
+		if ok {
+			state.Current = toTpmStateValueGigabyte(value)
+			valueFuture, okFuture := bios.future.Attributes[attribute.AttributeName]
+			if okFuture {
+				state.Future = toTpmStateValueGigabyte(valueFuture)
+			} else {
+				state.Future = state.Current
+			}
+		} else {
+			logger.Errorf(
+				"ERROR: found attrbiute for '%s' in the registry attributes, "+
+					"but did not find it in the current bios settings. { Attribute: %v } { Bios: %v }",
+				attributeName, attribute, bios.current.Attributes)
+		}
+	}
+	return state
+}
+
+func toTpmStateValueCray(value interface{}) TpmState {
+	str := fmt.Sprintf("%v", value)
+	switch str {
+	case EnabledCray:
+		return TpmStateEnabled
+	case DisabledCray:
+		return TpmStateDisabled
+	default:
+		return TpmStateNotPresent
+	}
+}
+
+func toTpmStateCray(bios *BiosCray) BiosTpmState {
+	state := BiosTpmState{
+		Current: TpmStateNotPresent,
+		Future:  TpmStateNotPresent,
+	}
+	tpmStateKey := string(TpmStateAttributeCray)
+	attribute, ok := bios.current.Attributes[tpmStateKey]
+	if ok {
+		state.Current = toTpmStateValueGigabyte(attribute.CurrentValue)
+
+		attributeFuture, okFuture := bios.future.Attributes[tpmStateKey]
+		if okFuture {
+			state.Future = toTpmStateValueGigabyte(attributeFuture)
+		} else {
+			state.Future = state.Current
+		}
+	}
+	return state
+}
+
+func toTpmStateIntel(bios *BiosIntel) BiosTpmState {
+	state := BiosTpmState{
+		Current: TpmStateNotPresent,
+		Future:  TpmStateNotPresent,
+	}
+	// todo implement getting future state
+	tpmStateIntel := bios.current.Attributes.TpmOperation
+	if DisabledIntel == tpmStateIntel {
+		state.Current = TpmStateDisabled
+		state.Future = TpmStateNotPresent
+	} else if EnabledIntel == tpmStateIntel {
+		state.Current = TpmStateEnabled
+		state.Future = TpmStateNotPresent
+	} else {
+		state.Current = TpmStateNotPresent
+		state.Future = TpmStateNotPresent
+	}
+	return state
+}
+
+func doBiosTpmStateGet(w http.ResponseWriter, r *http.Request) {
+	title := "Get BIOS TPM State"
+
+	bios, err, httpCode := getBios(r)
+	if err != nil {
+		sendErrorRsp(w, title, err.Error(), r.URL.Path, httpCode)
+		return
+	}
+	var tpmState BiosTpmState
+	tpmState.Current = TpmStateNotPresent
+	tpmState.Future = TpmStateNotPresent
+
+	switch bios.common.manufacturerType {
+	case cray:
+		tpmState = toTpmStateCray(bios.cray)
+	case gigabyte:
+		tpmState = toTpmStateGigabyte(bios.gigabyte)
+	case hpe:
+		tpmState = toTpmStateHpe(bios.hpe)
+	case intel:
+		tpmState = toTpmStateIntel(bios.intel)
+	}
+
+	ba, baerr := json.Marshal(tpmState)
+	if baerr != nil {
+		emsg := fmt.Sprintf("ERROR: Problem marshaling TPM data: %v", baerr)
+		sendErrorRsp(w, "Get TPM State Error", emsg, r.URL.Path, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set(CT_TYPE, CT_APPJSON)
+	w.WriteHeader(http.StatusOK)
+	w.Write(ba)
+}
+
+func doBiosTpmStatePatch(w http.ResponseWriter, r *http.Request) {
+	title := "Patch BIOS TPM State"
+
+	var requestBody BiosTpmStatePatch
+
+	err := getReqData(title, r, &requestBody)
+	if err != nil {
+		emsg := fmt.Sprintf("ERROR: Problem getting request data: %v", err)
+		sendErrorRsp(w, "Bad request data", emsg, r.URL.Path, http.StatusBadRequest)
+		return
+	}
+
+	attributeName := PatchAttributeName{
+		cray:     TpmStateAttributeCray,
+		gigabyte: TpmStateAttributeGigabyte,
+		hpe:      TpmStateAttributeHpe,
+		intel:    TpmStateAttributeIntel,
+	}
+	var attributeValue PatchAttributeValue
+	switch requestBody.Future {
+	case TpmStateEnabled:
+		attributeValue.cray = EnabledCray
+		attributeValue.gigabyte = EnabledGigabyte
+		attributeValue.hpe = EnabledHpe
+		attributeValue.intel = EnabledIntel
+	case TpmStateDisabled:
+		attributeValue.cray = DisabledCray
+		attributeValue.gigabyte = DisabledGigabyte
+		attributeValue.hpe = DisabledHpe
+		attributeValue.intel = DisabledIntel
+	default:
+		emsg := fmt.Sprintf("ERROR: Invalid future value: %s", requestBody.Future)
+		sendErrorRsp(w, "Bad request data", emsg, r.URL.Path, http.StatusBadRequest)
+		return
+	}
+
+	err, httpCode := patchBios(r, attributeName, attributeValue)
+	if err != nil {
+		sendErrorRsp(w, title, err.Error(), r.URL.Path, httpCode)
+		return
+	}
+
+	w.Header().Set(CT_TYPE, CT_APPJSON)
+	w.WriteHeader(http.StatusNoContent)
+}

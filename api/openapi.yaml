@@ -11,8 +11,8 @@ info:
     The System Configuration Service makes it possible for administrators to configure these
     parameters at anytime on multiple targets in a single operation. The System
     Configuration Service runs on the non-compute worker node.
-    
-    
+
+
     The REST API provides the following functions:
 
     * Set or retrieve network protocol (NWP) parameters (NTP, syslog servers, SSH keys)
@@ -96,7 +96,7 @@ info:
 
     #### POST /bmc/loadcfg
 
-    Send a JSON payload with parameters to set and a list of targets.  Targets 
+    Send a JSON payload with parameters to set and a list of targets.  Targets
     can be xnames of BMCs or controllers, or group IDs. Returns a JSON payload
     with the results of the operation.
 
@@ -116,7 +116,7 @@ info:
     #### POST /bmc/createcerts
 
     Send a JSON payload with BMC domain and targets.  Creates a TLS cert/key
-    pair for each BMC domain (e.g. cabinet) and stores it in secure storage 
+    pair for each BMC domain (e.g. cabinet) and stores it in secure storage
     for later use.
 
     #### POST /bmc/deletecerts
@@ -145,6 +145,14 @@ info:
     target BMC specified by {xname}.  Apply cert/key pair to target BMC.
     Force defaults to false, Domain defaults to cabinet.
 
+    ### Bios
+    #### GET /bmc/bios/{xname}/TpmState
+
+    Get TPM State in the BIOS settings.
+
+    #### GET /bmc/bios/{xname}/TpmState
+
+    Set TPM State in the BIOS settings.
 
   license:
     name: Cray Proprietary
@@ -153,6 +161,8 @@ tags:
     description: Endpoints that set or get Redfish Network Protocol information
   - name: creds
     description: Endpoints that set Redfish access credentials
+  - name: bios
+    description: Endpoints that set or get BIOS information
   - name: version
     description: Endpoints that perform health and version checks
   - name: certs
@@ -198,12 +208,12 @@ paths:
       description: >-
         Set the Redfish network protocol data (NTP server, syslog server, SSH
         key) for a set of targets. The POST payload contains the parameters to
-        set  along with a list of targets. 
-        
-        
+        set  along with a list of targets.
+
+
         The Force field is optional.
         If present, and set to 'true', the Redfish operations will be attempted without contacting HSM
-        and without verifying if the targets are present or are in a good state. 
+        and without verifying if the targets are present or are in a good state.
         If the "Force" field is not present or is present but set to 'false', HSM will be used.
       requestBody:
         content:
@@ -262,13 +272,13 @@ paths:
         - nwp
       summary: Set Redfish network protocol data for a single target
       description: >-
-        Set selected Redfish network protocol data for a single target.  
+        Set selected Redfish network protocol data for a single target.
         Payload body specifies NTP server, syslog server, or SSH key.
-        
-        
+
+
         The Force field is optional. If present, and set to 'true', the Redfish operations
         will be attempted without contacting HSM
-        and without verifying if the targets are present or are in a good state. 
+        and without verifying if the targets are present or are in a good state.
         If the "Force" field is not present or is present but set to 'false', HSM will be used.
       requestBody:
         content:
@@ -293,13 +303,13 @@ paths:
         - cli_from_file
       summary: Set the controller login credentials for a set of targets
       description: >-
-        Set discrete controller login credentials for a set of targets.  The POST 
+        Set discrete controller login credentials for a set of targets.  The POST
         payload contains the parameters to set along with a list of targets.
-        
-        
+
+
         The Force field is optional. If present, and set to 'true', the Redfish operations
         will be attempted without contacting HSM
-        and without verifying if the targets are present or are in a good state. 
+        and without verifying if the targets are present or are in a good state.
         If the "Force" field is not present or is present but set to 'false', HSM will be used.
       requestBody:
         content:
@@ -329,13 +339,13 @@ paths:
         - creds
       summary: Set controller login credentials for a single target
       description: >-
-        Set controller login credentials for a single target.  The POST 
+        Set controller login credentials for a single target.  The POST
         payload contains the parameters to set along with a list of targets.
-        
-        
+
+
         The Force field is optional. If present, and set to 'true', the Redfish operations
         will be attempted without contacting HSM
-        and without verifying if the targets are present or are in a good state. 
+        and without verifying if the targets are present or are in a good state.
         If the "Force" field is not present or is present but set to 'false', HSM will be used.
       requestBody:
         content:
@@ -401,14 +411,14 @@ paths:
         - cli_from_file
       summary: Set the the same controller login credentials for a set of targets
       description: >-
-        Set controller login credentials for a set of targets.  The POST 
+        Set controller login credentials for a set of targets.  The POST
         payload contains the parameters to set along with a list of targets.
         The same credentials are set on all targets.
-        
-        
+
+
         The Force field is optional. If present, and set to 'true', the Redfish operations
         will be attempted without contacting HSM
-        and without verifying if the targets are present or are in a good state. 
+        and without verifying if the targets are present or are in a good state.
         If the "Force" field is not present or is present but set to 'false', HSM will be used.
       requestBody:
         content:
@@ -433,8 +443,8 @@ paths:
         - cli_from_file
       summary: Create TLS cert/key pairs for a set of targets
       description: >-
-        Create TLS cert/key pairs for a set of BMC targets.  A TLS cert/key 
-        is created per BMC 'domain', the default being one cert per cabinet 
+        Create TLS cert/key pairs for a set of BMC targets.  A TLS cert/key
+        is created per BMC 'domain', the default being one cert per cabinet
         to be used by all BMCs in that cabinet.  TLS cert/key info is stored
         in secure storage for subsequent application or viewing.
       requestBody:
@@ -487,7 +497,7 @@ paths:
       summary: Fetch previously created BMC TLS certs for viewing.
       description: >-
         Fetches BMC TLS certs previously created using the /bmc/createcerts
-        endpoint and stored in secure storage.  This API does not interact 
+        endpoint and stored in secure storage.  This API does not interact
         with Redfish BMCs.
       requestBody:
         content:
@@ -516,7 +526,7 @@ paths:
         endpoint, to target BMCs.
         The Force field is optional. If present, and set to 'true', the Redfish operations
         will be attempted without contacting HSM
-        and without verifying if the targets are present or are in a good state. 
+        and without verifying if the targets are present or are in a good state.
         If the "Force" field is not present or is present but set to 'false', HSM will be used.
       requestBody:
         content:
@@ -560,7 +570,7 @@ paths:
         endpoint to the target BMC.
         The Force parameter is optional. If present, and set to 'true', the Redfish operations
         will be attempted without contacting HSM
-        and without verifying if the targets are present or are in a good state. 
+        and without verifying if the targets are present or are in a good state.
         If the "Force" parameter is not present or is present but set to 'false', HSM will be used.
       responses:
         '200':
@@ -569,7 +579,7 @@ paths:
           description: Endpoint not found
         '405':
           description: 'Invalid method, only POST is allowed'
-  
+
   /version:
     get:
       tags:
@@ -637,14 +647,76 @@ paths:
           description: The service encountered an error when gathering health information
         '503':
           description: The service is not taking HTTP requests
+
+  '/bmc/bios/{xname}/TpmState':
+    get:
+      tags:
+        - bios
+      summary: Fetch the current BIOS setting for the TPM State.
+      description: >-
+        Fetch the current BIOS setting for the TPM State.
+      parameters:
+        - name: xname
+          in: path
+          description: Locational xname of BMC.
+          required: true
+          schema:
+            $ref: '#/components/schemas/xname_for_node'
+      responses:
+        '200':
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/bmc_bios_tpm_state'
+        '400':
+          description: Bad request
+        '404':
+          description: Xname was not for a bmc
+        '500':
+          description: Internal server error including failures communicating with the server
+    patch:
+      tags:
+        - bios
+      summary: >-
+        Set the TPM State field in the BIOS settings
+      description: >-
+        Set the TPM State in the BIOS settings.
+      parameters:
+        - name: xname
+          in: path
+          description: Locational xname of the BMC.
+          required: true
+          schema:
+            $ref: '#/components/schemas/xname_for_node'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/bmc_bios_tpm_state_put'
+      responses:
+        '204':
+          description: Value set
+        '400':
+          description: Bad request
+        '404':
+          description: Xname was not for a bmc
+        '500':
+          description: Internal server error including failures communicating with the server
+
 components:
   schemas:
     xname:
       type: string
-      pattern: >-
+      pattern: &xname_pattern >-
         ^s0$|^d([0-9]+)$|^x([0-9]{1,4})d([0-1])$|^x([0-9]{1,4})m([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])$|^x([0-9]{1,4})m([0-3])i([0-3])$|^x([0-9]{1,4})m([0-3])p([0-7])j([1-9][0-9]*)$|^x([0-9]{1,4})e([0-1])$|^x([0-9]{1,4})$|^x([0-9]{1,4})b([0])$|^x([0-9]{1,4})c([0-7])$|^x([0-9]{1,4})c([0-7])b([0])$|^x([0-9]{1,4})c([0-7])f([0])$|^x([0-9]{1,4})c([0-7])t([0-2])$|^x([0-9]{1,4})c([0-7])s([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)f([0])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)j([1-2])$|^x([0-9]{1,4})c([0-7])r([0-9]+)e([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)h([0-3])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)a([0-7])$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)d([0-9]+)$|^x([0-9]{1,4})c([0-7])s([0-9]+)b([0-9]+)n([0-9]+)p([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)f([01])$|^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)$|^x([0-9]{1,4})c([0-7])r([0-9]+)b([0-9]+)i([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])r([0-9]+)j([1-9][0-9]*)p([012])$|^x([0-9]{1,4})c([0-7])r([0-9]+)a([0-3])l([0-9]+)$|^x([0-9]{1,4})c([0-7])w([1-9][0-9]*)$|^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$
       description: The xname of this piece of hardware
       example: x0c0s0b0
+    xname_for_node:
+      type: string
+      pattern: *xname_pattern
+      description: The xname of this piece of hardware
+      example: x0c0s0b0n0
     xname_list:
       type: string
       description: Comma separated list of xnames
@@ -901,7 +973,7 @@ components:
         StatusMsg:
           type: string
           example: "OK"
-    cert_rsp_with_cert:       
+    cert_rsp_with_cert:
       type: object
       properties:
         ID:
@@ -941,6 +1013,35 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/cert_rsp'
+    bmc_bios_tpm_state:
+      type: object
+      properties:
+        Current:
+          description: The current BIOS setting
+          type: string
+          enum:
+            - Disabled
+            - Enabled
+            - NotPresent
+          example: Enabled
+        Future:
+          description: The future BIOS setting which will take affect when the node is rebooted
+          type: string
+          enum:
+            - Disabled
+            - Enabled
+            - NotPresent
+          example: Enabled
+    bmc_bios_tpm_state_put:
+      type: object
+      properties:
+        Future:
+          description: The future BIOS setting which will take affect when the node is rebooted
+          type: string
+          enum:
+            - Disabled
+            - Enabled
+          example: Enabled
 
     version:
       type: object
