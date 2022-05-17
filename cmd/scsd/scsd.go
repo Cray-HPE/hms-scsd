@@ -66,10 +66,10 @@ const (
 	LOGLVL_PANIC = "PANIC"
 )
 
-var appParams = opParams{LogLevel: LOGLVL_ERROR,
+var appParams = opParams{LogLevel: LOGLVL_TRACE,
 	LocalMode:      true,
 	KafkaURL:       "",
-	SmdURL:         "http://cray-smd/hsm/v1",
+	SmdURL:         "http://cray-smd/hsm/v2",
 	HTTPListenPort: ":25309",
 	HTTPRetries:    5,
 	HTTPTimeout:    15,

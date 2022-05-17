@@ -67,7 +67,7 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      - SCSD_SMD_URL=http://cray-smd:27779/hsm/v1
+      - SCSD_SMD_URL=http://cray-smd:27779/hsm/v2
       - SCSD_HTTP_LISTEN_PORT=25309
       - SCSD_LOCAL_MODE=true
       - CRAY_VAULT_AUTH_PATH=auth/token/create
