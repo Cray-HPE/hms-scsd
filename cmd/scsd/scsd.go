@@ -1,6 +1,6 @@
 // MIT License
 //
-// (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -69,7 +69,7 @@ const (
 var appParams = opParams{LogLevel: LOGLVL_ERROR,
 	LocalMode:      true,
 	KafkaURL:       "",
-	SmdURL:         "http://cray-smd/hsm/v1",
+	SmdURL:         "http://cray-smd/hsm/v2",
 	HTTPListenPort: ":25309",
 	HTTPRetries:    5,
 	HTTPTimeout:    15,

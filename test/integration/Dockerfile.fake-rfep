@@ -25,26 +25,27 @@
 # Date: 26-February 2020
 
 # Base image contains everything needed for Go building, just build.
-FROM arti.dev.cray.com/baseos-docker-master-local/golang:1.16-alpine3.13 AS builder
+FROM artifactory.algol60.net/docker.io/library/golang:1.16-alpine AS builder
 
 RUN go env -w GO111MODULE=auto
 
-COPY Test/fake-hsm.go ${GOPATH}/src/fake-hsm/
+COPY fake-rfep.go ${GOPATH}/src/fake-rfep/
 
-RUN set -ex && go build -v -i -o /usr/local/bin/fake-hsm fake-hsm
+RUN set -ex && go build -v -i -o /usr/local/bin/fake-rfep fake-rfep
 
 ### Final Stage ###
 
-FROM arti.dev.cray.com/baseos-docker-master-local/alpine:3.13
+FROM artifactory.algol60.net/csm-docker/stable/docker.io/library/alpine:3.15
 LABEL maintainer="Hewlett Packard Enterprise"
 STOPSIGNAL SIGTERM
 
 ENV PORT=27999
+ENV GOODACCT=2
 
 # Copy the final binary.
 
-COPY --from=builder /usr/local/bin/fake-hsm /usr/local/bin
+COPY --from=builder /usr/local/bin/fake-rfep /usr/local/bin
 
 # Run the fake State Mgr daemon
 
-CMD ["sh", "-c", "fake-hsm"]
+CMD ["sh", "-c", "fake-rfep"]

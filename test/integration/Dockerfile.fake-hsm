@@ -20,59 +20,33 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# Dockerfile for building HMS SCSD.
+# Dockerfile for building HMS fake State Manager for testing.
+# Author: mpkelly
+# Date: 26-February 2020
 
-### Build Base Stage ###
-
-FROM artifactory.algol60.net/docker.io/library/golang:1.16-alpine AS build-base
-
-RUN set -ex \
-    && apk -U upgrade \
-    && apk add build-base
-
-### Base Stage ###
-
-FROM build-base AS base
+# Base image contains everything needed for Go building, just build.
+FROM artifactory.algol60.net/docker.io/library/golang:1.16-alpine AS builder
 
 RUN go env -w GO111MODULE=auto
 
-# Copy all the necessary files to the image.
-COPY cmd $GOPATH/src/github.com/Cray-HPE/hms-scsd/cmd
-COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-scsd/vendor
+COPY fake-hsm.go ${GOPATH}/src/fake-hsm/
 
-### Build Stage ###
-
-FROM base AS builder
-
-# Now build
-RUN set -ex \
-    && go build -v -i -o scsd github.com/Cray-HPE/hms-scsd/cmd/scsd
+RUN set -ex && go build -v -i -o /usr/local/bin/fake-hsm fake-hsm
+RUN ls -la /usr/local/bin/fake-hsm
 
 ### Final Stage ###
 
 FROM artifactory.algol60.net/csm-docker/stable/docker.io/library/alpine:3.15
 LABEL maintainer="Hewlett Packard Enterprise"
 STOPSIGNAL SIGTERM
-EXPOSE 25309
-STOPSIGNAL SIGTERM
-COPY configs configs
 
-RUN set -ex \
-    && apk -U upgrade \
-    && apk add --no-cache curl
+ENV PORT=27999
 
-# Setup environment variables.
-# ENV VAULT_ENABLED="true"
-ENV VAULT_ADDR="http://cray-vault.vault:8200"
-ENV VAULT_SKIP_VERIFY="true"
-# ENV VAULT_KEYPATH="secret/hms-creds"
+# Copy the final binary.
 
-# Get scsd from the builder stage.
-COPY --from=builder /go/scsd /usr/local/bin
-COPY .version /var/run/scsd_version.txt
+COPY --from=builder /usr/local/bin/fake-hsm /usr/local/bin
+RUN ls -la /usr/local/bin/fake-hsm
 
-# nobody 65534:65534
-USER 65534:65534
+# Run the fake State Mgr daemon
 
-# Set up the command to start the service, the run the init script.
-CMD scsd
+CMD ["sh", "-c", "fake-hsm"]

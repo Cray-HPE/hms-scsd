@@ -25,12 +25,12 @@
 # Author: mpkelly
 # Date: 26-February 2020
 
-FROM arti.dev.cray.com/baseos-docker-master-local/golang:1.16-alpine3.13 AS build-base
+FROM artifactory.algol60.net/docker.io/library/golang:1.16-alpine AS builder
 LABEL maintainer="Hewlett Packard Enterprise"
 
 RUN go env -w GO111MODULE=auto
 
-COPY Test/*.sh /usr/local/bin/
+COPY test/integration/*.sh /usr/local/bin/
 
 # Run the main test script
 
@@ -64,4 +64,3 @@ ENV X_S6_PORT=${IN_X_S6_PORT}
 ENV X_S7_PORT=${IN_X_S7_PORT}
 
 CMD ["sh", "-c", "runit.sh"]
-

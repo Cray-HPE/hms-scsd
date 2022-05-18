@@ -14,7 +14,7 @@ services:
   # This is used instead of the real State Manager for simplicity.
   fakesm:
     build:
-      context: ./
+      context: test/integration
       dockerfile: Dockerfile.fake-hsm
     image: fake-hsm:${HTAG}_${HSUFFIX}
     hostname: ${FAKE_SM_HOST}
@@ -23,7 +23,7 @@ services:
       - "${FAKE_SM_PORT}:${FAKE_SM_PORT}"
     environment:
       - PORT=:${FAKE_SM_PORT}
-    networks: 
+    networks:
       - ttest
 
   # A collection of 8 fake Redfish endpoints
@@ -31,7 +31,7 @@ services:
   # x_s0 (mountain)
   x_s0:
     build:
-      context: ./
+      context: test/integration
       dockerfile: Dockerfile.fake-rfep
     image: fake-rfep:${HTAG}_${HSUFFIX}
     hostname: ${X_S0_HOST}
@@ -43,14 +43,14 @@ services:
       - XNAME=${X_S0_HOST}
       - NACCTS=1
       - GOODACCT=1
-      - VENDOR=cray       
-    networks: 
+      - VENDOR=cray
+    networks:
       - ttest
 
   # x_s1 (mountain)
   x_s1:
     build:
-      context: ./
+      context: test/integration
       dockerfile: Dockerfile.fake-rfep
     image: fake-rfep:${HTAG}_${HSUFFIX}
     hostname: ${X_S1_HOST}
@@ -65,13 +65,13 @@ services:
       - ETAGACCT=2
       - BMCURL=1
       - VENDOR=HPE
-    networks: 
+    networks:
       - ttest
 
   # x_s2 (mountain)
   x_s2:
     build:
-      context: ./
+      context: test/integration
       dockerfile: Dockerfile.fake-rfep
     image: fake-rfep:${HTAG}_${HSUFFIX}
     hostname: ${X_S2_HOST}
@@ -84,14 +84,14 @@ services:
       - NACCTS=2
       - GOODACCT=1
       - ETAGACCT=1
-      - VENDOR=cray       
-    networks: 
+      - VENDOR=cray
+    networks:
       - ttest
 
   # x_s3 (mountain)
   x_s3:
     build:
-      context: ./
+      context: test/integration
       dockerfile: Dockerfile.fake-rfep
     image: fake-rfep:${HTAG}_${HSUFFIX}
     hostname: ${X_S3_HOST}
@@ -104,14 +104,14 @@ services:
       - NACCTS=3
       - GOODACCT=3
       - ETAGACCT=3
-      - VENDOR=cray       
-    networks: 
+      - VENDOR=cray
+    networks:
       - ttest
 
   # x_s6 (mountain, part of bmcgroup)
   x_s6:
     build:
-      context: ./
+      context: test/integration
       dockerfile: Dockerfile.fake-rfep
     image: fake-rfep:${HTAG}_${HSUFFIX}
     hostname: ${X_S6_HOST}
@@ -123,14 +123,14 @@ services:
       - XNAME=${X_S6_HOST}
       - NACCTS=4
       - GOODACCT=2
-      - VENDOR=cray       
-    networks: 
+      - VENDOR=cray
+    networks:
       - ttest
 
   # x_s7 (mountain, part of bmcgroup)
   x_s7:
     build:
-      context: ./
+      context: test/integration
       dockerfile: Dockerfile.fake-rfep
     image: fake-rfep:${HTAG}_${HSUFFIX}
     hostname: ${X_S7_HOST}
@@ -143,14 +143,14 @@ services:
       - NACCTS=2
       - GOODACCT=1
       - ETAGACCT=1
-      - VENDOR=cray       
-    networks: 
+      - VENDOR=cray
+    networks:
       - ttest
 
   # Fake vault daemon
   vault:
     build:
-      context: ./
+      context: test/integration
       dockerfile: Dockerfile.fake-vault
     image: fake-vault:${HTAG}_${HSUFFIX}
     hostname: ${VAULT_HOST}
@@ -161,7 +161,7 @@ services:
   # SCSD
   scsd:
     build:
-      context: ./
+      context: .
       dockerfile: Dockerfile.testscsd
       args:
         IN_CRAY_VAULT_JWT_FILE: ${CRAY_VAULT_JWT_FILE}
@@ -185,6 +185,5 @@ services:
       - IN_SCSD_TEST_K8S_AUTH_URL=:${SCSD_TEST_K8S_AUTH_URL}
       - IN_SCSD_TEST_VAULT_PKI_URL=:${SCSD_TEST_VAULT_PKI_URL}
       - IN_SCSD_TEST_VAULT_CA_URL=:${SCSD_TEST_VAULT_CA_URL}
-    networks: 
+    networks:
       - ttest
-
