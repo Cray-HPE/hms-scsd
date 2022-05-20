@@ -47,7 +47,7 @@ function cleanup() {
 # Get the base containers running
 echo "Starting containers..."
 docker-compose build --no-cache
-docker-compose up  -d cray-scsd #this will stand up everything except for the integration test container
+docker-compose up -d cray-scsd
 docker-compose up -d ct-tests-functional-wait-for-smd
 docker wait ${COMPOSE_PROJECT_NAME}_ct-tests-functional-wait-for-smd_1
 docker logs ${COMPOSE_PROJECT_NAME}_ct-tests-functional-wait-for-smd_1
