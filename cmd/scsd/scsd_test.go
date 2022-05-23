@@ -23,10 +23,10 @@
 package main
 
 import (
-	"testing"
+	"github.com/sirupsen/logrus"
 	"os"
 	"strconv"
-	"github.com/sirupsen/logrus"
+	"testing"
 )
 
 func TestENV(t *testing.T) {
@@ -37,59 +37,59 @@ func TestENV(t *testing.T) {
 	dlev := "TRACE"
 	lmode := "true"
 	kurl := "localhost:9678"
-	surl := "http://a.b.c.d/hsm/v1"
+	surl := "http://a.b.c.d/hsm/v2"
 	vkey := "vault_keypath"
 	venbl := "true"
 	dflth := "yes"
-	os.Setenv("SCSD_HTTP_LISTEN_PORT",hport)
-	os.Setenv("SCSD_HTTP_RETRIES",hret)
-	os.Setenv("SCSD_UUID",uuid)
-	os.Setenv("SCSD_LOG_LEVEL",dlev)
-	os.Setenv("SCSD_LOCAL_MODE",lmode)
-	os.Setenv("SCSD_KAFKA_URL",kurl)
-	os.Setenv("SCSD_SMD_URL",surl)
-	os.Setenv("VAULT_KEYPATH",vkey)
-	os.Setenv("VAULT_ENABLE",venbl)
-	os.Setenv("SCSD_DEFAULT_HTTP",dflth)
+	os.Setenv("SCSD_HTTP_LISTEN_PORT", hport)
+	os.Setenv("SCSD_HTTP_RETRIES", hret)
+	os.Setenv("SCSD_UUID", uuid)
+	os.Setenv("SCSD_LOG_LEVEL", dlev)
+	os.Setenv("SCSD_LOCAL_MODE", lmode)
+	os.Setenv("SCSD_KAFKA_URL", kurl)
+	os.Setenv("SCSD_SMD_URL", surl)
+	os.Setenv("VAULT_KEYPATH", vkey)
+	os.Setenv("VAULT_ENABLE", venbl)
+	os.Setenv("SCSD_DEFAULT_HTTP", dflth)
 
 	parseEnvVars()
 
-	if (appParams.HTTPListenPort != hport) {
+	if appParams.HTTPListenPort != hport {
 		t.Errorf("Mismatch of env HTTP listen port, exp: %s, got: %s\n",
-			hport,appParams.HTTPListenPort)
+			hport, appParams.HTTPListenPort)
 	}
-	ival,_ = strconv.Atoi(hret)
-	if (appParams.HTTPRetries != ival) {
+	ival, _ = strconv.Atoi(hret)
+	if appParams.HTTPRetries != ival {
 		t.Errorf("Mismatch of env HTTP retries, exp: %d, got: %d\n",
-			ival,appParams.HTTPRetries)
+			ival, appParams.HTTPRetries)
 	}
-	if (appParams.UUID != uuid) {
+	if appParams.UUID != uuid {
 		t.Errorf("Mismatch of env UUID, exp: %s, got: %s\n",
-			uuid,appParams.UUID)
+			uuid, appParams.UUID)
 	}
-	if (appParams.LogLevel != dlev) {
+	if appParams.LogLevel != dlev {
 		t.Errorf("Mismatch of env LogLevel, exp: %s got: %s\n",
-			dlev,appParams.LogLevel)
+			dlev, appParams.LogLevel)
 	}
-	if (appParams.LocalMode == false) {
+	if appParams.LocalMode == false {
 		t.Errorf("Mismatch of env LocalMode, exp: true, got: false\n")
 	}
-	if (appParams.KafkaURL != kurl) {
+	if appParams.KafkaURL != kurl {
 		t.Errorf("Mismatch of env KafkaURL, exp: %s got: %s\n",
-			kurl,appParams.KafkaURL)
+			kurl, appParams.KafkaURL)
 	}
-	if (appParams.SmdURL != surl) {
+	if appParams.SmdURL != surl {
 		t.Errorf("Mismatch of env SMD url, exp: %s, got: %s\n",
-			surl,appParams.UUID)
+			surl, appParams.UUID)
 	}
-	if (VaultKeypath != vkey) {
+	if VaultKeypath != vkey {
 		t.Errorf("Mismatch of env Vault keypath, exp: %s, got: %s\n",
-			vkey,VaultKeypath)
+			vkey, VaultKeypath)
 	}
-	if (*appParams.VaultEnable == false) {
+	if *appParams.VaultEnable == false {
 		t.Errorf("Mismatch of env VaultEnable, exp: true, got: false\n")
 	}
-	if (dfltHTTP == false) {
+	if dfltHTTP == false {
 		t.Errorf("Mismatch of env default http, exp: true, got: false\n")
 	}
 }
@@ -104,8 +104,8 @@ func printStuff() {
 
 func loggerSetup() {
 	logger = logrus.New()
-	logrus.SetFormatter(&logrus.TextFormatter{FullTimestamp: true,})
-	logger.SetFormatter(&logrus.TextFormatter{FullTimestamp: true,})
+	logrus.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
+	logger.SetFormatter(&logrus.TextFormatter{FullTimestamp: true})
 }
 
 func TestSetLogLevel(t *testing.T) {
@@ -127,7 +127,3 @@ func TestSetLogLevel(t *testing.T) {
 	setLogLevel()
 	printStuff()
 }
-
-
-
-

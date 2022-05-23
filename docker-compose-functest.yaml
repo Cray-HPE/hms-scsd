@@ -176,7 +176,7 @@ services:
       - "${SCSD_PORT}:${SCSD_PORT}"
     environment:
       - VAULT_ENABLE=0
-      - SCSD_SMD_URL=http://${FAKE_SM_HOST}:${FAKE_SM_PORT}/hsm/v1
+      - SCSD_SMD_URL=http://${FAKE_SM_HOST}:${FAKE_SM_PORT}/hsm/v2
       - SCSD_LOG_LEVEL=TRACE
       - SCSD_DEFAULT_HTTP=true
       - SCSD_HTTP_LISTEN_PORT=:${SCSD_PORT}

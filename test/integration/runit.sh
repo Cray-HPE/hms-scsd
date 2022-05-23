@@ -86,7 +86,7 @@ isReady () {
 }
 
 echo "CHECKING FOR HSM..."
-isReady http://${HSM}/hsm/v1/State/Components
+isReady http://${HSM}/hsm/v2/State/Components
 if [[ $? -ne 1 ]]; then
     echo "Can't continue, exiting."
     exit 1
