@@ -1,8 +1,6 @@
-#!/bin/bash
-
 # MIT License
 #
-# (C) Copyright [2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -22,27 +20,48 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# wait-for.sh; used by runCT.sh to make sure HSM has been populated with data before running.
-echo "Initiating..."
-URL="http://cray-smd:27779/hsm/v2/State/Components"
-sentry=1
-limit=200
-while :; do
-  length=$(curl --silent ${URL} | jq '.Components | length')
+# Dockerfile for running API/functional tests.
 
-  if [ ! -z "$length" ] && [ "$length" -gt "0" ]; then
-    echo $URL" is available"
-    break
-  fi
+# Author: mpkelly
+# Date: 26-February 2020
 
-  if [ "$sentry" -gt "$limit" ]; then
-    echo "Failed to connect for $limit, exiting"
-    exit 1
-  fi
+FROM artifactory.algol60.net/docker.io/library/golang:1.16-alpine AS builder
+LABEL maintainer="Hewlett Packard Enterprise"
 
-  ((sentry++))
+RUN go env -w GO111MODULE=auto
 
-  echo $URL" is unavailable - sleeping"
-  sleep 1
+COPY *.sh /usr/local/bin/
 
-done
+# Run the main test script
+
+ARG IN_SCSD
+ARG IN_HSM
+ARG IN_X_S0_PORT
+ARG IN_X_S1_PORT
+ARG IN_X_S2_PORT
+ARG IN_X_S3_PORT
+ARG IN_X_S6_PORT
+ARG IN_X_S7_PORT
+ARG SCSD_VERSION
+ARG CRAY_VAULT_JWT_FILE
+ARG CRAY_VAULT_ROLE_FILE
+ARG SCSD_TEST_K8S_AUTH_URL
+ARG SCSD_TEST_VAULT_PKI_URL
+ARG SCSD_TEST_VAULT_CA_URL
+
+RUN apk update && \
+    apk add bash curl jq
+
+RUN mkdir -p /var/run && \
+    echo ${SCSD_VERSION} > /var/run/scsd_version.txt
+
+ENV SCSD=${IN_SCSD}
+ENV HSM=${IN_HSM}
+ENV X_S0_PORT=${IN_X_S0_PORT}
+ENV X_S1_PORT=${IN_X_S1_PORT}
+ENV X_S2_PORT=${IN_X_S2_PORT}
+ENV X_S3_PORT=${IN_X_S3_PORT}
+ENV X_S6_PORT=${IN_X_S6_PORT}
+ENV X_S7_PORT=${IN_X_S7_PORT}
+
+CMD ["sh", "-c", "runit.sh"]

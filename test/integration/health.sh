@@ -2,7 +2,7 @@
 
 # MIT License
 #
-# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -24,6 +24,11 @@
 
 if [ -z $SCSD ]; then
     echo "MISSING SCSD ENV VAR."
+    exit 1
+fi
+
+if [ ! -r /var/run/scsd_version.txt ]; then
+    echo "MISSING SCSD VERSION FILE."
     exit 1
 fi
 
@@ -102,4 +107,3 @@ echo "+++++++++++++++++++++++++++++++++++++++++++"
 echo " "
 
 exit 0
-

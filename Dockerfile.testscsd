@@ -51,6 +51,7 @@ LABEL maintainer="Hewlett Packard Enterprise"
 STOPSIGNAL SIGTERM
 EXPOSE 25309
 STOPSIGNAL SIGTERM
+COPY configs configs
 
 RUN set -ex \
     && apk update \

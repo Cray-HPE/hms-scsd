@@ -2,7 +2,7 @@
 
 # MIT License
 #
-# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -22,10 +22,10 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# insure the existence of:
+# ensure the existence of:
 #   SCSD
 #   HSM
-#   X0B0S[0-7]B0_PORT
+#   x0b0s[0-7]b0_PORT
 
 echo "========= hosts =========="
 cat /etc/hosts
@@ -66,7 +66,7 @@ fi
 
 # Make sure HSM is running and all the fake RF endpoints
 
-isReady () {
+isReady() {
     url=$1
 
     for (( i = 0; i < 10; i ++ )); do
@@ -86,7 +86,7 @@ isReady () {
 }
 
 echo "CHECKING FOR HSM..."
-isReady http://${HSM}/hsm/v1/State/Components
+isReady http://${HSM}/hsm/v2/State/Components
 if [[ $? -ne 1 ]]; then
     echo "Can't continue, exiting."
     exit 1
@@ -135,18 +135,29 @@ if [[ $? != 1 ]]; then
     exit 1
 fi
 
+echo "##################################"
+echo "Loading HSM data."
+echo "##################################"
 
-echo "##################################"
-echo "Loading HSM data"
-echo "##################################"
 hsmLoad.sh
 if [ $? -ne 0 ]; then
-    echo "Error loading HSM data."
-	exit 1
+    echo "Error loading HSM data with hsmLoad.sh."
+    exit 1
 fi
 sleep 2
 
+echo "###############################################"
+echo "Liveness, readiness, health, version tests."
+echo "###############################################"
 
+health.sh
+if [ $? -ne 0 ]; then
+    echo "Error running health.sh."
+    exit 1
+fi
+
+#TODO
+: <<'END'
 
 echo "##################################"
 echo "Loading config data."
@@ -154,14 +165,14 @@ echo "##################################"
 
 loadcfg.sh
 if [ $? -ne 0 ]; then
-    echo "Error loading config data."
-	exit 1
+    echo "Error loading config data with loadcfg.sh."
+    exit 1
 fi
 
 loadcfg2.sh
 if [ $? -ne 0 ]; then
-    echo "Error loading config data."
-	exit 1
+    echo "Error loading config data with loadcfg2.sh."
+    exit 1
 fi
 
 echo "##################################"
@@ -170,8 +181,8 @@ echo "##################################"
 
 dumpcfg.sh
 if [ $? -ne 0 ]; then
-    echo "Error reading config data."
-	exit 1
+    echo "Error reading config data with dumpcfg.sh."
+    exit 1
 fi
 
 echo "##################################"
@@ -180,8 +191,8 @@ echo "##################################"
 
 load1cfg.sh
 if [ $? -ne 0 ]; then
-    echo "Error reading config data."
-	exit 1
+    echo "Error reading config data with load1cfg.sh."
+    exit 1
 fi
 
 echo "##################################"
@@ -190,8 +201,8 @@ echo "##################################"
 
 dump1cfg.sh
 if [ $? -ne 0 ]; then
-    echo "Error reading config data."
-	exit 1
+    echo "Error reading config data with dump1cfg.sh."
+    exit 1
 fi
 
 echo "##################################"
@@ -200,8 +211,8 @@ echo "##################################"
 
 dumpcfgGP.sh
 if [ $? -ne 0 ]; then
-    echo "Error reading global config data."
-	exit 1
+    echo "Error reading global config data with dumpcfgGP.sh."
+    exit 1
 fi
 
 echo "##################################"
@@ -210,8 +221,8 @@ echo "##################################"
 
 credsMulti.sh
 if [ $? -ne 0 ]; then
-    echo "Error loading multi creds."
-	exit 1
+    echo "Error loading multi creds with credsMulti.sh."
+    exit 1
 fi
 
 echo "##################################"
@@ -220,8 +231,8 @@ echo "##################################"
 
 credsGlobal.sh
 if [ $? -ne 0 ]; then
-    echo "Error loading global creds data."
-	exit 1
+    echo "Error loading global creds data with credsGlobal.sh."
+    exit 1
 fi
 
 echo "##################################"
@@ -230,71 +241,69 @@ echo "##################################"
 
 credsSingle.sh
 if [ $? -ne 0 ]; then
-    echo "Error loading global creds data."
-	exit 1
+    echo "Error loading global creds data with credsSingle.sh."
+    exit 1
 fi
 
 echo "##################################"
-echo "Create Cab-domain Certs"
+echo "Create cab-domain certs."
 echo "##################################"
 
 certsCreateCab.sh
 if [ $? -ne 0 ]; then
-    echo "Error creating cab-domain cert data."
-	exit 1
+    echo "Error creating cab-domain cert data with certsCreateCab.sh."
+    exit 1
 fi
 
 echo "##################################"
-echo "Create BMC list of Cab-domain Certs"
+echo "Create BMC list of cab-domain certs."
 echo "##################################"
 
 certsCreateList.sh
 if [ $? -ne 0 ]; then
-    echo "Error creating BMC list of cab-domain cert data."
-	exit 1
+    echo "Error creating BMC list of cab-domain cert data with certsCreateList.sh."
+    exit 1
 fi
 
 echo "##################################"
-echo "Delete Cab-domain Cert"
+echo "Delete cab-domain cert."
 echo "##################################"
 
 certsDelete.sh
 if [ $? -ne 0 ]; then
-    echo "Error deleting cab-domain cert data."
-	exit 1
+    echo "Error deleting cab-domain cert data with certsDelete.sh."
+    exit 1
 fi
 
 echo "##################################"
-echo "Fetch Cab-domain Certs"
+echo "Fetch cab-domain certs."
 echo "##################################"
 
 certsFetch.sh
 if [ $? -ne 0 ]; then
-    echo "Error fetching cab-domain cert data."
-	exit 1
+    echo "Error fetching cab-domain cert data with certsFetch.sh."
+    exit 1
 fi
 
 echo "##################################"
-echo "Replace BMC Certs"
+echo "Replace BMC certs."
 echo "##################################"
 
 certsRFPost.sh
 if [ $? -ne 0 ]; then
-    echo "Error replacing BMC certs."
-	exit 1
+    echo "Error replacing BMC certs with certsRFPost.sh."
+    exit 1
 fi
 
 echo "##################################"
-echo "Replace single BMC Cert"
+echo "Replace single BMC cert."
 echo "##################################"
 
 certsRFPostSingle.sh
 if [ $? -ne 0 ]; then
-    echo "Error replacing single BMC cert."
-	exit 1
+    echo "Error replacing single BMC cert with certsRFPostSingle.sh."
+    exit 1
 fi
-
-
 
 echo "##################################"
 echo "Group tests."
@@ -302,19 +311,11 @@ echo "##################################"
 
 groupTest.sh
 if [ $? -ne 0 ]; then
-    echo "Error running group tests."
-	exit 1
+    echo "Error running groupTest.sh."
+    exit 1
 fi
 
-echo "###############################################"
-echo "Liveness, readiness, health, version tests."
-echo "###############################################"
-
-health.sh
-if [ $? -ne 0 ]; then
-    echo "Error running health tests."
-	exit 1
-fi
+#TODO
+END
 
 exit 0
-
