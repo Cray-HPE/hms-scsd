@@ -16,24 +16,30 @@ services:
       - SCSD=cray-scsd:25309
       - HSM=cray-smd:27779
       - X_S0_XNAME=x0c0s480b0
-      - X_S0_HOST=${COMPOSE_PROJECT_NAME}_x0c0s480b0_1
+      #- X_S0_HOST=${COMPOSE_PROJECT_NAME}_x0c0s480b0_1
+      - X_S0_HOST=x0c0s480b0
       - X_S0_PORT=34800
       - X_S1_XNAME=x0c0s481b0
-      - X_S1_HOST=${COMPOSE_PROJECT_NAME}_x0c0s481b0_1
+      #- X_S1_HOST=${COMPOSE_PROJECT_NAME}_x0c0s481b0_1
+      - X_S1_HOST=x0c0s481b0
       - X_S1_PORT=34801
       - X_S2_XNAME=x0c0s482b0
-      - X_S2_HOST=${COMPOSE_PROJECT_NAME}_x0c0s482b0_1
+      #- X_S2_HOST=${COMPOSE_PROJECT_NAME}_x0c0s482b0_1
+      - X_S2_HOST=x0c0s482b0
       - X_S2_PORT=34802
       - X_S3_XNAME=x0c0s483b0
-      - X_S3_HOST=${COMPOSE_PROJECT_NAME}_x0c0s483b0_1
+      #- X_S3_HOST=${COMPOSE_PROJECT_NAME}_x0c0s483b0_1
+      - X_S3_HOST=x0c0s483b0
       - X_S3_PORT=34803
       #TODO: s4?
       #TODO: s5?
       - X_S6_XNAME=x0c0s486b0
-      - X_S6_HOST=${COMPOSE_PROJECT_NAME}_x0c0s486b0_1
+      #- X_S6_HOST=${COMPOSE_PROJECT_NAME}_x0c0s486b0_1
+      - X_S6_HOST=x0c0s486b0
       - X_S6_PORT=34806
       - X_S7_XNAME=x0c0s487b0
-      - X_S7_HOST=${COMPOSE_PROJECT_NAME}_x0c0s487b0_1
+      #- X_S7_HOST=${COMPOSE_PROJECT_NAME}_x0c0s487b0_1
+      - X_S7_HOST=x0c0s487b0
       - X_S7_PORT=34807
     depends_on:
       - cray-scsd
@@ -49,12 +55,10 @@ services:
 
   # A collection of 8 fake Redfish endpoints
 
-  #TODO: use the following to set the desired hostname?
-  #  hostname: ${SCSD_HOST}
-  #  container_name: ${SCSD_HOST}
-
   # x_s0 (Mountain)
   x0c0s480b0:
+    hostname: x0c0s480b0
+    container_name: x0c0s480b0
     build:
       context: test/integration
       dockerfile: Dockerfile.fake-rfep
@@ -69,6 +73,8 @@ services:
 
   # x_s1 (Mountain)
   x0c0s481b0:
+    hostname: x0c0s481b0
+    container_name: x0c0s481b0
     build:
       context: test/integration
       dockerfile: Dockerfile.fake-rfep
@@ -83,6 +89,8 @@ services:
 
   # x_s2 (Mountain)
   x0c0s482b0:
+    hostname: x0c0s482b0
+    container_name: x0c0s482b0
     build:
       context: test/integration
       dockerfile: Dockerfile.fake-rfep
@@ -97,6 +105,8 @@ services:
 
   # x_s3 (Mountain)
   x0c0s483b0:
+    hostname: x0c0s483b0
+    container_name: x0c0s483b0
     build:
       context: test/integration
       dockerfile: Dockerfile.fake-rfep
@@ -114,6 +124,8 @@ services:
 
   # x_s6 (Mountain)
   x0c0s486b0:
+    hostname: x0c0s486b0
+    container_name: x0c0s486b0
     build:
       context: test/integration
       dockerfile: Dockerfile.fake-rfep
@@ -128,6 +140,8 @@ services:
 
   # x_s7 (Mountain)
   x0c0s487b0:
+    hostname: x0c0s487b0
+    container_name: x0c0s487b0
     build:
       context: test/integration
       dockerfile: Dockerfile.fake-rfep
@@ -141,7 +155,8 @@ services:
       - scsd
 
   cray-scsd:
-    hostname: ${COMPOSE_PROJECT_NAME}_cray-scsd
+    #TODO: I don't think this is doing anything
+    #hostname: ${COMPOSE_PROJECT_NAME}_cray-scsd
     build:
       context: .
       #TODO
@@ -189,6 +204,7 @@ services:
       - vault-kv-enabler
 
   cray-smd:
+    hostname: cray-smd
     image: artifactory.algol60.net/csm-docker/stable/cray-smd:1.48.0
     environment:
       - POSTGRES_HOST=hmsds-postgres
@@ -202,7 +218,6 @@ services:
       - VAULT_KEYPATH=hms-creds
       - SMD_WVAULT=true
       - SMD_RVAULT=true
-    hostname: cray-smd
     depends_on:
       - cray-smd-init
       - vault
@@ -276,8 +291,8 @@ services:
       - scsd
 
   kafka:
-    image: artifactory.algol60.net/docker.io/confluentinc/cp-kafka:6.1.1
     hostname: kafka
+    image: artifactory.algol60.net/docker.io/confluentinc/cp-kafka:6.1.1
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
@@ -291,8 +306,8 @@ services:
       - scsd
 
   zookeeper:
-    image: artifactory.algol60.net/docker.io/confluentinc/cp-zookeeper:6.1.1
     hostname: zookeeper
+    image: artifactory.algol60.net/docker.io/confluentinc/cp-zookeeper:6.1.1
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -334,7 +349,7 @@ services:
           - x0c0s2b0
 
   redis:
-    image: artifactory.algol60.net/docker.io/library/redis:5.0-alpine3.12
     hostname: hms-redfish-redis
+    image: artifactory.algol60.net/docker.io/library/redis:5.0-alpine3.12
     networks:
       - scsd

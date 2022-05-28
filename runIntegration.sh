@@ -61,7 +61,7 @@ docker-compose up --exit-code-from integration-tests integration-tests
 test_result=$?
 
 #TODO
-sleep 180
+sleep 45
 
 # Clean up
 echo "Cleaning up containers..."

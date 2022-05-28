@@ -2,7 +2,7 @@
 
 # MIT License
 #
-# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -50,32 +50,32 @@ if [ -z $X_S7_PORT ]; then
     echo "MISSING X_S7_PORT ENV VAR."
     exit 1
 fi
-if [ -z $X_S0_HOST ]; then
-    echo "MISSING X_S0_HOST ENV VAR."
+if [ -z $X_S0_XNAME ]; then
+    echo "MISSING X_S0_XNAME ENV VAR."
     exit 1
 fi
-if [ -z $X_S1_HOST ]; then
-    echo "MISSING X_S1_HOST ENV VAR."
+if [ -z $X_S1_XNAME ]; then
+    echo "MISSING X_S1_XNAME ENV VAR."
     exit 1
 fi
-if [ -z $X_S2_HOST ]; then
-    echo "MISSING X_S2_HOST ENV VAR."
+if [ -z $X_S2_XNAME ]; then
+    echo "MISSING X_S2_XNAME ENV VAR."
     exit 1
 fi
-if [ -z $X_S3_HOST ]; then
-    echo "MISSING X_S3_HOST ENV VAR."
+if [ -z $X_S3_XNAME ]; then
+    echo "MISSING X_S3_XNAME ENV VAR."
     exit 1
 fi
-if [ -z $X_S6_HOST ]; then
-    echo "MISSING X_S6_HOST ENV VAR."
+if [ -z $X_S6_XNAME ]; then
+    echo "MISSING X_S6_XNAME ENV VAR."
     exit 1
 fi
-if [ -z $X_S7_HOST ]; then
-    echo "MISSING X_S7_HOST ENV VAR."
+if [ -z $X_S7_XNAME ]; then
+    echo "MISSING X_S7_XNAME ENV VAR."
     exit 1
 fi
 
-portFix () {
+portFix() {
     local pld
 	pld=`echo $1 | sed "s/XP0/$X_S0_PORT/g" | \
                    sed "s/XP1/$X_S1_PORT/g" | \
@@ -83,12 +83,12 @@ portFix () {
                    sed "s/XP3/$X_S3_PORT/g" | \
                    sed "s/XP6/$X_S6_PORT/g" | \
                    sed "s/XP7/$X_S7_PORT/g" | \
-                   sed "s/X_S0_HOST/$X_S0_HOST/g" | \
-                   sed "s/X_S1_HOST/$X_S1_HOST/g" | \
-                   sed "s/X_S2_HOST/$X_S2_HOST/g" | \
-                   sed "s/X_S3_HOST/$X_S3_HOST/g" | \
-                   sed "s/X_S6_HOST/$X_S6_HOST/g" | \
-                   sed "s/X_S7_HOST/$X_S7_HOST/g" | \
+                   sed "s/X_S0_XNAME/$X_S0_XNAME/g" | \
+                   sed "s/X_S1_XNAME/$X_S1_XNAME/g" | \
+                   sed "s/X_S2_XNAME/$X_S2_XNAME/g" | \
+                   sed "s/X_S3_XNAME/$X_S3_XNAME/g" | \
+                   sed "s/X_S6_XNAME/$X_S6_XNAME/g" | \
+                   sed "s/X_S7_XNAME/$X_S7_XNAME/g" | \
                    sed 's/"/\\"/g'`
     echo $pld
 }

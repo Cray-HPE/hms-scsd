@@ -31,6 +31,8 @@ fi
 
 #TODO: orig
 #pldx='{"Force":false,"Targets":["X_S0_HOST:XP0","X_S1_HOST:XP1"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
+#TODO: orig without ports
+pldx='{"Force":false,"Targets":["X_S0_HOST","X_S1_HOST"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
 
 #TODO: orig but HOST switched to XNAME
 #pldx='{"Force":false,"Targets":["X_S0_XNAME:XP0","X_S1_XNAME:XP1"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
@@ -72,7 +74,7 @@ fi
 #cray-scsd_1             | time="2022-05-28T01:42:55Z" level=error msg="ERROR: Problem determining target architectures: ERROR: No valid targets.."
 
 #TODO: xnames, no ports, need to be 'On' or 'Ready' and Mountain components
-pldx='{"Force":false,"Targets":["X_S0_XNAME","X_S1_XNAME"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
+#pldx='{"Force":false,"Targets":["X_S0_XNAME","X_S1_XNAME"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
 #{
 #  "type": "about:blank",
 #  "title": "NWP data",
