@@ -25,7 +25,7 @@
 FROM artifactory.algol60.net/docker.io/library/golang:1.16-alpine AS build-base
 
 RUN set -ex \
-    && apk update \
+    && apk -U upgrade \
     && apk add build-base
 
 FROM build-base AS base
@@ -54,7 +54,7 @@ STOPSIGNAL SIGTERM
 COPY configs configs
 
 RUN set -ex \
-    && apk update \
+    && apk -U upgrade \
     && apk add --no-cache curl
 
 # Setup environment variables.
@@ -77,7 +77,7 @@ RUN if [ ! -z ${IN_CRAY_VAULT_JWT_FILE} ]; then mkdir -p `dirname ${IN_CRAY_VAUL
 RUN if [ ! -z $CRAY_VAULT_ROLE_FILE ]; then mkdir -p `dirname ${CRAY_VAULT_ROLE_FILE}` ; echo role_xyzzy > ${CRAY_VAULT_ROLE_FILE} ; fi
 
 RUN set -ex \
-    && apk update \
+    && apk -U upgrade \
     && apk add --no-cache curl
 
 # Get scsd from the builder stage.

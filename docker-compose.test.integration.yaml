@@ -49,6 +49,10 @@ services:
 
   # A collection of 8 fake Redfish endpoints
 
+  #TODO: use the following to set the desired hostname?
+  #  hostname: ${SCSD_HOST}
+  #  container_name: ${SCSD_HOST}
+
   # x_s0 (Mountain)
   x0c0s480b0:
     build:
@@ -137,22 +141,43 @@ services:
       - scsd
 
   cray-scsd:
+    hostname: ${COMPOSE_PROJECT_NAME}_cray-scsd
     build:
       context: .
-      dockerfile: Dockerfile
+      #TODO
+      #dockerfile: Dockerfile <--- this is missing test arguments that are passed into SCSD
+      dockerfile: Dockerfile.testscsd
+      #TODO: not sure if these are needed
+      args:
+        IN_SCSD_TEST_K8S_AUTH_URL: ${SCSD_TEST_K8S_AUTH_URL}
+        IN_SCSD_TEST_VAULT_PKI_URL: ${SCSD_TEST_VAULT_PKI_URL}
+        IN_SCSD_TEST_VAULT_CA_URL: ${SCSD_TEST_VAULT_CA_URL}
+        IN_CRAY_VAULT_JWT_FILE: ${CRAY_VAULT_JWT_FILE}
+        IN_CRAY_VAULT_ROLE_FILE: ${CRAY_VAULT_ROLE_FILE}
     environment:
       - SCSD_SMD_URL=http://cray-smd:27779/hsm/v2
       - SCSD_HTTP_LISTEN_PORT=25309
       - SCSD_LOCAL_MODE=true
       - SCSD_LOG_LEVEL=TRACE
-      - CRAY_VAULT_AUTH_PATH=auth/token/create
-      - CRAY_VAULT_ROLE_FILE=configs/namespace
-      - CRAY_VAULT_JWT_FILE=configs/token
+      #TODO: these are the "new" way to set up Vault
+      #- CRAY_VAULT_AUTH_PATH=auth/token/create
+      #- CRAY_VAULT_ROLE_FILE=configs/namespace
+      #- CRAY_VAULT_JWT_FILE=configs/token
+      #- VAULT_ADDR=http://vault:8200
+      #- VAULT_TOKEN=hms
+      #- VAULT_KEYPATH=hms-creds
       #TODO: not sure if this is needed for fake Mountain Redfish endpoint credentials
-      #- VAULT_ENABLE=0
-      - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN=hms
-      - VAULT_KEYPATH=hms-creds
+      - VAULT_ENABLE=0
+      - IN_SCSD_TEST_K8S_AUTH_URL=:${SCSD_TEST_K8S_AUTH_URL} # http://${VAULT_HOST}:8200/v1/auth/kubernetes/login
+      #- IN_SCSD_TEST_K8S_AUTH_URL=http://${COMPOSE_PROJECT_NAME}_vault_1:8200/v1/auth/kubernetes/login
+      - IN_SCSD_TEST_VAULT_PKI_URL=:${SCSD_TEST_VAULT_PKI_URL}
+      #- IN_SCSD_TEST_VAULT_PKI_URL=http://${COMPOSE_PROJECT_NAME}_vault_1:8200/v1/pki_common/issue/pki-common
+      - IN_SCSD_TEST_VAULT_CA_URL=:${SCSD_TEST_VAULT_CA_URL}
+      #- IN_SCSD_TEST_VAULT_CA_URL=http://${COMPOSE_PROJECT_NAME}_vault_1:8200/v1/pki_common/ca_chain
+      - IN_CRAY_VAULT_JWT_FILE=:${CRAY_VAULT_JWT_FILE}
+      #- IN_CRAY_VAULT_JWT_FILE=/tmp/k8stoken
+      - IN_CRAY_VAULT_ROLE_FILE=:${CRAY_VAULT_ROLE_FILE}
+      #- IN_CRAY_VAULT_ROLE_FILE=/tmp/k8stoken
     networks:
       - scsd
     ports:
