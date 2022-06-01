@@ -214,9 +214,9 @@ func main() {
 		}
     }
 
-    urlep := "/hsm/v1/Subscriptions/SCN"
-    urlcomps := "/hsm/v1/State/Components"
-    urlgroups := "/hsm/v1/groups"
+    urlep := "/hsm/v2/Subscriptions/SCN"
+    urlcomps := "/hsm/v2/State/Components"
+    urlgroups := "/hsm/v2/groups"
     hstuff := new(httpStuff)
     http.HandleFunc(urlep,hstuff.subs_rcv)
     http.HandleFunc(urlcomps,hstuff.hsmComponents)

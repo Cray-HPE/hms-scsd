@@ -173,15 +173,8 @@ pldx='{"Force":false,"Targets":["X_S0_HOST:XP0","X_S1_HOST:XP1"],"Params":{"NTPS
 #cray-scsd_1             | time="2022-05-28T01:31:29Z" level=error msg="setNWP(): ERROR: No valid targets."
 #cray-scsd_1             | time="2022-05-28T01:31:29Z" level=error msg="ERROR: problem loading NWP data: ERROR: No valid targets.\n"
 
-#TODO: remove this debugging statement
-#curl -X GET http://${HSM}/hsm/v2/State/Components
-curl -X GET http://${HSM}/hsm/v1/State/Components
-
 source portFix.sh
 pld=$(portFix "$pldx")
-
-#TODO
-echo "pld=${pld}"
 
 curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/loadcfg | jq > out.txt
 cat out.txt

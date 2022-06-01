@@ -25,7 +25,7 @@
 # ensure the existence of:
 #   SCSD
 #   HSM
-#   x0b0s[0-7]b0_PORT
+#   x0b0s[0-7]b0:PORT
 
 echo "========= hosts =========="
 cat /etc/hosts

@@ -36,9 +36,7 @@ pldx='{"Components": [ {"ID":"X_S0_HOST:XP0","Type":"NodeBMC","State":"On","Flag
 source portFix.sh
 pld=`portFix "$pldx"`
 
-#TODO
-#curl -D hout -X POST -d "$pld" http://${HSM}/hsm/v2/State/Components
-curl -D hout -X POST -d "$pld" http://${HSM}/hsm/v1/State/Components
+curl -D hout -X POST -d "$pld" http://${HSM}/hsm/v2/State/Components
 echo " "
 
 echo "Components:"
@@ -55,12 +53,7 @@ pldx='[{"label":"bmcgroup","description":"group of bmcs","tags":["bmctag"],"memb
 #pldx='{"label":"bmcgroup","description":"group of bmcs","tags":["bmctag"],"members":{"ids":["X_S6_HOST","X_S7_HOST"]}}'
 pld=`portFix "$pldx"`
 
-#TODO
-echo "pld=${pld}"
-
-#TODO
-#curl -D hout -X POST -d "$pld" http://${HSM}/hsm/v2/groups
-curl -D hout -X POST -d "$pld" http://${HSM}/hsm/v1/groups
+curl -D hout -X POST -d "$pld" http://${HSM}/hsm/v2/groups
 echo " "
 
 echo "Groups:"
