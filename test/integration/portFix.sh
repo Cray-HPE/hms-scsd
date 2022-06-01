@@ -75,7 +75,7 @@ if [ -z $X_S7_HOST ]; then
     exit 1
 fi
 
-portFix () {
+portFix() {
     local pld
 	pld=`echo $1 | sed "s/XP0/$X_S0_PORT/g" | \
                    sed "s/XP1/$X_S1_PORT/g" | \

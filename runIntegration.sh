@@ -35,9 +35,12 @@ echo "COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME}"
 echo "COMPOSE_FILE: ${COMPOSE_FILE}"
 
 #TODO
-export SCSD_TEST_K8S_AUTH_URL="http://${COMPOSE_PROJECT_NAME}_vault_1:8200/v1/auth/kubernetes/login"
-export SCSD_TEST_VAULT_PKI_URL="http://${COMPOSE_PROJECT_NAME}_vault_1:8200/v1/pki_common/issue/pki-common"
-export SCSD_TEST_VAULT_CA_URL="http://${COMPOSE_PROJECT_NAME}_vault_1:8200/v1/pki_common/ca_chain"
+#export SCSD_TEST_K8S_AUTH_URL="http://${COMPOSE_PROJECT_NAME}_vault_1:8200/v1/auth/kubernetes/login"
+export SCSD_TEST_K8S_AUTH_URL="http://${COMPOSE_PROJECT_NAME}_fake-vault_1:8200/v1/auth/kubernetes/login"
+#export SCSD_TEST_VAULT_PKI_URL="http://${COMPOSE_PROJECT_NAME}_vault_1:8200/v1/pki_common/issue/pki-common"
+export SCSD_TEST_VAULT_PKI_URL="http://${COMPOSE_PROJECT_NAME}_fake-vault_1:8200/v1/pki_common/issue/pki-common"
+#export SCSD_TEST_VAULT_CA_URL="http://${COMPOSE_PROJECT_NAME}_vault_1:8200/v1/pki_common/ca_chain"
+export SCSD_TEST_VAULT_CA_URL="http://${COMPOSE_PROJECT_NAME}_fake-vault_1:8200/v1/pki_common/ca_chain"
 export CRAY_VAULT_JWT_FILE="/tmp/k8stoken"
 export CRAY_VAULT_ROLE_FILE="/tmp/k8stoken"
 
@@ -60,16 +63,13 @@ docker-compose up --exit-code-from integration-tests integration-tests
 
 test_result=$?
 
-#TODO
-sleep 45
-
 # Clean up
 echo "Cleaning up containers..."
 if [[ $test_result -ne 0 ]]; then
     docker-compose logs > ${LOG_FILE} 2>&1
     echo "================================================="
     echo "LOGS:"
-    cat ${LOG_FILE} | grep -v "redfish-simulator_1" | grep -v "kafka_1"
+    cat ${LOG_FILE}
     echo "================================================="
     echo
     echo "Integration tests FAILED!"

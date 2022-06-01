@@ -30,20 +30,39 @@ fi
 # POST to get a dump of current configs
 
 #TODO: orig
-#pldx='{"Force":false,"Targets":["X_S0_HOST:XP0","X_S1_HOST:XP1"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
+#cray-scsd_1             | time="2022-05-31T21:36:10Z" level=trace msg="  [ 0]: 0xc0002420f0 tg: 'x0c0s480b0:34800', gp: '', gpm: false, st: Unknown, isM: false sc: 0 err: <nil>"
+#cray-scsd_1             | time="2022-05-31T21:36:10Z" level=trace msg="  [ 1]: 0xc000242168 tg: 'x0c0s481b0:34801', gp: '', gpm: false, st: Unknown, isM: false sc: 0 err: <nil>"
+#cray-scsd_1             | time="2022-05-31T21:36:10Z" level=trace msg="getRvMt(0), targ: 'x0c0s480b0:34800', state: Unknown"
+#cray-scsd_1             | time="2022-05-31T21:36:10Z" level=trace msg="getRvMt(0), targ: 'x0c0s481b0:34801', state: Unknown"
+#cray-scsd_1             | time="2022-05-31T21:36:10Z" level=error msg="getRvMt(): no valid targets."
+pldx='{"Force":false,"Targets":["X_S0_HOST:XP0","X_S1_HOST:XP1"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
 #TODO: orig without ports
-pldx='{"Force":false,"Targets":["X_S0_HOST","X_S1_HOST"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
+#cray-scsd_1             | time="2022-05-31T21:38:39Z" level=trace msg="CHECKLIST:"
+#cray-scsd_1             | time="2022-05-31T21:38:39Z" level=trace msg="  [ 0]: 0xc0002de0f0 tg: 'x0c0s480b0', gp: '', gpm: false, st: On, isM: false sc: 0 err: <nil>"
+#cray-scsd_1             | time="2022-05-31T21:38:39Z" level=trace msg="  [ 1]: 0xc0002de168 tg: 'x0c0s481b0', gp: '', gpm: false, st: On, isM: false sc: 0 err: <nil>"
+#cray-scsd_1             | time="2022-05-31T21:38:39Z" level=trace msg="getRvMt(0), targ: 'x0c0s480b0', state: On"
+#cray-scsd_1             | time="2022-05-31T21:38:39Z" level=trace msg="getRvMt(0), targ: 'x0c0s481b0', state: On"
+#cray-scsd_1             | time="2022-05-31T21:38:39Z" level=trace msg="popRFCreds(), Vault is disabled, no creds."
+#cray-scsd_1             | time="2022-05-31T21:38:39Z" level=trace msg="popRFCreds(), Vault is disabled, no creds."
+#cray-scsd_1             | time="2022-05-31T21:38:39Z" level=trace msg="setting up context for request"
+#cray-scsd_1             | time="2022-05-31T21:38:39Z" level=trace msg="setting up context for request"
+#cray-scsd_1             | time="2022-05-31T21:38:46Z" level=trace msg="Err: GET https://x0c0s481b0/redfish/v1/ giving up after 4 attempt(s): Get \"https://x0c0s481b0/redfish/v1/\": dial tcp 192.168.128.13:443: connect: connection refused"
+#cray-scsd_1             | time="2022-05-31T21:38:46Z" level=trace msg="getStatusCode, no response, err: 'GET https://x0c0s481b0/redfish/v1/ giving up after 4 attempt(s): Get \"https://x0c0s481b0/redfish/v1/\": dial tcp 192.168.128.13:443: connect: connection refused'"
+#cray-scsd_1             | time="2022-05-31T21:38:46Z" level=debug msg="Task complete, URL: '/redfish/v1/', status code: 500"
+#cray-scsd_1             | time="2022-05-31T21:38:46Z" level=trace msg="Err: GET https://x0c0s480b0/redfish/v1/ giving up after 4 attempt(s): Get \"https://x0c0s480b0/redfish/v1/\": dial tcp 192.168.128.15:443: connect: connection refused"
+#cray-scsd_1             | time="2022-05-31T21:38:46Z" level=trace msg="getStatusCode, no response, err: 'GET https://x0c0s480b0/redfish/v1/ giving up after 4 attempt(s): Get \"https://x0c0s480b0/redfish/v1/\": dial tcp 192.168.128.15:443: connect: connection refused'"
+#cray-scsd_1             | time="2022-05-31T21:38:46Z" level=debug msg="Task complete, URL: '/redfish/v1/', status code: 500"
+#cray-scsd_1             | time="2022-05-31T21:38:46Z" level=trace msg="getStatusCode, no response, err: 'GET https://x0c0s480b0/redfish/v1/ giving up after 4 attempt(s): Get \"https://x0c0s480b0/redfish/v1/\": dial tcp 192.168.128.15:443: connect: connection refused'"
+#cray-scsd_1             | time="2022-05-31T21:38:46Z" level=trace msg="getStatusCode, no response, err: 'GET https://x0c0s481b0/redfish/v1/ giving up after 4 attempt(s): Get \"https://x0c0s481b0/redfish/v1/\": dial tcp 192.168.128.13:443: connect: connection refused'"
+#cray-scsd_1             | time="2022-05-31T21:38:46Z" level=trace msg="getStatusCode, no response, err: 'GET https://x0c0s480b0/redfish/v1/ giving up after 4 attempt(s): Get \"https://x0c0s480b0/redfish/v1/\": dial tcp 192.168.128.15:443: connect: connection refused'"
+#cray-scsd_1             | time="2022-05-31T21:38:46Z" level=trace msg="getStatusCode, no response, err: 'GET https://x0c0s481b0/redfish/v1/ giving up after 4 attempt(s): Get \"https://x0c0s481b0/redfish/v1/\": dial tcp 192.168.128.13:443: connect: connection refused'"
+#cray-scsd_1             | time="2022-05-31T21:38:46Z" level=debug msg="doOp(): No tasks to perform, all ignored."
+#cray-scsd_1             | time="2022-05-31T21:38:46Z" level=trace msg="setNWP() NWP info: '{\"Oem\":{\"Syslog\":{\"ProtocolEnabled\":true,\"SyslogServers\":[\"sms-mmm-yyy1\"],\"Port\":567},\"SSHAdmin\":{\"AuthorizedKeys\":\"aabbccdd\"},\"SSHConsole\":{\"AuthorizedKeys\":\"eeddffgg\"}},\"NTP\":{\"NTPServers\":[\"sms-nnn-www1\"],\"ProtocolEnabled\":true,\"Port\":234}}'"
+#cray-scsd_1             | time="2022-05-31T21:38:46Z" level=error msg="setNWP(): ERROR: No valid targets."
+#cray-scsd_1             | time="2022-05-31T21:38:46Z" level=error msg="ERROR: problem loading NWP data: ERROR: No valid targets.\n"
+#pldx='{"Force":false,"Targets":["X_S0_HOST","X_S1_HOST"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
 
-#TODO: orig but HOST switched to XNAME
-#pldx='{"Force":false,"Targets":["X_S0_XNAME:XP0","X_S1_XNAME:XP1"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
-#{
-#    "type": "about:blank",
-#    "title": "Target architectures",
-#    "detail": "ERROR: Problem determining target architectures: ERROR: No valid targets..",
-#    "instance": "/v1/bmc/loadcfg",
-#    "status": 500
-#}
-#TODO: FAIL SCSD loadcfg.sh logs
+#TODO: FAIL SCSD loadcfg.sh logs w/ ports
 #cray-scsd_1             | time="2022-05-28T01:42:37Z" level=info msg="Service Instance Name: '23195_cray-scsd'"
 #cray-scsd_1             | time="2022-05-28T01:42:37Z" level=info msg="Overriding k8s auth url with: 'http://23195_vault_1:8200/v1/auth/kubernetes/login'"
 #cray-scsd_1             | time="2022-05-28T01:42:37Z" level=info msg="Overriding PKI url with: 'http://23195_vault_1:8200/v1/pki_common/issue/pki-common'"
@@ -73,15 +92,6 @@ pldx='{"Force":false,"Targets":["X_S0_HOST","X_S1_HOST"],"Params":{"NTPServerInf
 #cray-scsd_1             | time="2022-05-28T01:42:55Z" level=error msg="getRvMt(): no valid targets."
 #cray-scsd_1             | time="2022-05-28T01:42:55Z" level=error msg="ERROR: Problem determining target architectures: ERROR: No valid targets.."
 
-#TODO: xnames, no ports, need to be 'On' or 'Ready' and Mountain components
-#pldx='{"Force":false,"Targets":["X_S0_XNAME","X_S1_XNAME"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
-#{
-#  "type": "about:blank",
-#  "title": "NWP data",
-#  "detail": "ERROR: problem loading NWP data: ERROR: No valid targets.\n",
-#  "instance": "/v1/bmc/loadcfg",
-#  "status": 500
-#}
 #TODO: PASS SCSD loadcfg.sh logs
 #^[[33mscsd_96   |^[[0m time="2022-05-27T19:02:02Z" level=info msg="Service Instance Name: 'scsd_96'"
 #^[[33mscsd_96   |^[[0m time="2022-05-27T19:02:02Z" level=info msg="Overriding k8s auth url with: 'http://vault_96:8200/v1/auth/kubernetes/login'"
@@ -117,7 +127,7 @@ pldx='{"Force":false,"Targets":["X_S0_HOST","X_S1_HOST"],"Params":{"NTPServerInf
 #^[[33mscsd_96   |^[[0m time="2022-05-27T19:02:25Z" level=debug msg="Task complete, URL: '/redfish/v1/', status code: 200"
 #^[[33mscsd_96   |^[[0m time="2022-05-27T19:02:25Z" level=trace msg="Response: 200"
 
-#TODO: FAIL SCSD loadcfg.sh logs
+#TODO: FAIL SCSD loadcfg.sh logs w/o ports
 #cray-scsd_1             | time="2022-05-28T01:31:15Z" level=info msg="Service Instance Name: '12811_cray-scsd'"
 #cray-scsd_1             | time="2022-05-28T01:31:15Z" level=info msg="Overriding k8s auth url with: 'http://12811_vault_1:8200/v1/auth/kubernetes/login'"
 #cray-scsd_1             | time="2022-05-28T01:31:15Z" level=info msg="Overriding PKI url with: 'http://12811_vault_1:8200/v1/pki_common/issue/pki-common'"
@@ -165,6 +175,7 @@ pldx='{"Force":false,"Targets":["X_S0_HOST","X_S1_HOST"],"Params":{"NTPServerInf
 
 #TODO: remove this debugging statement
 #curl -X GET http://${HSM}/hsm/v2/State/Components
+curl -X GET http://${HSM}/hsm/v1/State/Components
 
 source portFix.sh
 pld=$(portFix "$pldx")
@@ -184,3 +195,4 @@ if (( scode != 200 )); then
 fi
 
 exit 0
+

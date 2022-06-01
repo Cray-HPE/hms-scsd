@@ -20,7 +20,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# Dockerfile for building HMS fake Vault daemon
+# Dockerfile for building HMS fake Vault daemon for testing.
 # Author: mpkelly
 # Date: 11-August 2020
 

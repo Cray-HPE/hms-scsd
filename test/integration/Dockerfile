@@ -20,7 +20,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# Dockerfile for running API/functional tests.
+# Dockerfile for running API/integration tests.
 
 # Author: mpkelly
 # Date: 26-February 2020
@@ -49,7 +49,7 @@ ARG SCSD_TEST_K8S_AUTH_URL
 ARG SCSD_TEST_VAULT_PKI_URL
 ARG SCSD_TEST_VAULT_CA_URL
 
-RUN apk update && \
+RUN apk -U upgrade && \
     apk add bash curl jq
 
 RUN mkdir -p /var/run && \

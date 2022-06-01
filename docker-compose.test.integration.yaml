@@ -1,5 +1,6 @@
 version: '3.7'
 #THIS environment sets up all of SCSD
+#TODO
 #  All dependencies -> HSM (vault, hm-collector, kafka), RTS (redfish sims) are all setup and active.
 #  The SCSD binary is active.
 #  No ports are exposed to the local system.
@@ -14,36 +15,25 @@ services:
       dockerfile: Dockerfile
     environment:
       - SCSD=cray-scsd:25309
-      - HSM=cray-smd:27779
-      - X_S0_XNAME=x0c0s480b0
-      #- X_S0_HOST=${COMPOSE_PROJECT_NAME}_x0c0s480b0_1
+      #TODO
+      #- HSM=cray-smd:27779
+      - HSM=fake-smd:27779
       - X_S0_HOST=x0c0s480b0
       - X_S0_PORT=34800
-      - X_S1_XNAME=x0c0s481b0
-      #- X_S1_HOST=${COMPOSE_PROJECT_NAME}_x0c0s481b0_1
       - X_S1_HOST=x0c0s481b0
       - X_S1_PORT=34801
-      - X_S2_XNAME=x0c0s482b0
-      #- X_S2_HOST=${COMPOSE_PROJECT_NAME}_x0c0s482b0_1
       - X_S2_HOST=x0c0s482b0
       - X_S2_PORT=34802
-      - X_S3_XNAME=x0c0s483b0
-      #- X_S3_HOST=${COMPOSE_PROJECT_NAME}_x0c0s483b0_1
       - X_S3_HOST=x0c0s483b0
       - X_S3_PORT=34803
       #TODO: s4?
       #TODO: s5?
-      - X_S6_XNAME=x0c0s486b0
-      #- X_S6_HOST=${COMPOSE_PROJECT_NAME}_x0c0s486b0_1
       - X_S6_HOST=x0c0s486b0
       - X_S6_PORT=34806
-      - X_S7_XNAME=x0c0s487b0
-      #- X_S7_HOST=${COMPOSE_PROJECT_NAME}_x0c0s487b0_1
       - X_S7_HOST=x0c0s487b0
       - X_S7_PORT=34807
     depends_on:
       - cray-scsd
-      - cray-smd
       - x0c0s480b0
       - x0c0s481b0
       - x0c0s482b0
@@ -155,14 +145,9 @@ services:
       - scsd
 
   cray-scsd:
-    #TODO: I don't think this is doing anything
-    #hostname: ${COMPOSE_PROJECT_NAME}_cray-scsd
     build:
       context: .
-      #TODO
-      #dockerfile: Dockerfile <--- this is missing test arguments that are passed into SCSD
-      dockerfile: Dockerfile.testscsd
-      #TODO: not sure if these are needed
+      dockerfile: Dockerfile.test.integration
       args:
         IN_SCSD_TEST_K8S_AUTH_URL: ${SCSD_TEST_K8S_AUTH_URL}
         IN_SCSD_TEST_VAULT_PKI_URL: ${SCSD_TEST_VAULT_PKI_URL}
@@ -170,186 +155,41 @@ services:
         IN_CRAY_VAULT_JWT_FILE: ${CRAY_VAULT_JWT_FILE}
         IN_CRAY_VAULT_ROLE_FILE: ${CRAY_VAULT_ROLE_FILE}
     environment:
-      - SCSD_SMD_URL=http://cray-smd:27779/hsm/v2
+      #TODO
+      #- SCSD_SMD_URL=http://cray-smd:27779/hsm/v2
+      - SCSD_SMD_URL=http://fake-smd:27779/hsm/v1
       - SCSD_HTTP_LISTEN_PORT=25309
       - SCSD_LOCAL_MODE=true
+      - SCSD_DEFAULT_HTTP=true
       - SCSD_LOG_LEVEL=TRACE
-      #TODO: these are the "new" way to set up Vault
-      #- CRAY_VAULT_AUTH_PATH=auth/token/create
-      #- CRAY_VAULT_ROLE_FILE=configs/namespace
-      #- CRAY_VAULT_JWT_FILE=configs/token
-      #- VAULT_ADDR=http://vault:8200
-      #- VAULT_TOKEN=hms
-      #- VAULT_KEYPATH=hms-creds
-      #TODO: not sure if this is needed for fake Mountain Redfish endpoint credentials
       - VAULT_ENABLE=0
-      - IN_SCSD_TEST_K8S_AUTH_URL=:${SCSD_TEST_K8S_AUTH_URL} # http://${VAULT_HOST}:8200/v1/auth/kubernetes/login
-      #- IN_SCSD_TEST_K8S_AUTH_URL=http://${COMPOSE_PROJECT_NAME}_vault_1:8200/v1/auth/kubernetes/login
+      - IN_SCSD_TEST_K8S_AUTH_URL=:${SCSD_TEST_K8S_AUTH_URL}
       - IN_SCSD_TEST_VAULT_PKI_URL=:${SCSD_TEST_VAULT_PKI_URL}
-      #- IN_SCSD_TEST_VAULT_PKI_URL=http://${COMPOSE_PROJECT_NAME}_vault_1:8200/v1/pki_common/issue/pki-common
       - IN_SCSD_TEST_VAULT_CA_URL=:${SCSD_TEST_VAULT_CA_URL}
-      #- IN_SCSD_TEST_VAULT_CA_URL=http://${COMPOSE_PROJECT_NAME}_vault_1:8200/v1/pki_common/ca_chain
       - IN_CRAY_VAULT_JWT_FILE=:${CRAY_VAULT_JWT_FILE}
-      #- IN_CRAY_VAULT_JWT_FILE=/tmp/k8stoken
       - IN_CRAY_VAULT_ROLE_FILE=:${CRAY_VAULT_ROLE_FILE}
-      #- IN_CRAY_VAULT_ROLE_FILE=/tmp/k8stoken
     networks:
       - scsd
+    depends_on:
+      - fake-smd
+      - fake-vault
+
+  fake-smd:
+    build:
+      context: test/integration
+      dockerfile: Dockerfile.fake-hsm
+    hostname: fake-smd
     ports:
-      - "25309:25309"
-    depends_on:
-      - cray-smd
-      - cray-hms-hmcollector
-      - redfish-simulator
-      - vault-kv-enabler
-
-  cray-smd:
-    hostname: cray-smd
-    image: artifactory.algol60.net/csm-docker/stable/cray-smd:1.48.0
+      - "27779:27779"
     environment:
-      - POSTGRES_HOST=hmsds-postgres
-      - POSTGRES_PORT=5432
-      - RF_MSG_HOST=kafka:9092:cray-dmtf-resource-event
-      - CRAY_VAULT_AUTH_PATH=auth/token/create
-      - CRAY_VAULT_ROLE_FILE=configs/namespace
-      - CRAY_VAULT_JWT_FILE=configs/token
-      - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN=hms
-      - VAULT_KEYPATH=hms-creds
-      - SMD_WVAULT=true
-      - SMD_RVAULT=true
-    depends_on:
-      - cray-smd-init
-      - vault
+      - PORT=:27779
     networks:
       - scsd
 
-  cray-smd-init:
-    image: artifactory.algol60.net/csm-docker/stable/cray-smd:1.48.0
-    environment:
-      - SMD_DBHOST=hmsds-postgres
-      - SMD_DBPORT=5432
-    depends_on:
-      - hmsds-postgres
-    networks:
-      - scsd
-    command: /entrypoint.sh smd-init
-
-  hmsds-postgres:
-    hostname: hmsds-postgres
-    image: artifactory.algol60.net/docker.io/library/postgres:11-alpine
-    environment:
-      - POSTGRES_PASSWORD=hmsdsuser
-      - POSTGRES_USER=hmsdsuser
-      - POSTGRES_DB=hmsds
-    networks:
-      - scsd
-
-  vault:
-    hostname: vault
-    image: artifactory.algol60.net/docker.io/library/vault:1.5.5
-    environment:
-      - VAULT_DEV_ROOT_TOKEN_ID=hms
-      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
-      - VAULT_ADDR=http://127.0.0.1:8200
-    cap_add:
-      - IPC_LOCK
-    networks:
-      - scsd
-
-  vault-kv-enabler:
-    image: artifactory.algol60.net/csm-docker/stable/vault-kv-enabler:1.13.4
-    environment:
-      - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN=hms
-      - KV_STORES=hms-creds
-    depends_on:
-      - vault
-    networks:
-      - scsd
-
-  cray-hms-hmcollector:
-    image: artifactory.algol60.net/csm-docker/stable/hms-hmcollector:2.12.4
-    environment:
-      - LOG_LEVEL=TRACE
-      - SM_URL=http://cray-smd:27779
-      - POLLING_ENABLED=false
-      - RF_SUBSCRIBE_ENABLED=false
-      - REST_PORT=80
-      - VAULT_TOKEN=hms
-      - CRAY_VAULT_JWT_FILE=configs/token
-      - CRAY_VAULT_ROLE_FILE=configs/namespace
-      - CRAY_VAULT_AUTH_PATH=auth/token/create
-      - VAULT_ADDR=http://vault:8200
-    volumes:
-      - ./configs/kafka_brokers.json:/configs/kafka_brokers.json
-      - ./configs/namespace:/configs/namespace
-      - ./configs/token:/configs/token
-    depends_on:
-      - kafka
-    networks:
-      - scsd
-
-  kafka:
-    hostname: kafka
-    image: artifactory.algol60.net/docker.io/confluentinc/cp-kafka:6.1.1
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-    depends_on:
-      - zookeeper
-    networks:
-      - scsd
-
-  zookeeper:
-    hostname: zookeeper
-    image: artifactory.algol60.net/docker.io/confluentinc/cp-zookeeper:6.1.1
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    networks:
-      - scsd
-
-  redfish-simulator:
-    image: artifactory.algol60.net/csm-docker/stable/hms-redfish-translation-service:1.13.3
-    environment:
-      - SCHEMA_VERSION=2019.1
-      - LOG_LEVEL=TRACE
-      - PRIVILEGE_REGISTRY_VERSION=1.0.4
-      - SCRIPT_DIR_PREFIX=/tmp/redfish
-      - VAULT_TOKEN=hms
-      - REDIS_HOSTNAME=redis
-      - REDIS_PORT=6379
-      - VAULT_ADDR=http://vault:8200
-      - CRAY_VAULT_JWT_FILE=configs/token
-      - CRAY_VAULT_ROLE_FILE=configs/namespace
-      - CRAY_VAULT_AUTH_PATH=auth/token/create
-      - HTTPS_CERT=configs/rts.crt
-      - HTTPS_KEY=configs/rts.key
-      - BACKEND_HELPER=RFSimulator
-      - PERIODIC_SLEEP=120
-      - COLLECTOR_URL=http://cray-hms-hmcollector
-      - HSM_URL=http://cray-smd:27779
-      - HMS_VAULT_KEYPATH=hms-creds
-      - RF_USERNAME=root
-      - RF_PASSWORD=testpassword
-      - RF_SIMULATOR_XNAMES=x0c0s1b0,x0c0s2b0
-    depends_on:
-      - redis
-      - vault
-      - cray-smd
-    networks:
-      scsd:
-        aliases:
-          - x0c0s1b0
-          - x0c0s2b0
-
-  redis:
-    hostname: hms-redfish-redis
-    image: artifactory.algol60.net/docker.io/library/redis:5.0-alpine3.12
+  fake-vault:
+    build:
+      context: test/integration
+      dockerfile: Dockerfile.fake-vault
+    hostname: fake-vault
     networks:
       - scsd

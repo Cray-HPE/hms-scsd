@@ -64,7 +64,7 @@ if [ -z $X_S7_PORT ]; then
     exit 1
 fi
 
-# Make sure HSM is running and all the fake RF endpoints
+# Make sure SCSD, HSM, and all fake RF endpoints are running
 
 isReady() {
     url=$1
@@ -72,12 +72,10 @@ isReady() {
     for (( i = 0; i < 10; i ++ )); do
         echo "Looking for: ${url}..."
         curl -s $url > /dev/null 2>&1
-        #curl -D hout  $url 
         if [ $? -eq 0 ]; then
             echo "  ==> ${url} Running!"
             return 1
         fi
-        #cat hout
         sleep 10
     done
 
@@ -155,9 +153,6 @@ if [ $? -ne 0 ]; then
     echo "Error running health.sh."
     exit 1
 fi
-
-#TODO
-: <<'END'
 
 echo "##################################"
 echo "Loading config data."
@@ -315,7 +310,5 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-#TODO
-END
-
 exit 0
+

@@ -28,48 +28,49 @@ if [ -z $HSM ]; then
 fi
 
 #TODO: orig
-#pldx='{"Components": [ {"ID":"X_S0_HOST:XP0","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S1_HOST:XP1","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S2_HOST:XP2","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S3_HOST:XP3","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"x0c0s4b0:XP4","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"x0c0s5b0:XP5","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"X_S6_HOST:XP6","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"X_S7_HOST:XP7","Type":"NodeBMC","State":"On","Flag":"OK"} ]}'
+#{"type":"about:blank","title":"Bad Request","detail":"couldn't validate components: xname ID 'x0c0s480b0:34800' is invalid","status":400}
+pldx='{"Components": [ {"ID":"X_S0_HOST:XP0","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S1_HOST:XP1","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S2_HOST:XP2","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S3_HOST:XP3","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"x0c0s4b0:XP4","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"x0c0s5b0:XP5","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"X_S6_HOST:XP6","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"X_S7_HOST:XP7","Type":"NodeBMC","State":"On","Flag":"OK"} ]}'
 #TODO: orig but no ports
-pldx='{"Components": [ {"ID":"X_S0_HOST","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S1_HOST","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S2_HOST","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S3_HOST","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"x0c0s4b0","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"x0c0s5b0","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"X_S6_HOST","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"X_S7_HOST","Type":"NodeBMC","State":"On","Flag":"OK"} ]}'
-#TODO: no ports, xnames
-#pldx='{"Components": [ {"ID":"X_S0_XNAME","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S1_XNAME","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S2_XNAME","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S3_XNAME","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"x0c0s4b0","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"x0c0s5b0","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"X_S6_XNAME","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"X_S7_XNAME","Type":"NodeBMC","State":"On","Flag":"OK"} ]}'
-#TODO: orig but HOST switched to XNAME
-#pldx='{"Components": [ {"ID":"X_S0_XNAME:XP0","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S1_XNAME:XP1","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S2_XNAME:XP2","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S3_XNAME:XP3","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"x0c0s4b0:XP4","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"x0c0s5b0:XP5","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"X_S6_XNAME:XP6","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"X_S7_XNAME:XP7","Type":"NodeBMC","State":"On","Flag":"OK"} ]}'
+#pldx='{"Components": [ {"ID":"X_S0_HOST","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S1_HOST","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S2_HOST","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S3_HOST","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"x0c0s4b0","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"x0c0s5b0","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"X_S6_HOST","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"X_S7_HOST","Type":"NodeBMC","State":"On","Flag":"OK"} ]}'
 
 source portFix.sh
 pld=`portFix "$pldx"`
 
-curl -D hout -X POST -d "$pld" http://${HSM}/hsm/v2/State/Components
+#TODO
+#curl -D hout -X POST -d "$pld" http://${HSM}/hsm/v2/State/Components
+curl -D hout -X POST -d "$pld" http://${HSM}/hsm/v1/State/Components
 echo " "
 
 echo "Components:"
 cat hout
 scode=`cat hout | grep HTTP | awk '{print $2}'`
-if (( scode != 204 )); then
+if (( scode != 200 )); then
     echo "Bad status code from HSM component load: ${scode}"
     exit 1
 fi
 
 #TODO
-#pldx='[{"label":"bmcgroup","description":"group of bmcs","tags":["bmctag"],"members":{"ids":["X_S6_HOST:XP6","X_S7_HOST:XP7"]}}]'
-pldx='{"label":"bmcgroup","description":"group of bmcs","tags":["bmctag"],"members":{"ids":["X_S6_HOST","X_S7_HOST"]}}'
-#pldx='{"label":"bmcgroup","description":"group of bmcs","tags":["bmctag"],"members":{"ids":["X_S6_XNAME","X_S7_XNAME"]}}'
-#pldx='{"label":"bmcgroup","description":"group of bmcs","tags":["bmctag"],"members":{"ids":["X_S6_XNAME:XP6","X_S7_XNAME:XP7"]}}'
+#{"type":"about:blank","title":"Internal Server Error","detail":"error decoding JSON json: cannot unmarshal array into Go value of type sm.Group","status":500}
+pldx='[{"label":"bmcgroup","description":"group of bmcs","tags":["bmctag"],"members":{"ids":["X_S6_HOST:XP6","X_S7_HOST:XP7"]}}]'
+#pldx='{"label":"bmcgroup","description":"group of bmcs","tags":["bmctag"],"members":{"ids":["X_S6_HOST","X_S7_HOST"]}}'
 pld=`portFix "$pldx"`
 
 #TODO
 echo "pld=${pld}"
 
-curl -D hout -X POST -d "$pld" http://${HSM}/hsm/v2/groups
+#TODO
+#curl -D hout -X POST -d "$pld" http://${HSM}/hsm/v2/groups
+curl -D hout -X POST -d "$pld" http://${HSM}/hsm/v1/groups
 echo " "
 
 echo "Groups:"
 cat hout
 
 scode=`cat hout | grep HTTP | awk '{print $2}'`
-if (( scode != 201 )); then
+if (( scode != 200 )); then
     echo "Bad status code from HSM group load: ${scode}"
     exit 1
 fi
 
 exit 0
+
