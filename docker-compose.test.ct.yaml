@@ -17,6 +17,7 @@ services:
       - cray-smd
     networks:
       - scsd
+  # No SCSD CT functional tests yet
   #ct-tests-functional:
   #  build:
   #    context: test/ct/

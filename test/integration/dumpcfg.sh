@@ -27,7 +27,9 @@ if [ -z $SCSD ]; then
     exit 1
 fi
 
-pldx='{"Force": false, "Targets":["X_S0_HOST:XP0","X_S1_HOST:XP1","X_S2_HOST:XP2","X_S3_HOST:XP3"],"Params":["NTPServerInfo","SyslogServerInfo","SSHKey","SSHConsoleKey"]}'
+#TODO
+#pldx='{"Force": false, "Targets":["X_S0_HOST:XP0","X_S1_HOST:XP1","X_S2_HOST:XP2","X_S3_HOST:XP3"],"Params":["NTPServerInfo","SyslogServerInfo","SSHKey","SSHConsoleKey"]}'
+pldx='{"Force": false, "Targets":["X_S0_HOST","X_S1_HOST","X_S2_HOST","X_S3_HOST"],"Params":["NTPServerInfo","SyslogServerInfo","SSHKey","SSHConsoleKey"]}'
 
 source portFix.sh
 pld=`portFix "$pldx"`

@@ -32,7 +32,9 @@ pldx='{"Force":false, "Creds":{"Username":"root", "Password":"zzaabb"}}'
 source portFix.sh
 pld=`portFix "$pldx"`
 
-curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/creds/${X_S0_HOST}:${X_S0_PORT}
+#TODO
+#curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/creds/${X_S0_HOST}:${X_S0_PORT}
+curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/creds/${X_S0_HOST}
 echo " "
 
 scode=`cat hout | grep HTTP | awk '{print $2}'`

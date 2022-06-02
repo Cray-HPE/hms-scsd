@@ -25,7 +25,7 @@
 # ensure the existence of:
 #   SCSD
 #   HSM
-#   x0b0s[0-7]b0:PORT
+#   x0b0s[0-5]b0:PORT
 
 echo "========= hosts =========="
 cat /etc/hosts
@@ -55,12 +55,12 @@ if [ -z $X_S3_PORT ]; then
     echo "ENV var 'X_S3_PORT' not set, exiting."
     exit 1
 fi
-if [ -z $X_S6_PORT ]; then
-    echo "ENV var 'X_S6_PORT' not set, exiting."
+if [ -z $X_S4_PORT ]; then
+    echo "ENV var 'X_S4_PORT' not set, exiting."
     exit 1
 fi
-if [ -z $X_S7_PORT ]; then
-    echo "ENV var 'X_S7_PORT' not set, exiting."
+if [ -z $X_S5_PORT ]; then
+    echo "ENV var 'X_S5_PORT' not set, exiting."
     exit 1
 fi
 
@@ -120,14 +120,14 @@ if [[ $? != 1 ]]; then
     echo "Can't continue, exiting."
     exit 1
 fi
-echo "CHECKING FOR ${X_S6_HOST}..."
-isReady http://${X_S6_HOST}:${X_S6_PORT}/redfish/v1/
+echo "CHECKING FOR ${X_S4_HOST}..."
+isReady http://${X_S4_HOST}:${X_S4_PORT}/redfish/v1/
 if [[ $? != 1 ]]; then
     echo "Can't continue, exiting."
     exit 1
 fi
-echo "CHECKING FOR ${X_S7_HOST}..."
-isReady http://${X_S7_HOST}:${X_S7_PORT}/redfish/v1/
+echo "CHECKING FOR ${X_S5_HOST}..."
+isReady http://${X_S5_HOST}:${X_S5_PORT}/redfish/v1/
 if [[ $? != 1 ]]; then
     echo "Can't continue, exiting."
     exit 1

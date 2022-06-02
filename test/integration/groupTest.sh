@@ -50,7 +50,9 @@ echo "====================================================================="
 echo "Group test: global creds, valid group with 4 other targs"
 echo "====================================================================="
 
-pldx='{"Force":false, "Username":"root", "Password":"zzaabb", "Targets":["X_S0_HOST:XP0","X_S1_HOST:XP1","X_S2_HOST:XP2","X_S3_HOST:XP3","bmcgroup"]}'
+#TODO
+#pldx='{"Force":false, "Username":"root", "Password":"zzaabb", "Targets":["X_S0_HOST:XP0","X_S1_HOST:XP1","X_S2_HOST:XP2","X_S3_HOST:XP3","bmcgroup"]}'
+pldx='{"Force":false, "Username":"root", "Password":"zzaabb", "Targets":["X_S0_HOST","X_S1_HOST","X_S2_HOST","X_S3_HOST","bmcgroup"]}'
 pld=`portFix "$pldx"`
 
 curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/globalcreds | jq > out.txt
@@ -84,7 +86,9 @@ echo "====================================================================="
 echo "Group test: global creds, bad group with 4 valid targs"
 echo "====================================================================="
 
-pldx='{"Force":false, "Username":"root", "Password":"zzaabb", "Targets":["bmcgroupx","X_S0_HOST:XP0","X_S1_HOST:XP1","X_S2_HOST:XP2","X_S3_HOST:XP3"]}'
+#TODO
+#pldx='{"Force":false, "Username":"root", "Password":"zzaabb", "Targets":["bmcgroupx","X_S0_HOST:XP0","X_S1_HOST:XP1","X_S2_HOST:XP2","X_S3_HOST:XP3"]}'
+pldx='{"Force":false, "Username":"root", "Password":"zzaabb", "Targets":["bmcgroupx","X_S0_HOST","X_S1_HOST","X_S2_HOST","X_S3_HOST"]}'
 pld=`portFix "$pldx"`
 
 curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/globalcreds | jq > out.txt
@@ -101,7 +105,9 @@ echo "====================================================================="
 echo "Group test: global creds, bad group with 3 valid targs, 1 bad targ"
 echo "====================================================================="
 
-pldx='{"Force":false, "Username":"root", "Password":"zzaabb", "Targets":["bmcgroupx","x0c0s0bx:XP0","X_S1_HOST:XP1","X_S2_HOST:XP2","X_S3_HOST:XP3"]}'
+#TODO
+#pldx='{"Force":false, "Username":"root", "Password":"zzaabb", "Targets":["bmcgroupx","x0c0s0bx:XP0","X_S1_HOST:XP1","X_S2_HOST:XP2","X_S3_HOST:XP3"]}'
+pldx='{"Force":false, "Username":"root", "Password":"zzaabb", "Targets":["bmcgroupx","x0c0s0bx","X_S1_HOST","X_S2_HOST","X_S3_HOST"]}'
 pld=`portFix "$pldx"`
 
 curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/globalcreds | jq > out.txt
@@ -136,7 +142,9 @@ echo "====================================================================="
 echo "Group test: discreet creds, valid group with 3 valid targs"
 echo "====================================================================="
 
-pldx='{ "Force":false, "Targets": [ { "Xname": "bmcgroup", "Creds": { "Username":"root", "Password":"aaaaaa" } }, { "Xname": "X_S1_HOST:XP1", "Creds": { "Username":"root", "Password":"bbbbbb" } }, { "Xname": "X_S2_HOST:XP2", "Creds": { "Username":"root", "Password":"cccccc" } }, { "Xname": "X_S3_HOST:XP3", "Creds": { "Username":"root", "Password":"dddddd" } } ] }'
+#TODO
+#pldx='{ "Force":false, "Targets": [ { "Xname": "bmcgroup", "Creds": { "Username":"root", "Password":"aaaaaa" } }, { "Xname": "X_S1_HOST:XP1", "Creds": { "Username":"root", "Password":"bbbbbb" } }, { "Xname": "X_S2_HOST:XP2", "Creds": { "Username":"root", "Password":"cccccc" } }, { "Xname": "X_S3_HOST:XP3", "Creds": { "Username":"root", "Password":"dddddd" } } ] }'
+pldx='{ "Force":false, "Targets": [ { "Xname": "bmcgroup", "Creds": { "Username":"root", "Password":"aaaaaa" } }, { "Xname": "X_S1_HOST", "Creds": { "Username":"root", "Password":"bbbbbb" } }, { "Xname": "X_S2_HOST", "Creds": { "Username":"root", "Password":"cccccc" } }, { "Xname": "X_S3_HOST", "Creds": { "Username":"root", "Password":"dddddd" } } ] }'
 pld=`portFix "$pldx"`
 
 curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/discreetcreds | jq > out.txt
@@ -170,7 +178,9 @@ echo "====================================================================="
 echo "Group test: discreet creds, bad group with 3 valid targs"
 echo "====================================================================="
 
-pldx='{ "Force":false, "Targets": [ { "Xname": "bmcgroupx", "Creds": { "Username":"root", "Password":"aaaaaa" } }, { "Xname": "X_S1_HOST:XP1", "Creds": { "Username":"root", "Password":"bbbbbb" } }, { "Xname": "X_S2_HOST:XP2", "Creds": { "Username":"root", "Password":"cccccc" } }, { "Xname": "X_S3_HOST:XP3", "Creds": { "Username":"root", "Password":"dddddd" } } ] }'
+#TODO
+#pldx='{ "Force":false, "Targets": [ { "Xname": "bmcgroupx", "Creds": { "Username":"root", "Password":"aaaaaa" } }, { "Xname": "X_S1_HOST:XP1", "Creds": { "Username":"root", "Password":"bbbbbb" } }, { "Xname": "X_S2_HOST:XP2", "Creds": { "Username":"root", "Password":"cccccc" } }, { "Xname": "X_S3_HOST:XP3", "Creds": { "Username":"root", "Password":"dddddd" } } ] }'
+pldx='{ "Force":false, "Targets": [ { "Xname": "bmcgroupx", "Creds": { "Username":"root", "Password":"aaaaaa" } }, { "Xname": "X_S1_HOST", "Creds": { "Username":"root", "Password":"bbbbbb" } }, { "Xname": "X_S2_HOST", "Creds": { "Username":"root", "Password":"cccccc" } }, { "Xname": "X_S3_HOST", "Creds": { "Username":"root", "Password":"dddddd" } } ] }'
 pld=`portFix "$pldx"`
 
 curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/discreetcreds | jq > out.txt
@@ -187,7 +197,9 @@ echo "====================================================================="
 echo "Group test: discreet creds, bad group with 2 valid targs, 1 bad targ (fail)"
 echo "====================================================================="
 
-pldx='{ "Force":false, "Targets": [ { "Xname": "X_S0_HOSTx:XP0", "Creds": { "Username":"root", "Password":"aaaaaa" } }, { "Xname": "bmcgroupx", "Creds": { "Username":"root", "Password":"bbbbbb" } }, { "Xname": "X_S2_HOST:XP2", "Creds": { "Username":"root", "Password":"cccccc" } }, { "Xname": "X_S3_HOST:XP3", "Creds": { "Username":"root", "Password":"dddddd" } } ] }'
+#TODO
+#pldx='{ "Force":false, "Targets": [ { "Xname": "X_S0_HOSTx:XP0", "Creds": { "Username":"root", "Password":"aaaaaa" } }, { "Xname": "bmcgroupx", "Creds": { "Username":"root", "Password":"bbbbbb" } }, { "Xname": "X_S2_HOST:XP2", "Creds": { "Username":"root", "Password":"cccccc" } }, { "Xname": "X_S3_HOST:XP3", "Creds": { "Username":"root", "Password":"dddddd" } } ] }'
+pldx='{ "Force":false, "Targets": [ { "Xname": "X_S0_HOSTx", "Creds": { "Username":"root", "Password":"aaaaaa" } }, { "Xname": "bmcgroupx", "Creds": { "Username":"root", "Password":"bbbbbb" } }, { "Xname": "X_S2_HOST", "Creds": { "Username":"root", "Password":"cccccc" } }, { "Xname": "X_S3_HOST", "Creds": { "Username":"root", "Password":"dddddd" } } ] }'
 pld=`portFix "$pldx"`
 
 curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/discreetcreds | jq > out.txt
@@ -221,7 +233,9 @@ echo "====================================================================="
 echo "Group test: load config, valid group with other valid targs"
 echo "====================================================================="
 
-pldx='{"Force":false,"Targets":["bmcgroup","X_S0_HOST:XP0","X_S1_HOST:XP1"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
+#TODO
+#pldx='{"Force":false,"Targets":["bmcgroup","X_S0_HOST:XP0","X_S1_HOST:XP1"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
+pldx='{"Force":false,"Targets":["bmcgroup","X_S0_HOST","X_S1_HOST"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
 pld=`portFix "$pldx"`
 
 curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/loadcfg | jq > out.txt
@@ -255,7 +269,9 @@ echo "====================================================================="
 echo "Group test: load config, bad group with other valid targs"
 echo "====================================================================="
 
-pldx='{"Force":false,"Targets":["bmcgroupx","X_S0_HOST:XP0","X_S1_HOST:XP1"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
+#TODO
+#pldx='{"Force":false,"Targets":["bmcgroupx","X_S0_HOST:XP0","X_S1_HOST:XP1"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
+pldx='{"Force":false,"Targets":["bmcgroupx","X_S0_HOST","X_S1_HOST"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
 pld=`portFix "$pldx"`
 
 curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/loadcfg | jq > out.txt
@@ -272,7 +288,9 @@ echo "====================================================================="
 echo "Group test: load config, bad group with bad and valid targs"
 echo "====================================================================="
 
-pldx='{"Force":false,"Targets":["bmcgroupx","X_S0_HOST:XP0","X_S1_HOSTx:XP1"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
+#TODO
+#pldx='{"Force":false,"Targets":["bmcgroupx","X_S0_HOST:XP0","X_S1_HOSTx:XP1"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
+pldx='{"Force":false,"Targets":["bmcgroupx","X_S0_HOST","X_S1_HOSTx"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
 pld=`portFix "$pldx"`
 
 curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/loadcfg | jq > out.txt
@@ -289,7 +307,9 @@ echo "====================================================================="
 echo "Group test: load config, with bad and valid targs"
 echo "====================================================================="
 
-pldx='{"Force":false,"Targets":["X_S0_HOST:XP0","X_S1_HOSTx:XP1","X_S2_HOST:XP2"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
+#TODO
+#pldx='{"Force":false,"Targets":["X_S0_HOST:XP0","X_S1_HOSTx:XP1","X_S2_HOST:XP2"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
+pldx='{"Force":false,"Targets":["X_S0_HOST","X_S1_HOSTx","X_S2_HOST"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
 pld=`portFix "$pldx"`
 
 curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/loadcfg | jq > out.txt
@@ -323,7 +343,9 @@ echo "====================================================================="
 echo "Group test: load config, valid group with other valid targs"
 echo "====================================================================="
 
-pldx='{"Force": false, "Targets":["bmcgroup","X_S0_HOST:XP0","X_S1_HOST:XP1"],"Params":["NTPServerInfo","SyslogServerInfo","SSHKey","SSHConsoleKey"]}'
+#TODO
+#pldx='{"Force": false, "Targets":["bmcgroup","X_S0_HOST:XP0","X_S1_HOST:XP1"],"Params":["NTPServerInfo","SyslogServerInfo","SSHKey","SSHConsoleKey"]}'
+pldx='{"Force": false, "Targets":["bmcgroup","X_S0_HOST","X_S1_HOST"],"Params":["NTPServerInfo","SyslogServerInfo","SSHKey","SSHConsoleKey"]}'
 pld=`portFix "$pldx"`
 
 curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/dumpcfg | jq > out.txt
@@ -358,7 +380,9 @@ echo "====================================================================="
 echo "Group test: load config, bad group with other valid targs"
 echo "====================================================================="
 
-pldx='{"Force": false, "Targets":["bmcgroupx","X_S1_HOST:XP1","X_S2_HOST:XP2","X_S3_HOST:XP3"],"Params":["NTPServerInfo","SyslogServerInfo","SSHKey","SSHConsoleKey"]}'
+#TODO
+#pldx='{"Force": false, "Targets":["bmcgroupx","X_S1_HOST:XP1","X_S2_HOST:XP2","X_S3_HOST:XP3"],"Params":["NTPServerInfo","SyslogServerInfo","SSHKey","SSHConsoleKey"]}'
+pldx='{"Force": false, "Targets":["bmcgroupx","X_S1_HOST","X_S2_HOST","X_S3_HOST"],"Params":["NTPServerInfo","SyslogServerInfo","SSHKey","SSHConsoleKey"]}'
 pld=`portFix "$pldx"`
 
 curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/dumpcfg | jq > out.txt
@@ -375,7 +399,9 @@ echo "====================================================================="
 echo "Group test: load config, bad group with bad and valid targs"
 echo "====================================================================="
 
-pldx='{"Force": false, "Targets":["bmcgroupx","X_S1_HOST:XP1","x0c0s2bx:XP2","X_S3_HOST:XP3"],"Params":["NTPServerInfo","SyslogServerInfo","SSHKey","SSHConsoleKey"]}'
+#TODO
+#pldx='{"Force": false, "Targets":["bmcgroupx","X_S1_HOST:XP1","x0c0s2bx:XP2","X_S3_HOST:XP3"],"Params":["NTPServerInfo","SyslogServerInfo","SSHKey","SSHConsoleKey"]}'
+pldx='{"Force": false, "Targets":["bmcgroupx","X_S1_HOST","x0c0s2bx","X_S3_HOST"],"Params":["NTPServerInfo","SyslogServerInfo","SSHKey","SSHConsoleKey"]}'
 pld=`portFix "$pldx"`
 
 curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/dumpcfg | jq > out.txt
@@ -392,7 +418,9 @@ echo "====================================================================="
 echo "Group test: load config, with bad and valid targs"
 echo "====================================================================="
 
-pldx='{"Force": false, "Targets":["X_S1_HOST:XP1","x0c0s2bx:XP2","X_S3_HOST:XP3"],"Params":["NTPServerInfo","SyslogServerInfo","SSHKey","SSHConsoleKey"]}'
+#TODO
+#pldx='{"Force": false, "Targets":["X_S1_HOST:XP1","x0c0s2bx:XP2","X_S3_HOST:XP3"],"Params":["NTPServerInfo","SyslogServerInfo","SSHKey","SSHConsoleKey"]}'
+pldx='{"Force": false, "Targets":["X_S1_HOST","x0c0s2bx","X_S3_HOST"],"Params":["NTPServerInfo","SyslogServerInfo","SSHKey","SSHConsoleKey"]}'
 pld=`portFix "$pldx"`
 
 curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/dumpcfg | jq > out.txt

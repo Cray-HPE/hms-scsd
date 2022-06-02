@@ -35,7 +35,7 @@ fi
 #cray-scsd_1             | time="2022-05-31T21:36:10Z" level=trace msg="getRvMt(0), targ: 'x0c0s480b0:34800', state: Unknown"
 #cray-scsd_1             | time="2022-05-31T21:36:10Z" level=trace msg="getRvMt(0), targ: 'x0c0s481b0:34801', state: Unknown"
 #cray-scsd_1             | time="2022-05-31T21:36:10Z" level=error msg="getRvMt(): no valid targets."
-pldx='{"Force":false,"Targets":["X_S0_HOST:XP0","X_S1_HOST:XP1"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
+#pldx='{"Force":false,"Targets":["X_S0_HOST:XP0","X_S1_HOST:XP1"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
 #TODO: orig without ports
 #cray-scsd_1             | time="2022-05-31T21:38:39Z" level=trace msg="CHECKLIST:"
 #cray-scsd_1             | time="2022-05-31T21:38:39Z" level=trace msg="  [ 0]: 0xc0002de0f0 tg: 'x0c0s480b0', gp: '', gpm: false, st: On, isM: false sc: 0 err: <nil>"
@@ -60,7 +60,7 @@ pldx='{"Force":false,"Targets":["X_S0_HOST:XP0","X_S1_HOST:XP1"],"Params":{"NTPS
 #cray-scsd_1             | time="2022-05-31T21:38:46Z" level=trace msg="setNWP() NWP info: '{\"Oem\":{\"Syslog\":{\"ProtocolEnabled\":true,\"SyslogServers\":[\"sms-mmm-yyy1\"],\"Port\":567},\"SSHAdmin\":{\"AuthorizedKeys\":\"aabbccdd\"},\"SSHConsole\":{\"AuthorizedKeys\":\"eeddffgg\"}},\"NTP\":{\"NTPServers\":[\"sms-nnn-www1\"],\"ProtocolEnabled\":true,\"Port\":234}}'"
 #cray-scsd_1             | time="2022-05-31T21:38:46Z" level=error msg="setNWP(): ERROR: No valid targets."
 #cray-scsd_1             | time="2022-05-31T21:38:46Z" level=error msg="ERROR: problem loading NWP data: ERROR: No valid targets.\n"
-#pldx='{"Force":false,"Targets":["X_S0_HOST","X_S1_HOST"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
+pldx='{"Force":false,"Targets":["X_S0_HOST","X_S1_HOST"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
 
 #TODO: FAIL SCSD loadcfg.sh logs w/ ports
 #cray-scsd_1             | time="2022-05-28T01:42:37Z" level=info msg="Service Instance Name: '23195_cray-scsd'"
