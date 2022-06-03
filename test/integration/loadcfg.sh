@@ -32,7 +32,7 @@ fi
 pldx='{"Force":false,"Targets":["X_S0_HOST","X_S1_HOST"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
 
 source portFix.sh
-pld=$(portFix "$pldx")
+pld=`portFix "$pldx"`
 
 curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/loadcfg | jq > out.txt
 cat out.txt
