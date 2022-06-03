@@ -2,7 +2,7 @@
 
 # MIT License
 #
-# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -27,8 +27,6 @@ if [ -z $SCSD ]; then
     exit 1
 fi
 
-#TODO
-#pldx='{"Force": false, "Targets":["X_S0_HOST:XP0","X_S1_HOST:XP1","X_S2_HOST:XP2","X_S3_HOST:XP3"],"Params":["NTPServerInfo","SyslogServerInfo","SSHKey","SSHConsoleKey"]}'
 pldx='{"Force": false, "Targets":["X_S0_HOST","X_S1_HOST","X_S2_HOST","X_S3_HOST"],"Params":["NTPServerInfo","SyslogServerInfo","SSHKey","SSHConsoleKey"]}'
 
 source portFix.sh

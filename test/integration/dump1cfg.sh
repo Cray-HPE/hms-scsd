@@ -2,7 +2,7 @@
 
 # MIT License
 #
-# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -30,8 +30,6 @@ fi
 
 # POST to get a dump of current configs
 
-#TODO
-#curl -D hout http://${SCSD}/v1/bmc/cfg/${X_S0_HOST}:${X_S0_PORT}?params=NTPServerInfo+SyslogServerInfo+SSHKey+SSHConsoleKey
 curl -D hout http://${SCSD}/v1/bmc/cfg/${X_S0_HOST}?params=NTPServerInfo+SyslogServerInfo+SSHKey+SSHConsoleKey
 echo " "
 

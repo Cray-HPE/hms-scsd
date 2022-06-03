@@ -2,7 +2,7 @@
 
 # MIT License
 #
-# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -27,11 +27,8 @@ if [ -z $SCSD ]; then
     exit 1
 fi
 
-
 # POST to load a single target's configs
 
-#TODO
-#curl -D hout -X POST -d '{"Force":false,"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}' http://${SCSD}/v1/bmc/cfg/${X_S0_HOST}:${X_S0_PORT}
 curl -D hout -X POST -d '{"Force":false,"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}' http://${SCSD}/v1/bmc/cfg/${X_S0_HOST}
 echo " "
 

@@ -34,13 +34,9 @@ echo "COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME}"
 echo "COMPOSE_FILE: ${COMPOSE_FILE}"
 
 # Configure SCSD for docker compose test environment
-#TODO
 export SCSD_TEST_K8S_AUTH_URL="http://${COMPOSE_PROJECT_NAME}_fake-vault_1:8200/v1/auth/kubernetes/login"
-#export SCSD_TEST_K8S_AUTH_URL="http://${COMPOSE_PROJECT_NAME}_vault_1:8200/v1/auth/kubernetes/login"
 export SCSD_TEST_VAULT_PKI_URL="http://${COMPOSE_PROJECT_NAME}_fake-vault_1:8200/v1/pki_common/issue/pki-common"
-#export SCSD_TEST_VAULT_PKI_URL="http://${COMPOSE_PROJECT_NAME}_vault_1:8200/v1/pki_common/issue/pki-common"
 export SCSD_TEST_VAULT_CA_URL="http://${COMPOSE_PROJECT_NAME}_fake-vault_1:8200/v1/pki_common/ca_chain"
-#export SCSD_TEST_VAULT_CA_URL="http://${COMPOSE_PROJECT_NAME}_vault_1:8200/v1/pki_common/ca_chain"
 export CRAY_VAULT_JWT_FILE="/tmp/k8stoken"
 export CRAY_VAULT_ROLE_FILE="/tmp/k8stoken"
 

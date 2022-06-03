@@ -2,7 +2,7 @@
 
 # MIT License
 #
-# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -27,8 +27,6 @@ if [ -z $SCSD ]; then
     exit 1
 fi
 
-#TODO
-#pldx='{ "Force":false, "Targets": [ { "Xname": "X_S0_HOST:XP0", "Creds": { "Username":"root", "Password":"aaaaaa" } }, { "Xname": "X_S1_HOST:XP1", "Creds": { "Username":"root", "Password":"bbbbbb" } }, { "Xname": "X_S2_HOST:XP2", "Creds": { "Username":"root", "Password":"cccccc" } }, { "Xname": "X_S3_HOST:XP3", "Creds": { "Username":"root", "Password":"dddddd" } }, { "Xname": "X_S4_HOST:XP4", "Creds": { "Username":"root", "Password":"eeeeee" } } ] }'
 pldx='{ "Force":false, "Targets": [ { "Xname": "X_S0_HOST", "Creds": { "Username":"root", "Password":"aaaaaa" } }, { "Xname": "X_S1_HOST", "Creds": { "Username":"root", "Password":"bbbbbb" } }, { "Xname": "X_S2_HOST", "Creds": { "Username":"root", "Password":"cccccc" } }, { "Xname": "X_S3_HOST", "Creds": { "Username":"root", "Password":"dddddd" } }, { "Xname": "X_S4_HOST", "Creds": { "Username":"root", "Password":"eeeeee" } } ] }'
 
 source portFix.sh
