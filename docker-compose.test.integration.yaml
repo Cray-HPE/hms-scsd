@@ -12,26 +12,18 @@ services:
       dockerfile: Dockerfile
     environment:
       - SCSD=cray-scsd:25309
-      #TODO
-      #- HSM=fake-smd:27779
       - HSM=cray-smd:27779
       - X_S0_HOST=x0c0s0b0
-      #- X_S0_PORT=34800
       - X_S0_PORT=80
       - X_S1_HOST=x0c0s1b0
-      #- X_S1_PORT=34801
       - X_S1_PORT=80
       - X_S2_HOST=x0c0s2b0
-      #- X_S2_PORT=34802
       - X_S2_PORT=80
       - X_S3_HOST=x0c0s3b0
-      #- X_S3_PORT=34803
       - X_S3_PORT=80
       - X_S4_HOST=x0c0s4b0
-      #- X_S4_PORT=34804
       - X_S4_PORT=80
       - X_S5_HOST=x0c0s5b0
-      #- X_S5_PORT=34805
       - X_S5_PORT=80
     depends_on:
       - cray-scsd
@@ -55,7 +47,6 @@ services:
       dockerfile: Dockerfile.fake-rfep
     environment:
       - XNAME=x0c0s0b0n0
-      #- BMCPORT=:34800
       - BMCPORT=:80
       - NACCTS=1
       - GOODACCT=1
@@ -72,7 +63,6 @@ services:
       dockerfile: Dockerfile.fake-rfep
     environment:
       - XNAME=x0c0s1b0n0
-      #- BMCPORT=:34801
       - BMCPORT=:80
       - NACCTS=1
       - GOODACCT=1
@@ -89,7 +79,6 @@ services:
       dockerfile: Dockerfile.fake-rfep
     environment:
       - XNAME=x0c0s2b0n0
-      #- BMCPORT=:34802
       - BMCPORT=:80
       - NACCTS=1
       - GOODACCT=1
@@ -106,7 +95,6 @@ services:
       dockerfile: Dockerfile.fake-rfep
     environment:
       - XNAME=x0c0s3b0n0
-      #- BMCPORT=:34803
       - BMCPORT=:80
       - NACCTS=1
       - GOODACCT=1
@@ -123,7 +111,6 @@ services:
       dockerfile: Dockerfile.fake-rfep
     environment:
       - XNAME=x0c0s4b0n0
-      #- BMCPORT=:34804
       - BMCPORT=:80
       - NACCTS=1
       - GOODACCT=1
@@ -140,7 +127,6 @@ services:
       dockerfile: Dockerfile.fake-rfep
     environment:
       - XNAME=x0c0s5b0n0
-      #- BMCPORT=:34805
       - BMCPORT=:80
       - NACCTS=1
       - GOODACCT=1
@@ -159,16 +145,12 @@ services:
         IN_CRAY_VAULT_JWT_FILE: ${CRAY_VAULT_JWT_FILE}
         IN_CRAY_VAULT_ROLE_FILE: ${CRAY_VAULT_ROLE_FILE}
     environment:
-      #TODO
-      #- SCSD_SMD_URL=http://fake-smd:27779/hsm/v2
       - SCSD_SMD_URL=http://cray-smd:27779/hsm/v2
       - SCSD_HTTP_LISTEN_PORT=25309
       - SCSD_LOCAL_MODE=true
       - SCSD_DEFAULT_HTTP=true
       - SCSD_LOG_LEVEL=TRACE
-      #TODO: turning this on causes http://cray-scsd:25309/v1/params to not come up
       - VAULT_ENABLE=0
-      #- VAULT_ENABLE=1
       - IN_SCSD_TEST_K8S_AUTH_URL=:${SCSD_TEST_K8S_AUTH_URL}
       - IN_SCSD_TEST_VAULT_PKI_URL=:${SCSD_TEST_VAULT_PKI_URL}
       - IN_SCSD_TEST_VAULT_CA_URL=:${SCSD_TEST_VAULT_CA_URL}
@@ -177,63 +159,8 @@ services:
     networks:
       - scsd
     depends_on:
-      #TODO
-      #- fake-smd
       - cray-smd
-      #TODO
       - fake-vault
-      #- vault
-      #- vault-kv-enabler
-
-  cray-scsd-real-vault:
-    build:
-      context: .
-      dockerfile: Dockerfile.test.integration
-      args:
-        IN_SCSD_TEST_K8S_AUTH_URL: ${SCSD_TEST_K8S_AUTH_URL}
-        IN_SCSD_TEST_VAULT_PKI_URL: ${SCSD_TEST_VAULT_PKI_URL}
-        IN_SCSD_TEST_VAULT_CA_URL: ${SCSD_TEST_VAULT_CA_URL}
-        IN_CRAY_VAULT_JWT_FILE: ${CRAY_VAULT_JWT_FILE}
-        IN_CRAY_VAULT_ROLE_FILE: ${CRAY_VAULT_ROLE_FILE}
-    environment:
-      #TODO
-      #- SCSD_SMD_URL=http://fake-smd:27779/hsm/v2
-      - SCSD_SMD_URL=http://cray-smd:27779/hsm/v2
-      - SCSD_HTTP_LISTEN_PORT=25309
-      - SCSD_LOCAL_MODE=true
-      - SCSD_DEFAULT_HTTP=true
-      - SCSD_LOG_LEVEL=TRACE
-      #TODO: integration-tests_1  |       "StatusMsg": "Error creating cert for 'x1', domain 'Cabinet: ERROR reading k8s token file '/var/run/secrets/kubernetes.io/serviceaccount/token': open /var/run/secrets/kubernetes.io/serviceaccount/token: no such file or directory"
-      - VAULT_ENABLE=0
-      #TODO: turning this on causes http://cray-scsd:25309/v1/params to not come up
-      #- VAULT_ENABLE=1
-      - IN_SCSD_TEST_K8S_AUTH_URL=:${SCSD_TEST_K8S_AUTH_URL}
-      - IN_SCSD_TEST_VAULT_PKI_URL=:${SCSD_TEST_VAULT_PKI_URL}
-      - IN_SCSD_TEST_VAULT_CA_URL=:${SCSD_TEST_VAULT_CA_URL}
-      - IN_CRAY_VAULT_JWT_FILE=:${CRAY_VAULT_JWT_FILE}
-      - IN_CRAY_VAULT_ROLE_FILE=:${CRAY_VAULT_ROLE_FILE}
-    networks:
-      - scsd
-    depends_on:
-      #TODO
-      #- fake-smd
-      - cray-smd
-      #TODO:
-      # cray-scsd_1          | time="2022-06-02T04:51:01Z" level=error msg="Connecting to Vault: open /var/run/secrets/kubernetes.io/serviceaccount/namespace: no such file or directory -- retry in 1 second..."
-      - vault
-      - vault-kv-enabler
-
-  fake-smd:
-    build:
-      context: test/integration
-      dockerfile: Dockerfile.fake-hsm
-    hostname: fake-smd
-    ports:
-      - "27779:27779"
-    environment:
-      - PORT=:27779
-    networks:
-      - scsd
 
   fake-vault:
     build:
@@ -258,7 +185,7 @@ services:
   vault-kv-enabler:
     image: artifactory.algol60.net/csm-docker/stable/vault-kv-enabler:1.13.4
     environment:
-      - VAULT_ADDR=http://vault:8200
+      - VAULT_ADDR=http://${COMPOSE_PROJECT_NAME}_vault_1:8200
       - VAULT_TOKEN=hms
       - KV_STORES=hms-creds
     depends_on:
@@ -275,7 +202,7 @@ services:
       - CRAY_VAULT_AUTH_PATH=auth/token/create
       - CRAY_VAULT_ROLE_FILE=configs/namespace
       - CRAY_VAULT_JWT_FILE=configs/token
-      - VAULT_ADDR=http://vault:8200
+      - VAULT_ADDR=http://${COMPOSE_PROJECT_NAME}_vault_1:8200
       - VAULT_TOKEN=hms
       - VAULT_KEYPATH=hms-creds
       - SMD_WVAULT=true
@@ -284,6 +211,7 @@ services:
     depends_on:
       - cray-smd-init
       - vault
+      - vault-kv-enabler
     networks:
       - scsd
 

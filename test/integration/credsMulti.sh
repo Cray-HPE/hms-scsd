@@ -42,9 +42,13 @@ echo " "
 cat hout
 scode=`cat hout | grep HTTP | awk '{print $2}'`
 scode2=`cat out.txt | grep StatusCode | grep -v 200`
-if [[ $scode -ne 200 || "${scode2}" != "" ]]; then
+if [[ $scode -ne 200 ]]; then
 	echo "Bad status code from multi creds load: ${scode}"
 	exit 1
+elif [[ "${scode2}" != "" ]]; then
+    echo "Bad status code(s) from multi creds load:"
+    echo "${scode2}"
+    exit 1
 fi
 
 exit 0
