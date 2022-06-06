@@ -256,6 +256,7 @@ services:
     depends_on:
       - cray-smd-init
       - vault
+      - vault-kv-enabler
     networks:
       - scsd
 
