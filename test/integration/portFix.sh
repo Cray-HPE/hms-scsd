@@ -42,12 +42,12 @@ if [ -z $X_S3_PORT ]; then
     echo "MISSING X_S3_PORT ENV VAR."
     exit 1
 fi
-if [ -z $X_S6_PORT ]; then
-    echo "MISSING X_S6_PORT ENV VAR."
+if [ -z $X_S4_PORT ]; then
+    echo "MISSING X_S4_PORT ENV VAR."
     exit 1
 fi
-if [ -z $X_S7_PORT ]; then
-    echo "MISSING X_S7_PORT ENV VAR."
+if [ -z $X_S5_PORT ]; then
+    echo "MISSING X_S5_PORT ENV VAR."
     exit 1
 fi
 if [ -z $X_S0_HOST ]; then
@@ -66,29 +66,29 @@ if [ -z $X_S3_HOST ]; then
     echo "MISSING X_S3_HOST ENV VAR."
     exit 1
 fi
-if [ -z $X_S6_HOST ]; then
-    echo "MISSING X_S6_HOST ENV VAR."
+if [ -z $X_S4_HOST ]; then
+    echo "MISSING X_S4_HOST ENV VAR."
     exit 1
 fi
-if [ -z $X_S7_HOST ]; then
-    echo "MISSING X_S7_HOST ENV VAR."
+if [ -z $X_S5_HOST ]; then
+    echo "MISSING X_S5_HOST ENV VAR."
     exit 1
 fi
 
-portFix () {
+portFix() {
     local pld
 	pld=`echo $1 | sed "s/XP0/$X_S0_PORT/g" | \
                    sed "s/XP1/$X_S1_PORT/g" | \
                    sed "s/XP2/$X_S2_PORT/g" | \
                    sed "s/XP3/$X_S3_PORT/g" | \
-                   sed "s/XP6/$X_S6_PORT/g" | \
-                   sed "s/XP7/$X_S7_PORT/g" | \
+                   sed "s/XP4/$X_S4_PORT/g" | \
+                   sed "s/XP5/$X_S5_PORT/g" | \
                    sed "s/X_S0_HOST/$X_S0_HOST/g" | \
                    sed "s/X_S1_HOST/$X_S1_HOST/g" | \
                    sed "s/X_S2_HOST/$X_S2_HOST/g" | \
                    sed "s/X_S3_HOST/$X_S3_HOST/g" | \
-                   sed "s/X_S6_HOST/$X_S6_HOST/g" | \
-                   sed "s/X_S7_HOST/$X_S7_HOST/g" | \
+                   sed "s/X_S4_HOST/$X_S4_HOST/g" | \
+                   sed "s/X_S5_HOST/$X_S5_HOST/g" | \
                    sed 's/"/\\"/g'`
     echo $pld
 }

@@ -164,7 +164,7 @@ func __env_parse_string(envvar string, pval *string) bool {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// Parse environment variables.  Process any that have the "HMNFD_" prefix
+// Parse environment variables.  Process any that have the "SCSD_" prefix
 // and set operating parameters with their values.
 //
 // Args, Return: None.

@@ -30,7 +30,7 @@ RUN set -ex \
 
 ### Base Stage ###
 
-FROM build-base as base
+FROM build-base AS base
 
 RUN go env -w GO111MODULE=auto
 

@@ -1,6 +1,6 @@
 # MIT License
 #
-# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -20,7 +20,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# Dockerfile for running API/functional TAVERN-based tests.
+# Dockerfile for running API/integration tests.
 
 # Author: mpkelly
 # Date: 26-February 2020
@@ -30,7 +30,7 @@ LABEL maintainer="Hewlett Packard Enterprise"
 
 RUN go env -w GO111MODULE=auto
 
-COPY test/integration/*.sh /usr/local/bin/
+COPY *.sh /usr/local/bin/
 
 # Run the main test script
 
@@ -40,8 +40,8 @@ ARG IN_X_S0_PORT
 ARG IN_X_S1_PORT
 ARG IN_X_S2_PORT
 ARG IN_X_S3_PORT
-ARG IN_X_S6_PORT
-ARG IN_X_S7_PORT
+ARG IN_X_S4_PORT
+ARG IN_X_S5_PORT
 ARG SCSD_VERSION
 ARG CRAY_VAULT_JWT_FILE
 ARG CRAY_VAULT_ROLE_FILE
@@ -49,10 +49,11 @@ ARG SCSD_TEST_K8S_AUTH_URL
 ARG SCSD_TEST_VAULT_PKI_URL
 ARG SCSD_TEST_VAULT_CA_URL
 
-RUN apk update && apk add bash && apk add curl && apk add jq
+RUN apk -U upgrade && \
+    apk add bash curl jq
 
-RUN mkdir -p /var/run && echo ${SCSD_VERSION} > /var/run/scsd_version.txt
-
+RUN mkdir -p /var/run && \
+    echo ${SCSD_VERSION} > /var/run/scsd_version.txt
 
 ENV SCSD=${IN_SCSD}
 ENV HSM=${IN_HSM}
@@ -60,7 +61,7 @@ ENV X_S0_PORT=${IN_X_S0_PORT}
 ENV X_S1_PORT=${IN_X_S1_PORT}
 ENV X_S2_PORT=${IN_X_S2_PORT}
 ENV X_S3_PORT=${IN_X_S3_PORT}
-ENV X_S6_PORT=${IN_X_S6_PORT}
-ENV X_S7_PORT=${IN_X_S7_PORT}
+ENV X_S4_PORT=${IN_X_S4_PORT}
+ENV X_S5_PORT=${IN_X_S5_PORT}
 
 CMD ["sh", "-c", "runit.sh"]

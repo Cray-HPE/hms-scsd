@@ -318,7 +318,7 @@ one call.
 Note that it is not possible to "fetch" creds via this API.  Only
 setting them is allowed, for security reasons.
 
-The payload for this API  is amenable to setting different creds for
+The payload for this API is amenable to setting different creds for
 different targets all in one call.  To set a group of controllers'
 creds, set up a group in HSM and use the group ID.
 

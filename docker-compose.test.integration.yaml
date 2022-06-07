@@ -1,0 +1,237 @@
+version: '3.7'
+
+#THIS environment sets up SCSD and its dependencies for integration testing
+
+networks:
+  scsd:
+
+services:
+  integration-tests:
+    build:
+      context: test/integration/
+      dockerfile: Dockerfile
+    environment:
+      - SCSD=cray-scsd:25309
+      - HSM=cray-smd:27779
+      - X_S0_HOST=x0c0s0b0
+      - X_S0_PORT=80
+      - X_S1_HOST=x0c0s1b0
+      - X_S1_PORT=80
+      - X_S2_HOST=x0c0s2b0
+      - X_S2_PORT=80
+      - X_S3_HOST=x0c0s3b0
+      - X_S3_PORT=80
+      - X_S4_HOST=x0c0s4b0
+      - X_S4_PORT=80
+      - X_S5_HOST=x0c0s5b0
+      - X_S5_PORT=80
+    depends_on:
+      - cray-scsd
+      - x0c0s0b0
+      - x0c0s1b0
+      - x0c0s2b0
+      - x0c0s3b0
+      - x0c0s4b0
+      - x0c0s5b0
+    networks:
+      - scsd
+
+  # A collection of fake Redfish endpoints
+
+  # x_s0 (Mountain)
+  x0c0s0b0:
+    hostname: x0c0s0b0
+    container_name: x0c0s0b0
+    build:
+      context: test/integration
+      dockerfile: Dockerfile.fake-rfep
+    environment:
+      - XNAME=x0c0s0b0n0
+      - BMCPORT=:80
+      - NACCTS=1
+      - GOODACCT=1
+      - VENDOR=cray
+    networks:
+      - scsd
+
+  # x_s1 (Mountain)
+  x0c0s1b0:
+    hostname: x0c0s1b0
+    container_name: x0c0s1b0
+    build:
+      context: test/integration
+      dockerfile: Dockerfile.fake-rfep
+    environment:
+      - XNAME=x0c0s1b0n0
+      - BMCPORT=:80
+      - NACCTS=1
+      - GOODACCT=1
+      - VENDOR=cray
+    networks:
+      - scsd
+
+  # x_s2 (Mountain)
+  x0c0s2b0:
+    hostname: x0c0s2b0
+    container_name: x0c0s2b0
+    build:
+      context: test/integration
+      dockerfile: Dockerfile.fake-rfep
+    environment:
+      - XNAME=x0c0s2b0n0
+      - BMCPORT=:80
+      - NACCTS=1
+      - GOODACCT=1
+      - VENDOR=cray
+    networks:
+      - scsd
+
+  # x_s3 (Mountain)
+  x0c0s3b0:
+    hostname: x0c0s3b0
+    container_name: x0c0s3b0
+    build:
+      context: test/integration
+      dockerfile: Dockerfile.fake-rfep
+    environment:
+      - XNAME=x0c0s3b0n0
+      - BMCPORT=:80
+      - NACCTS=1
+      - GOODACCT=1
+      - VENDOR=cray
+    networks:
+      - scsd
+
+  # x_s4 (Mountain)
+  x0c0s4b0:
+    hostname: x0c0s4b0
+    container_name: x0c0s4b0
+    build:
+      context: test/integration
+      dockerfile: Dockerfile.fake-rfep
+    environment:
+      - XNAME=x0c0s4b0n0
+      - BMCPORT=:80
+      - NACCTS=1
+      - GOODACCT=1
+      - VENDOR=cray
+    networks:
+      - scsd
+
+  # x_s5 (Mountain)
+  x0c0s5b0:
+    hostname: x0c0s5b0
+    container_name: x0c0s5b0
+    build:
+      context: test/integration
+      dockerfile: Dockerfile.fake-rfep
+    environment:
+      - XNAME=x0c0s5b0n0
+      - BMCPORT=:80
+      - NACCTS=1
+      - GOODACCT=1
+      - VENDOR=cray
+    networks:
+      - scsd
+
+  cray-scsd:
+    build:
+      context: .
+      dockerfile: Dockerfile.test.integration
+      args:
+        IN_SCSD_TEST_K8S_AUTH_URL: ${SCSD_TEST_K8S_AUTH_URL}
+        IN_SCSD_TEST_VAULT_PKI_URL: ${SCSD_TEST_VAULT_PKI_URL}
+        IN_SCSD_TEST_VAULT_CA_URL: ${SCSD_TEST_VAULT_CA_URL}
+        IN_CRAY_VAULT_JWT_FILE: ${CRAY_VAULT_JWT_FILE}
+        IN_CRAY_VAULT_ROLE_FILE: ${CRAY_VAULT_ROLE_FILE}
+    environment:
+      - SCSD_SMD_URL=http://cray-smd:27779/hsm/v2
+      - SCSD_HTTP_LISTEN_PORT=25309
+      - SCSD_LOCAL_MODE=true
+      - SCSD_DEFAULT_HTTP=true
+      - SCSD_LOG_LEVEL=TRACE
+      - VAULT_ENABLE=0
+      - IN_SCSD_TEST_K8S_AUTH_URL=:${SCSD_TEST_K8S_AUTH_URL}
+      - IN_SCSD_TEST_VAULT_PKI_URL=:${SCSD_TEST_VAULT_PKI_URL}
+      - IN_SCSD_TEST_VAULT_CA_URL=:${SCSD_TEST_VAULT_CA_URL}
+      - IN_CRAY_VAULT_JWT_FILE=:${CRAY_VAULT_JWT_FILE}
+      - IN_CRAY_VAULT_ROLE_FILE=:${CRAY_VAULT_ROLE_FILE}
+    networks:
+      - scsd
+    depends_on:
+      - cray-smd
+      - fake-vault
+
+  fake-vault:
+    build:
+      context: test/integration
+      dockerfile: Dockerfile.fake-vault
+    hostname: fake-vault
+    networks:
+      - scsd
+
+  vault:
+    hostname: vault
+    image: artifactory.algol60.net/docker.io/library/vault:1.5.5
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=hms
+      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
+      - VAULT_ADDR=http://127.0.0.1:8200
+    cap_add:
+      - IPC_LOCK
+    networks:
+      - scsd
+
+  vault-kv-enabler:
+    image: artifactory.algol60.net/csm-docker/stable/vault-kv-enabler:1.13.4
+    environment:
+      - VAULT_ADDR=http://${COMPOSE_PROJECT_NAME}_vault_1:8200
+      - VAULT_TOKEN=hms
+      - KV_STORES=hms-creds
+    depends_on:
+      - vault
+    networks:
+      - scsd
+
+  cray-smd:
+    image: artifactory.algol60.net/csm-docker/stable/cray-smd:1.48.0
+    environment:
+      - POSTGRES_HOST=hmsds-postgres
+      - POSTGRES_PORT=5432
+      - RF_MSG_HOST=kafka:9092:cray-dmtf-resource-event
+      - CRAY_VAULT_AUTH_PATH=auth/token/create
+      - CRAY_VAULT_ROLE_FILE=configs/namespace
+      - CRAY_VAULT_JWT_FILE=configs/token
+      - VAULT_ADDR=http://${COMPOSE_PROJECT_NAME}_vault_1:8200
+      - VAULT_TOKEN=hms
+      - VAULT_KEYPATH=hms-creds
+      - SMD_WVAULT=true
+      - SMD_RVAULT=true
+    hostname: cray-smd
+    depends_on:
+      - cray-smd-init
+      - vault
+      - vault-kv-enabler
+    networks:
+      - scsd
+
+  cray-smd-init:
+    image: artifactory.algol60.net/csm-docker/stable/cray-smd:1.48.0
+    environment:
+      - SMD_DBHOST=hmsds-postgres
+      - SMD_DBPORT=5432
+    depends_on:
+      - hmsds-postgres
+    networks:
+      - scsd
+    command: /entrypoint.sh smd-init
+
+  hmsds-postgres:
+    hostname: hmsds-postgres
+    image: artifactory.algol60.net/docker.io/library/postgres:11-alpine
+    environment:
+      - POSTGRES_PASSWORD=hmsdsuser
+      - POSTGRES_USER=hmsdsuser
+      - POSTGRES_DB=hmsds
+    networks:
+      - scsd

@@ -2,7 +2,7 @@
 
 # MIT License
 #
-# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -29,14 +29,18 @@ pldx='{"Domain":"Cabinet","DomainIDs":["x0","x1"]}'
 source portFix.sh
 pld=`portFix "$pldx"`
 
-curl -D hout -X POST -d "$pld"  http://${SCSD}/v1/bmc/createcerts | jq > out.txt
+curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/createcerts | jq > out.txt
 cat out.txt
 echo " "
 
 scode=`cat hout | grep HTTP | awk '{print $2}'`
 scode2=`cat out.txt | grep StatusCode | grep -v 200`
-if [[ $scode -ne 200 || "${scode2}" != "" ]]; then
+if [[ $scode -ne 200 ]]; then
 	echo "Bad status code from cabinet-domain cert create: ${scode}"
+	exit 1
+elif [[ "${scode2}" != "" ]]; then
+	echo "Bad status code(s) from cabinet-domain cert create:"
+	echo "${scode2}"
 	exit 1
 fi
 

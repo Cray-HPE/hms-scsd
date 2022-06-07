@@ -20,7 +20,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# Dockerfile for building HMS fake State Manager for testing.
+# Dockerfile for building HMS fake Redfish endpoints for testing.
 # Author: mpkelly
 # Date: 26-February 2020
 
