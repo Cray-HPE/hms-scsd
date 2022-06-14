@@ -27,10 +27,10 @@ if [ -z $SCSD ]; then
     exit 1
 fi
 
-# if [ ! -r /var/run/scsd_version.txt ]; then
-    # echo "MISSING SCSD VERSION FILE."
-    # exit 1
-# fi
+if [ ! -r /var/run/scsd_version.txt ]; then
+    echo "MISSING SCSD VERSION FILE."
+    exit 1
+fi
 
 # GET /liveness
 
@@ -74,37 +74,37 @@ echo " "
 
 # Get /version
 
-# echo "====================================================================="
-# echo "Checking /version"
-# echo "====================================================================="
+echo "====================================================================="
+echo "Checking /version"
+echo "====================================================================="
 
-# curl -D hout http://${SCSD}/v1/version > /tmp/out 2>&1
-# echo " "
-# if [ -f /tmp/out ]; then
-    # echo /tmp/out
-# fi
+curl -D hout http://${SCSD}/v1/version > /tmp/out 2>&1
+echo " "
+if [ -f /tmp/out ]; then
+    echo /tmp/out
+fi
 
-# cat hout
-# scode=`cat hout | grep HTTP | awk '{print $2}'`
-# if (( scode != 200 )); then
-    # echo "Bad status code from version check"
-    # exit 1
-# fi
+cat hout
+scode=`cat hout | grep HTTP | awk '{print $2}'`
+if (( scode != 200 )); then
+    echo "Bad status code from version check"
+    exit 1
+fi
 
-# ver=`cat /var/run/scsd_version.txt`
-# vok=`cat /tmp/out | grep ${ver}`
-# vout=`cat /tmp/out`
+ver=`cat /var/run/scsd_version.txt`
+vok=`cat /tmp/out | grep ${ver}`
+vout=`cat /tmp/out`
 
-# if [ "${vok}" == "" ]; then
-    # echo "Bad version found in version check"
-    # echo "Expecting: ${ver}"
-    # echo "Got:       ${vout}"
-    # exit 1
-# fi
-# echo "+++++++++++++++++++++++++++++++++++++++++++"
-# echo "VERSION CHECK OK (${vok})"
-# echo "+++++++++++++++++++++++++++++++++++++++++++"
-# echo " "
+if [ "${vok}" == "" ]; then
+    echo "Bad version found in version check"
+    echo "Expecting: ${ver}"
+    echo "Got:       ${vout}"
+    exit 1
+fi
+echo "+++++++++++++++++++++++++++++++++++++++++++"
+echo "VERSION CHECK OK (${vok})"
+echo "+++++++++++++++++++++++++++++++++++++++++++"
+echo " "
 
 exit 0
 
