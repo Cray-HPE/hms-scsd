@@ -64,4 +64,6 @@ ENV X_S3_PORT=${IN_X_S3_PORT}
 ENV X_S4_PORT=${IN_X_S4_PORT}
 ENV X_S5_PORT=${IN_X_S5_PORT}
 
+WORKDIR /usr/local/bin
+
 CMD ["sh", "-c", "runit.sh"]

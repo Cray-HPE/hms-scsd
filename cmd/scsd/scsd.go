@@ -83,17 +83,9 @@ var VaultKeypath string
 var Running = true
 var dfltHTTP = false // for testing
 var caURI string
-var vaultCAURL string
-var vaultPKIURL string
 var dfltProtocol = "https"
 var serviceName = "scsd"
 var logger *logrus.Logger
-
-//Test stuff
-var test_k8sAuthUrl string
-var test_vaultJWTFile string
-var test_vaultPKIUrl string
-var test_vaultCAUrl string
 
 var compCredStore *compcreds.CompCredStore
 
@@ -181,8 +173,6 @@ func parseEnvVars() {
 	__env_parse_string("SCSD_SMD_URL", &appParams.SmdURL)
 	__env_parse_bool("SCSD_DEFAULT_HTTP", &dfltHTTP)
 	__env_parse_string("SCSD_CA_URI", &caURI)
-	__env_parse_string("SCSD_VAULT_CA_URL", &vaultCAURL)
-	__env_parse_string("SCSD_VAULT_PKI_URL", &vaultPKIURL)
 
 	//These env vars are for vault and need to be named without SCSD_
 	//since libraries use them too.
@@ -198,12 +188,6 @@ func parseEnvVars() {
 	//  CRAY_VAULT_JWT_FILE    # e.g. /tmp/k8stoken
 	//  CRAY_VAULT_ROLE_FILE   # e.g. also /tmp/k8stoken
 
-	//The following are used only for testing
-
-	__env_parse_string("SCSD_TEST_K8S_AUTH_URL", &test_k8sAuthUrl)
-	__env_parse_string("SCSD_TEST_VAULT_JWT_FILE", &test_vaultJWTFile)
-	__env_parse_string("SCSD_TEST_VAULT_PKI_URL", &test_vaultPKIUrl)
-	__env_parse_string("SCSD_TEST_VAULT_CA_URL", &test_vaultCAUrl)
 }
 
 func setupVault() {
@@ -328,47 +312,12 @@ func main() {
 	}
 
 	// For testing.  ENV VARS relevant:
-	//   SCSD_TEST_K8S_AUTH_URL
-	//   SCSD_TEST_VAULT_PKI_URL
-	//   SCSD_TEST_VAULT_CA_URL
-	//   SCSD_TEST_VAULT_JWT_FILE
-	//   See also: CRAY_VAULT_JWT_FILE and CRAY_VAULT_ROLE_FILE
+	// CRAY_VAULT_JWT_FILE
+	// CRAY_VAULT_ROLE_FILE
 
-	if test_k8sAuthUrl != "" {
-		logger.Infof("Overriding k8s auth url with: '%s'", test_k8sAuthUrl)
-		hms_certs.ConfigParams.K8SAuthUrl = test_k8sAuthUrl
-	}
-	if test_vaultPKIUrl != "" {
-		logger.Infof("Overriding PKI url with: '%s'", test_vaultPKIUrl)
-		hms_certs.ConfigParams.VaultPKIUrl = test_vaultPKIUrl
-	}
-	if test_vaultCAUrl != "" {
-		logger.Infof("Overriding CA url with: '%s'", test_vaultCAUrl)
-		hms_certs.ConfigParams.VaultCAUrl = test_vaultCAUrl
-	}
-	if test_vaultJWTFile != "" {
-		logger.Infof("Overriding Vault JWT file with: '%s'", test_vaultJWTFile)
-		hms_certs.ConfigParams.VaultJWTFile = test_vaultJWTFile
-	}
-	estr := os.Getenv("CRAY_VAULT_JWT_FILE")
-	if estr != "" {
-		logger.Infof("Overriding JWT file with: '%s'", estr)
-	}
-	estr = os.Getenv("CRAY_VAULT_ROLE_FILE")
-	if estr != "" {
-		logger.Infof("Overriding ROLE file with: '%s'", estr)
-	}
 	hms_certs.InitInstance(logger, serviceName)
 
 	if appParams.LocalMode && (caURI != "") {
-		if vaultCAURL != "" {
-			logger.Infof("Setting Vault CA URL to: '%s'", vaultCAURL)
-			hms_certs.ConfigParams.VaultCAUrl = vaultCAURL
-		}
-		if vaultPKIURL != "" {
-			logger.Infof("Setting Vault PKI URL to: '%s'", vaultPKIURL)
-			hms_certs.ConfigParams.VaultPKIUrl = vaultPKIURL
-		}
 
 		//Set up TRS cert security stuff and register CA chain update callback
 

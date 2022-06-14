@@ -1,6 +1,6 @@
 # MIT License
 #
-# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -59,22 +59,6 @@ RUN set -ex \
 
 # Setup environment variables.
 ENV VAULT_SKIP_VERIFY="true"
-
-ARG IN_CRAY_VAULT_JWT_FILE
-ARG IN_CRAY_VAULT_ROLE_FILE
-ARG IN_SCSD_TEST_K8S_AUTH_URL
-ARG IN_SCSD_TEST_VAULT_PKI_URL
-ARG IN_SCSD_TEST_VAULT_CA_URL
-
-ENV CRAY_VAULT_JWT_FILE=${IN_CRAY_VAULT_JWT_FILE}
-ENV CRAY_VAULT_ROLE_FILE=${IN_CRAY_VAULT_ROLE_FILE}
-ENV SCSD_TEST_K8S_AUTH_URL=${IN_SCSD_TEST_K8S_AUTH_URL}
-ENV SCSD_TEST_VAULT_PKI_URL=${IN_SCSD_TEST_VAULT_PKI_URL}
-ENV SCSD_TEST_VAULT_CA_URL=${IN_SCSD_TEST_VAULT_CA_URL}
-
-RUN if [ ! -z ${IN_CRAY_VAULT_JWT_FILE} ]; then mkdir -p `dirname ${IN_CRAY_VAULT_JWT_FILE}` ; echo jwt_xyzzy > ${IN_CRAY_VAULT_JWT_FILE} ;  fi
-
-RUN if [ ! -z $CRAY_VAULT_ROLE_FILE ]; then mkdir -p `dirname ${CRAY_VAULT_ROLE_FILE}` ; echo role_xyzzy > ${CRAY_VAULT_ROLE_FILE} ; fi
 
 RUN set -ex \
     && apk -U upgrade \
