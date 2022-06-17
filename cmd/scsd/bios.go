@@ -420,239 +420,37 @@ func patchRedfishEtag(targets []targInfo, uri string, requestBody []byte, etags 
 	return tasks, nil, httpCode
 }
 
-// todo switch to using systems to determine manufacture
-func parseChassisResponse(tasks []trsapi.HttpTask) (responses map[string]*rfChassis, err error, code int) {
-	funcName := "parseChassisResponse"
-	responses = make(map[string]*rfChassis)
-
-	for _, task := range tasks {
-		host := task.Request.Host
-		var chassis rfChassis
-		err = grabTaskRspData(funcName, &task, &chassis)
-		if err != nil {
-			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
-			return responses, err, http.StatusInternalServerError
+func getTask(host string, tasks []trsapi.HttpTask) (task *trsapi.HttpTask, err error, code int) {
+	foundTasks := make([]string, len(tasks))
+	for _, t := range tasks {
+		taskHost := t.Request.Host
+		if host == taskHost {
+			task = &t
+			return
 		}
-		responses[host] = &chassis
+		foundTasks = append(foundTasks, taskHost)
 	}
-	return responses, nil, http.StatusOK
+	err = fmt.Errorf("ERROR: failed to find task for %s. tasks: %v", host, foundTasks)
+	code = http.StatusInternalServerError
+	return
 }
 
-// todo remove if not used. It might be needed by intel
-func parseManagersResponse(tasks []trsapi.HttpTask) (responses map[string]*rfManagers, err error, code int) {
-	funcName := "parseManagersResponse"
-	responses = make(map[string]*rfManagers)
-
-	for _, task := range tasks {
-		host := task.Request.Host
-		var managers rfManagers
-		err = grabTaskRspData(funcName, &task, &managers)
-		if err != nil {
-			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
-			return responses, err, http.StatusInternalServerError
-		}
-		responses[host] = &managers
+func parseResponse(description string, task *trsapi.HttpTask, data interface{}) (err error, code int) {
+	err = grabTaskRspData(description, task, data)
+	if err != nil {
+		err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
+		return err, http.StatusInternalServerError
 	}
-	return responses, nil, http.StatusOK
+	return nil, http.StatusOK
 }
 
-func parseSystemsResponse(tasks []trsapi.HttpTask) (responses map[string]*rfSystems, err error, code int) {
-	funcName := "parseSystemsResponse"
-	responses = make(map[string]*rfSystems)
-
-	for _, task := range tasks {
-		host := task.Request.Host
-		var systems rfSystems
-		err = grabTaskRspData(funcName, &task, &systems)
-		if err != nil {
-			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
-			return responses, err, http.StatusInternalServerError
-		}
-		responses[host] = &systems
+func parseResponseForHost(description string, host string, tasks []trsapi.HttpTask, data interface{}) (err error, httpCode int) {
+	task, err, httpCode := getTask(host, tasks)
+	if err != nil {
+		return
 	}
-	return responses, nil, http.StatusOK
-}
-
-func parseSystemResponse(tasks []trsapi.HttpTask) (responses map[string]*rfSystem, err error, code int) {
-	funcName := "parseSystemResponse"
-	responses = make(map[string]*rfSystem)
-
-	for _, task := range tasks {
-		host := task.Request.Host
-		var system rfSystem
-		err = grabTaskRspData(funcName, &task, &system)
-		if err != nil {
-			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
-			return responses, err, http.StatusInternalServerError
-		}
-		responses[host] = &system
-	}
-	return responses, nil, http.StatusOK
-}
-
-func parseBiosIntelResponse(tasks []trsapi.HttpTask) (responses map[string]*rfBiosIntel, err error, code int) {
-	funcName := "parseBiosIntelResponse"
-	responses = make(map[string]*rfBiosIntel)
-
-	for _, task := range tasks {
-		host := task.Request.Host
-		var bios rfBiosIntel
-		err = grabTaskRspData(funcName, &task, &bios)
-		if err != nil {
-			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
-			return responses, err, http.StatusInternalServerError
-		}
-		responses[host] = &bios
-	}
-	return responses, nil, http.StatusOK
-}
-
-func parseBiosHpeResponse(tasks []trsapi.HttpTask) (responses map[string]*rfBiosHpe, err error, code int) {
-	funcName := "parseBiosHpeResponse"
-	responses = make(map[string]*rfBiosHpe)
-
-	for _, task := range tasks {
-		host := task.Request.Host
-		var bios rfBiosHpe
-		err = grabTaskRspData(funcName, &task, &bios)
-		if err != nil {
-			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
-			return responses, err, http.StatusInternalServerError
-		}
-		responses[host] = &bios
-	}
-	return responses, nil, http.StatusOK
-}
-
-func parseBiosGigabyteResponse(tasks []trsapi.HttpTask) (responses map[string]*rfBiosGigabyte, err error, code int) {
-	funcName := "parseBiosGigabyteResponse"
-	responses = make(map[string]*rfBiosGigabyte)
-
-	for _, task := range tasks {
-		host := task.Request.Host
-		var bios rfBiosGigabyte
-		err = grabTaskRspData(funcName, &task, &bios)
-		if err != nil {
-			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
-			return responses, err, http.StatusInternalServerError
-		}
-		if bios.Attributes == nil {
-			bios.Attributes = make(map[string]interface{})
-		}
-		responses[host] = &bios
-	}
-	return responses, nil, http.StatusOK
-}
-
-func parseBiosSDGigabyteResponse(tasks []trsapi.HttpTask) (responses map[string]*rfBiosSDGigabyte, err error, code int) {
-	funcName := "parseBiosSDGigabyteResponse"
-	responses = make(map[string]*rfBiosSDGigabyte)
-
-	for _, task := range tasks {
-		host := task.Request.Host
-		var bios rfBiosSDGigabyte
-		err = grabTaskRspData(funcName, &task, &bios)
-		if err != nil {
-			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
-			return responses, err, http.StatusInternalServerError
-		}
-		if bios.Attributes == nil {
-			bios.Attributes = make(map[string]interface{})
-		}
-		responses[host] = &bios
-	}
-	return responses, nil, http.StatusOK
-}
-
-func parseBiosCrayResponse(tasks []trsapi.HttpTask) (responses map[string]*rfBiosCray, err error, code int) {
-	funcName := "parseBiosCrayResponse"
-	responses = make(map[string]*rfBiosCray)
-
-	for _, task := range tasks {
-		host := task.Request.Host
-		var bios rfBiosCray
-		err = grabTaskRspData(funcName, &task, &bios)
-		if err != nil {
-			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
-			return responses, err, http.StatusInternalServerError
-		}
-		if bios.Attributes == nil {
-			bios.Attributes = make(map[string]rfBiosAttributeCray)
-		}
-		responses[host] = &bios
-	}
-	return responses, nil, http.StatusOK
-}
-
-func parseBiosSDCrayResponse(tasks []trsapi.HttpTask) (responses map[string]*rfBiosSDCray, err error, code int) {
-	funcName := "parseBiosSDCrayResponse"
-	responses = make(map[string]*rfBiosSDCray)
-
-	for _, task := range tasks {
-		host := task.Request.Host
-		var bios rfBiosSDCray
-		err = grabTaskRspData(funcName, &task, &bios)
-		if err != nil {
-			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
-			return responses, err, http.StatusInternalServerError
-		}
-		if bios.Attributes == nil {
-			bios.Attributes = make(map[string]interface{})
-		}
-		responses[host] = &bios
-	}
-	return responses, nil, http.StatusOK
-}
-
-func parseRegistriesResponse(tasks []trsapi.HttpTask) (responses map[string]*rfRegistries, err error, code int) {
-	funcName := "parseRegistriesResponse"
-	responses = make(map[string]*rfRegistries)
-
-	for _, task := range tasks {
-		host := task.Request.Host
-		var registries rfRegistries
-		err = grabTaskRspData(funcName, &task, &registries)
-		if err != nil {
-			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
-			return responses, err, http.StatusInternalServerError
-		}
-		responses[host] = &registries
-	}
-	return responses, nil, http.StatusOK
-}
-
-func parseBiosAttributesRegistriesResponse(tasks []trsapi.HttpTask) (responses map[string]*rfBiosAttributesRegistries, err error, code int) {
-	funcName := "parseBiosAttributesRegistriesResponse"
-	responses = make(map[string]*rfBiosAttributesRegistries)
-
-	for _, task := range tasks {
-		host := task.Request.Host
-		var registries rfBiosAttributesRegistries
-		err = grabTaskRspData(funcName, &task, &registries)
-		if err != nil {
-			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
-			return responses, err, http.StatusInternalServerError
-		}
-		responses[host] = &registries
-	}
-	return responses, nil, http.StatusOK
-}
-
-func parseBiosAttributesRegistryResponse(tasks []trsapi.HttpTask) (responses map[string]*rfBiosAttributesRegistry, err error, code int) {
-	funcName := "parseBiosAttributesRegistryResponse"
-	responses = make(map[string]*rfBiosAttributesRegistry)
-
-	for _, task := range tasks {
-		host := task.Request.Host
-		var registries rfBiosAttributesRegistry
-		err = grabTaskRspData(funcName, &task, &registries)
-		if err != nil {
-			err = fmt.Errorf("ERROR: parsing response from %v gave the error: %v", task.Request.URL, err)
-			return responses, err, http.StatusInternalServerError
-		}
-		responses[host] = &registries
-	}
-	return responses, nil, http.StatusOK
+	err, httpCode = parseResponse(description, task, data)
+	return
 }
 
 func getSystemUri(xname string, nodeNumber int, manufacturer manufacturerType, systems *rfSystems) (uri string, err error, httpCode int) {
@@ -798,18 +596,12 @@ func getBiosCommon(xname string) (bios *BiosCommon, err error, httpCode int) {
 		return
 	}
 
-	chassisMap, err, httpCode := parseChassisResponse(chassisTasks)
+	var chassis rfChassis
+	err, httpCode = parseResponseForHost("Chassis", bios.bmcXname, chassisTasks, &chassis)
 	if err != nil {
 		return
 	}
-
-	ok := false
-	bios.chassis, ok = chassisMap[bios.bmcXname]
-	if !ok {
-		err = fmt.Errorf("ERROR: missing bios chassis data for %s from %s %s", bios.xname, bios.bmcXname, RFCHASSIS_API)
-		httpCode = http.StatusInternalServerError
-		return
-	}
+	bios.chassis = &chassis
 
 	// ---- /redfish/v1/Systems ----
 
@@ -818,17 +610,12 @@ func getBiosCommon(xname string) (bios *BiosCommon, err error, httpCode int) {
 		return
 	}
 
-	systemsMap, err, httpCode := parseSystemsResponse(systemsTasks)
+	var systems rfSystems
+	err, httpCode = parseResponseForHost("Systems", bios.bmcXname, systemsTasks, &systems)
 	if err != nil {
 		return
 	}
-
-	bios.systems, ok = systemsMap[bios.bmcXname]
-	if !ok {
-		err = fmt.Errorf("ERROR: missing bios systems data for %s from %s %s", bios.xname, bios.bmcXname, RFSYSTEMS_API)
-		httpCode = http.StatusInternalServerError
-		return
-	}
+	bios.systems = &systems
 
 	bios.manufacturerType = getManufacturerType(bios.chassis)
 	if bios.manufacturerType == unknown {
@@ -858,17 +645,12 @@ func getBiosCommon(xname string) (bios *BiosCommon, err error, httpCode int) {
 		return
 	}
 
-	systemMap, err, httpCode := parseSystemResponse(systemTasks)
+	var system rfSystem
+	err, httpCode = parseResponseForHost("System", bios.bmcXname, systemTasks, &system)
 	if err != nil {
 		return
 	}
-
-	bios.system, ok = systemMap[bios.bmcXname]
-	if !ok {
-		err = fmt.Errorf("ERROR: missing bios system data for %s from %s %s", bios.xname, bios.bmcXname, bios.systemUri)
-		httpCode = http.StatusInternalServerError
-		return
-	}
+	bios.system = &system
 
 	bios.biosUri = bios.system.Bios.ID
 
@@ -886,43 +668,28 @@ func getBiosHpe(biosCommon *BiosCommon) (biosHpe *BiosHpe, err error, httpCode i
 		return
 	}
 
-	biosCurrentMap, err, httpCode := parseBiosHpeResponse(biosTasks)
+	var current rfBiosHpe
+	err, httpCode = parseResponseForHost("Systems/1/Bios", biosCommon.bmcXname, biosTasks, &current)
 	if err != nil {
 		return
 	}
-
-	ok := false
-	biosHpe.current, ok = biosCurrentMap[biosCommon.bmcXname]
-	if !ok {
-		err = fmt.Errorf(
-			"ERROR: missing bios data for %s from %s %s",
-			biosCommon.xname, biosCommon.bmcXname, biosCommon.biosUri)
-		httpCode = http.StatusInternalServerError
-		return
-	}
-
-	biosHpe.futureUri = biosCommon.biosUri + "/Settings"
+	biosHpe.current = &current
 
 	// ---- /redfish/v1/Systems/1/Bios/Settings ----
+
+	biosHpe.futureUri = biosCommon.biosUri + "/Settings"
 
 	biosFutureTasks, err, httpCode := getRedfish(biosCommon.targets, biosHpe.futureUri)
 	if err != nil {
 		return
 	}
 
-	biosFutureMap, err, httpCode := parseBiosHpeResponse(biosFutureTasks)
+	var future rfBiosHpe
+	err, httpCode = parseResponseForHost("Systems/1/Bios/Settings", biosCommon.bmcXname, biosFutureTasks, &future)
 	if err != nil {
 		return
 	}
-
-	biosHpe.future, ok = biosFutureMap[biosCommon.bmcXname]
-	if !ok {
-		err = fmt.Errorf(
-			"ERROR: missing future bios data for %s from %s %s",
-			biosCommon.xname, biosCommon.bmcXname, biosCommon.biosUri)
-		httpCode = http.StatusInternalServerError
-		return
-	}
+	biosHpe.future = &future
 
 	return
 }
@@ -938,20 +705,12 @@ func getBiosRegistriesHpe(biosCommon *BiosCommon) (biosRegistries *BiosHpeRegist
 		return
 	}
 
-	registriesMap, err, httpCode := parseRegistriesResponse(tasks)
+	var registries rfRegistries
+	err, httpCode = parseResponseForHost("Registries", biosCommon.bmcXname, tasks, &registries)
 	if err != nil {
 		return
 	}
-
-	ok := false
-	biosRegistries.registries, ok = registriesMap[biosCommon.bmcXname]
-	if !ok {
-		err = fmt.Errorf(
-			"ERROR: missing registries for %s from %s %s",
-			biosCommon.xname, biosCommon.bmcXname, RFREGISTRIES_API)
-		httpCode = http.StatusInternalServerError
-		return
-	}
+	biosRegistries.registries = &registries
 
 	for _, member := range biosRegistries.registries.Members {
 		// looking for a uri like: /redfish/v1/Registries/BiosAttributeRegistryA43.v1_2_40
@@ -976,20 +735,12 @@ func getBiosRegistriesHpe(biosCommon *BiosCommon) (biosRegistries *BiosHpeRegist
 		return
 	}
 
-	registriesBiosAttributes, err, httpCode := parseBiosAttributesRegistriesResponse(tasks)
+	var biosAttributesRegistries rfBiosAttributesRegistries
+	err, httpCode = parseResponseForHost("AttributesRegistries", biosCommon.bmcXname, tasks, &biosAttributesRegistries)
 	if err != nil {
 		return
 	}
-
-	biosAttributesRegistries, ok := registriesBiosAttributes[biosCommon.bmcXname]
-	if !ok {
-		err = fmt.Errorf(
-			"ERROR: missing registries for %s from %s %s",
-			biosCommon.xname, biosCommon.bmcXname, biosRegistries.biosRegistryUri)
-		httpCode = http.StatusInternalServerError
-		return
-	}
-	biosRegistries.biosAttributesRegistries = biosAttributesRegistries
+	biosRegistries.biosAttributesRegistries = &biosAttributesRegistries
 
 	for _, location := range biosAttributesRegistries.Location {
 		if strings.ToLower(location.Language) == "en" {
@@ -1013,20 +764,12 @@ func getBiosRegistriesHpe(biosCommon *BiosCommon) (biosRegistries *BiosHpeRegist
 		return
 	}
 
-	registriesBiosAttributesEn, err, httpCode := parseBiosAttributesRegistryResponse(tasks)
+	var biosAttributesRegistry rfBiosAttributesRegistry
+	err, httpCode = parseResponseForHost("AttributesRegistry", biosCommon.bmcXname, tasks, &biosAttributesRegistry)
 	if err != nil {
 		return
 	}
-
-	biosAttributes, ok := registriesBiosAttributesEn[biosCommon.bmcXname]
-	if !ok {
-		err = fmt.Errorf(
-			"ERROR: missing registries bios attributes for %s from %s %s",
-			biosCommon.xname, biosCommon.bmcXname, biosRegistries.biosRegistryEnUri)
-		httpCode = http.StatusInternalServerError
-		return
-	}
-	biosRegistries.biosAttributes = biosAttributes
+	biosRegistries.biosAttributes = &biosAttributesRegistry
 
 	return
 }
@@ -1095,27 +838,19 @@ func getBiosGigabyte(biosCommon *BiosCommon) (biosGigabyte *BiosGigabyte, err er
 		return
 	}
 
-	biosCurrentMap, err, httpCode := parseBiosGigabyteResponse(biosTasks)
+	var current rfBiosGigabyte
+	err, httpCode = parseResponseForHost("Systems/Self/Bios", biosCommon.bmcXname, biosTasks, &current)
 	if err != nil {
 		return
 	}
+	biosGigabyte.current = &current
 
-	ok := false
-	biosGigabyte.current, ok = biosCurrentMap[biosCommon.bmcXname]
-	if !ok {
-		err = fmt.Errorf(
-			"ERROR: missing bios data for %s from %s %s",
-			biosCommon.xname, biosCommon.bmcXname, biosCommon.biosUri)
-		httpCode = http.StatusInternalServerError
-		return
-	}
+	// ---- /redfish/v1/Systems/Self/Bios/SD ----
 
 	biosGigabyte.futureUri = biosGigabyte.current.Settings.SettingsObject.ID
 	if biosGigabyte.futureUri == "" {
 		biosGigabyte.futureUri = biosCommon.biosUri + "/SD"
 	}
-
-	// ---- /redfish/v1/Systems/Self/Bios/SD ----
 
 	biosFutureTasks, codes, err, httpCode := getRedfishNoCheck(biosCommon.targets, biosGigabyte.futureUri)
 	if err != nil {
@@ -1145,20 +880,12 @@ func getBiosGigabyte(biosCommon *BiosCommon) (biosGigabyte *BiosGigabyte, err er
 			Attributes: make(map[string]interface{}),
 		}
 	} else {
-		var biosFutureMap map[string]*rfBiosSDGigabyte
-		biosFutureMap, err, httpCode = parseBiosSDGigabyteResponse(biosFutureTasks)
+		var future rfBiosSDGigabyte
+		err, httpCode = parseResponseForHost("Systems/Self/Bios/SD", biosCommon.bmcXname, biosFutureTasks, &future)
 		if err != nil {
 			return
 		}
-
-		biosGigabyte.future, ok = biosFutureMap[biosCommon.bmcXname]
-		if !ok {
-			err = fmt.Errorf(
-				"ERROR: missing future bios data for %s from %s %s",
-				biosCommon.xname, biosCommon.bmcXname, biosCommon.biosUri)
-			httpCode = http.StatusInternalServerError
-			return
-		}
+		biosGigabyte.future = &future
 	}
 
 	// ---- /redfish/v1/Registries/BiosAttributeRegistry.json ----
@@ -1169,19 +896,12 @@ func getBiosGigabyte(biosCommon *BiosCommon) (biosGigabyte *BiosGigabyte, err er
 		return
 	}
 
-	registryMap, err, httpCode := parseBiosAttributesRegistryResponse(registryTasks)
+	var biosAttributes rfBiosAttributesRegistry
+	err, httpCode = parseResponseForHost("BiosAttributeRegistry.json", biosCommon.bmcXname, registryTasks, &biosAttributes)
 	if err != nil {
 		return
 	}
-
-	biosGigabyte.biosAttributes, ok = registryMap[biosCommon.bmcXname]
-	if !ok {
-		err = fmt.Errorf(
-			"ERROR: missing bios attribute registry data for %s from %s %s",
-			biosCommon.xname, biosCommon.bmcXname, registryUri)
-		httpCode = http.StatusInternalServerError
-		return
-	}
+	biosGigabyte.biosAttributes = &biosAttributes
 
 	return
 }
@@ -1252,25 +972,17 @@ func getBiosCray(biosCommon *BiosCommon) (biosCray *BiosCray, err error, httpCod
 		return
 	}
 
-	biosCurrentMap, err, httpCode := parseBiosCrayResponse(biosTasks)
+	var current rfBiosCray
+	err, httpCode = parseResponseForHost("Systems/Node[0-1]/Bios", biosCommon.bmcXname, biosTasks, &current)
 	if err != nil {
 		return
 	}
-
-	ok := false
-	biosCray.current, ok = biosCurrentMap[biosCommon.bmcXname]
-	if !ok {
-		err = fmt.Errorf(
-			"ERROR: missing bios data for %s from %s %s",
-			biosCommon.xname, biosCommon.bmcXname, biosCommon.biosUri)
-		httpCode = http.StatusInternalServerError
-		return
-	}
-
-	biosCray.futureUri = biosCommon.biosUri + "/SD"
+	biosCray.current = &current
 
 	// ---- /redfish/v1/Systems/Node0/Bios/SD ----
 	// ---- /redfish/v1/Systems/Node1/Bios/SD ----
+
+	biosCray.futureUri = biosCommon.biosUri + "/SD"
 
 	biosFutureTasks, codes, err, httpCode := getRedfishNoCheck(biosCommon.targets, biosCray.futureUri)
 	if err != nil {
@@ -1300,20 +1012,12 @@ func getBiosCray(biosCommon *BiosCommon) (biosCray *BiosCray, err error, httpCod
 			Attributes: make(map[string]interface{}),
 		}
 	} else {
-		var biosFutureMap map[string]*rfBiosSDCray
-		biosFutureMap, err, httpCode = parseBiosSDCrayResponse(biosFutureTasks)
+		var future rfBiosSDCray
+		err, httpCode = parseResponseForHost("Systems/Node[0-1]/Bios/SD", biosCommon.bmcXname, biosFutureTasks, &future)
 		if err != nil {
 			return
 		}
-
-		biosCray.future, ok = biosFutureMap[biosCommon.bmcXname]
-		if !ok {
-			err = fmt.Errorf(
-				"ERROR: missing future bios data for %s from %s %s",
-				biosCommon.xname, biosCommon.bmcXname, biosCommon.biosUri)
-			httpCode = http.StatusInternalServerError
-			return
-		}
+		biosCray.future = &future
 	}
 
 	return
@@ -1384,20 +1088,12 @@ func getBiosIntel(biosCommon *BiosCommon) (biosIntel *BiosIntel, err error, http
 		return
 	}
 
-	biosCurrentMap, err, httpCode := parseBiosIntelResponse(biosTasks)
+	var current rfBiosIntel
+	err, httpCode = parseResponseForHost("Systems/*/Bios", biosCommon.bmcXname, biosTasks, &current)
 	if err != nil {
 		return
 	}
-
-	ok := false
-	biosIntel.current, ok = biosCurrentMap[biosCommon.bmcXname]
-	if !ok {
-		err = fmt.Errorf(
-			"ERROR: missing bios data for %s from %s %s",
-			biosCommon.xname, biosCommon.bmcXname, biosCommon.biosUri)
-		httpCode = http.StatusInternalServerError
-		return
-	}
+	biosIntel.current = &current
 
 	return
 }
