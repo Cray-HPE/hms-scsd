@@ -670,11 +670,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/bmc_bios_tpm_state'
         '400':
-          description: Bad request
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
         '404':
-          description: Xname was not for a bmc
+          description: Xname was not for a bmc.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
         '500':
-          description: Internal server error including failures communicating with the server
+          description: Internal server error including failures communicating with the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
     patch:
       tags:
         - bios
@@ -696,13 +717,34 @@ paths:
               $ref: '#/components/schemas/bmc_bios_tpm_state_put'
       responses:
         '204':
-          description: Value set
+          description: OK. The value was set.
         '400':
-          description: Bad request
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
         '404':
-          description: Xname was not for a bmc
+          description: Xname was not for a bmc.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
         '500':
-          description: Internal server error including failures communicating with the server
+          description: Internal server error including failures communicating with the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem7807'
 
 components:
   schemas:
