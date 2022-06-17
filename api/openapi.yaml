@@ -146,11 +146,11 @@ info:
     Force defaults to false, Domain defaults to cabinet.
 
     ### Bios
-    #### GET /bmc/bios/{xname}/TpmState
+    #### GET /bmc/bios/{xname}/tpmstate
 
     Get TPM State in the BIOS settings.
 
-    #### GET /bmc/bios/{xname}/TpmState
+    #### GET /bmc/bios/{xname}/tpmstate
 
     Set TPM State in the BIOS settings.
 
@@ -648,7 +648,7 @@ paths:
         '503':
           description: The service is not taking HTTP requests
 
-  '/bmc/bios/{xname}/TpmState':
+  '/bmc/bios/{xname}/tpmstate':
     get:
       tags:
         - bios
