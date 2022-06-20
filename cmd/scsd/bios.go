@@ -379,6 +379,21 @@ func getRedfishNoCheck(targets []targInfo, uri string) (tasks []trsapi.HttpTask,
 	return tasks, codes, nil, http.StatusOK
 }
 
+func getRedfishAndParseResponse(
+	description string, host string, targets []targInfo, uri string, responseData interface{}) (
+	err error, httpCode int) {
+
+	tasks, err, httpCode := getRedfish(targets, uri)
+	if err != nil {
+		return
+	}
+
+	err, httpCode = parseResponseForHost(description, host, tasks, &responseData)
+	if err != nil {
+		return
+	}
+}
+
 func patchRedfish(targets []targInfo, uri string, requestBody []byte) (tasks []trsapi.HttpTask, err error, httpCode int) {
 	return patchRedfishEtag(targets, uri, requestBody, []string{})
 }
@@ -591,13 +606,8 @@ func getBiosCommon(xname string) (bios *BiosCommon, err error, httpCode int) {
 
 	// ---- /redfish/v1/Chassis ----
 
-	chassisTasks, err, httpCode := getRedfish(bios.targets, RFCHASSIS_API)
-	if err != nil {
-		return
-	}
-
 	var chassis rfChassis
-	err, httpCode = parseResponseForHost("Chassis", bios.bmcXname, chassisTasks, &chassis)
+	err, httpCode = getRedfishAndParseResponse("Chassis", bios.bmcXname, bios.targets, RFCHASSIS_API, &chassis)
 	if err != nil {
 		return
 	}
@@ -605,13 +615,8 @@ func getBiosCommon(xname string) (bios *BiosCommon, err error, httpCode int) {
 
 	// ---- /redfish/v1/Systems ----
 
-	systemsTasks, err, httpCode := getRedfish(bios.targets, RFSYSTEMS_API)
-	if err != nil {
-		return
-	}
-
 	var systems rfSystems
-	err, httpCode = parseResponseForHost("Systems", bios.bmcXname, systemsTasks, &systems)
+	err, httpCode = getRedfishAndParseResponse("Systems", bios.bmcXname, bios.targets, RFSYSTEMS_API, &systems)
 	if err != nil {
 		return
 	}
@@ -640,13 +645,8 @@ func getBiosCommon(xname string) (bios *BiosCommon, err error, httpCode int) {
 	// ---- /redfish/v1/Systems/Self ----
 	// ---- /redfish/v1/Systems/BQWF73500342 ----
 
-	systemTasks, err, httpCode := getRedfish(bios.targets, bios.systemUri)
-	if err != nil {
-		return
-	}
-
 	var system rfSystem
-	err, httpCode = parseResponseForHost("System", bios.bmcXname, systemTasks, &system)
+	err, httpCode = getRedfishAndParseResponse("System", bios.bmcXname, bios.targets, bios.systemUri, &system)
 	if err != nil {
 		return
 	}
@@ -663,13 +663,9 @@ func getBiosHpe(biosCommon *BiosCommon) (biosHpe *BiosHpe, err error, httpCode i
 
 	// ---- /redfish/v1/Systems/1/Bios ----
 
-	biosTasks, err, httpCode := getRedfish(biosCommon.targets, biosCommon.biosUri)
-	if err != nil {
-		return
-	}
-
 	var current rfBiosHpe
-	err, httpCode = parseResponseForHost("Systems/1/Bios", biosCommon.bmcXname, biosTasks, &current)
+	err, httpCode = getRedfishAndParseResponse(
+		"System/1/Bios", biosCommon.bmcXname, biosCommon.targets, biosCommon.biosUri, &current)
 	if err != nil {
 		return
 	}
@@ -679,13 +675,9 @@ func getBiosHpe(biosCommon *BiosCommon) (biosHpe *BiosHpe, err error, httpCode i
 
 	biosHpe.futureUri = biosCommon.biosUri + "/Settings"
 
-	biosFutureTasks, err, httpCode := getRedfish(biosCommon.targets, biosHpe.futureUri)
-	if err != nil {
-		return
-	}
-
 	var future rfBiosHpe
-	err, httpCode = parseResponseForHost("Systems/1/Bios/Settings", biosCommon.bmcXname, biosFutureTasks, &future)
+	err, httpCode = getRedfishAndParseResponse(
+		"System/1/Bios/Settings", biosCommon.bmcXname, biosCommon.targets, biosHpe.futureUri, &future)
 	if err != nil {
 		return
 	}
@@ -700,13 +692,9 @@ func getBiosRegistriesHpe(biosCommon *BiosCommon) (biosRegistries *BiosHpeRegist
 
 	// ---- /redfish/v1/Registries ----
 
-	tasks, err, httpCode := getRedfish(biosCommon.targets, RFREGISTRIES_API)
-	if err != nil {
-		return
-	}
-
 	var registries rfRegistries
-	err, httpCode = parseResponseForHost("Registries", biosCommon.bmcXname, tasks, &registries)
+	err, httpCode = getRedfishAndParseResponse(
+		"Registries", biosCommon.bmcXname, biosCommon.targets, RFREGISTRIES_API, &registries)
 	if err != nil {
 		return
 	}
@@ -730,13 +718,9 @@ func getBiosRegistriesHpe(biosCommon *BiosCommon) (biosRegistries *BiosHpeRegist
 
 	// ---- /redfish/v1/Registries/BiosAttributeRegistryA43.v1_2_40 ----
 
-	tasks, err, httpCode = getRedfish(biosCommon.targets, biosRegistries.biosRegistryUri)
-	if err != nil {
-		return
-	}
-
 	var biosAttributesRegistries rfBiosAttributesRegistries
-	err, httpCode = parseResponseForHost("AttributesRegistries", biosCommon.bmcXname, tasks, &biosAttributesRegistries)
+	err, httpCode = getRedfishAndParseResponse(
+		"AttributesRegistries", biosCommon.bmcXname, biosCommon.targets, biosRegistries.biosRegistryUri, &biosAttributesRegistries)
 	if err != nil {
 		return
 	}
@@ -759,13 +743,9 @@ func getBiosRegistriesHpe(biosCommon *BiosCommon) (biosRegistries *BiosHpeRegist
 
 	// ---- /redfish/v1/registrystore/registries/en/biosattributeregistrya43.v1_2_40 ----
 
-	tasks, err, httpCode = getRedfish(biosCommon.targets, biosRegistries.biosRegistryEnUri)
-	if err != nil {
-		return
-	}
-
 	var biosAttributesRegistry rfBiosAttributesRegistry
-	err, httpCode = parseResponseForHost("AttributesRegistry", biosCommon.bmcXname, tasks, &biosAttributesRegistry)
+	err, httpCode = getRedfishAndParseResponse(
+		"AttributesRegistry", biosCommon.bmcXname, biosCommon.targets, biosRegistries.biosRegistryEnUri, &biosAttributesRegistry)
 	if err != nil {
 		return
 	}
@@ -833,13 +813,9 @@ func getBiosGigabyte(biosCommon *BiosCommon) (biosGigabyte *BiosGigabyte, err er
 
 	// ---- /redfish/v1/Systems/Self/Bios ----
 
-	biosTasks, err, httpCode := getRedfish(biosCommon.targets, biosCommon.biosUri)
-	if err != nil {
-		return
-	}
-
 	var current rfBiosGigabyte
-	err, httpCode = parseResponseForHost("Systems/Self/Bios", biosCommon.bmcXname, biosTasks, &current)
+	err, httpCode = getRedfishAndParseResponse(
+		"Systems/Self/Bios", biosCommon.bmcXname, biosCommon.targets, biosCommon.biosUri, &current)
 	if err != nil {
 		return
 	}
@@ -891,13 +867,10 @@ func getBiosGigabyte(biosCommon *BiosCommon) (biosGigabyte *BiosGigabyte, err er
 	// ---- /redfish/v1/Registries/BiosAttributeRegistry.json ----
 
 	registryUri := "/redfish/v1/Registries/BiosAttributeRegistry.json"
-	registryTasks, err, httpCode := getRedfish(biosCommon.targets, registryUri)
-	if err != nil {
-		return
-	}
 
 	var biosAttributes rfBiosAttributesRegistry
-	err, httpCode = parseResponseForHost("BiosAttributeRegistry.json", biosCommon.bmcXname, registryTasks, &biosAttributes)
+	err, httpCode = getRedfishAndParseResponse(
+		"BiosAttributeRegistry.json", biosCommon.bmcXname, biosCommon.targets, registryUri, &biosAttributes)
 	if err != nil {
 		return
 	}
@@ -967,13 +940,9 @@ func getBiosCray(biosCommon *BiosCommon) (biosCray *BiosCray, err error, httpCod
 	// ---- /redfish/v1/Systems/Node0/Bios ----
 	// ---- /redfish/v1/Systems/Node1/Bios ----
 
-	biosTasks, err, httpCode := getRedfish(biosCommon.targets, biosCommon.biosUri)
-	if err != nil {
-		return
-	}
-
 	var current rfBiosCray
-	err, httpCode = parseResponseForHost("Systems/Node[0-1]/Bios", biosCommon.bmcXname, biosTasks, &current)
+	err, httpCode = getRedfishAndParseResponse(
+		"Systems/Node[0-1]/Bios", biosCommon.bmcXname, biosCommon.targets, biosCommon.biosUri, &current)
 	if err != nil {
 		return
 	}
@@ -1083,13 +1052,9 @@ func getBiosIntel(biosCommon *BiosCommon) (biosIntel *BiosIntel, err error, http
 
 	// ---- /redfish/v1/Systems/BQWF73500342/Bios ----
 
-	biosTasks, err, httpCode := getRedfish(biosCommon.targets, biosCommon.biosUri)
-	if err != nil {
-		return
-	}
-
 	var current rfBiosIntel
-	err, httpCode = parseResponseForHost("Systems/*/Bios", biosCommon.bmcXname, biosTasks, &current)
+	err, httpCode = getRedfishAndParseResponse(
+		"Systems/*/Bios", biosCommon.bmcXname, biosCommon.targets, biosCommon.biosUri, &current)
 	if err != nil {
 		return
 	}
