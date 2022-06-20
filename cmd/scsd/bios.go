@@ -392,6 +392,7 @@ func getRedfishAndParseResponse(
 	if err != nil {
 		return
 	}
+	return
 }
 
 func patchRedfish(targets []targInfo, uri string, requestBody []byte) (tasks []trsapi.HttpTask, err error, httpCode int) {
@@ -630,7 +631,7 @@ func getBiosCommon(xname string) (bios *BiosCommon, err error, httpCode int) {
 		}
 		logger.Errorf("Unknown manufacturer for %s where its chassis has these members: %v", bios.xname, members)
 		err = fmt.Errorf("ERROR: BIOS calls not supported for this type of hardware. xname: %s ", bios.xname)
-		httpCode = http.StatusNotImplemented
+		httpCode = http.StatusBadRequest
 		return
 	}
 
@@ -1093,7 +1094,7 @@ func getBios(r *http.Request) (bios *Bios, err error, httpCode int) {
 			"Getting BIOS has not been implmented for the hardware. type: %d, xname: %s",
 			bios.common.manufacturerType, xname)
 		err = fmt.Errorf("Modifications not supported by BMC at %s", xname)
-		httpCode = http.StatusNotImplemented
+		httpCode = http.StatusBadRequest
 	}
 	return
 }
@@ -1119,7 +1120,7 @@ func patchBios(r *http.Request, attributeName PatchAttributeName, attributeValue
 			"Modifications for %s has not been implmented for cray hardware. xname: %s",
 			attributeName.cray, xname)
 		err = fmt.Errorf("Modifications not supported by BMC at %s", xname)
-		httpCode = http.StatusNotImplemented
+		httpCode = http.StatusBadRequest
 
 		// todo here is the code that likely implements this
 		// err, httpCode = patchBiosCray(biosCommon, attributeName, attributeValue)
@@ -1133,13 +1134,13 @@ func patchBios(r *http.Request, attributeName PatchAttributeName, attributeValue
 			"Modifications for %s has not been implmented for intel hardware. xname: %s",
 			attributeName.intel, xname)
 		err = fmt.Errorf("Modifications not supported by BMC at %s", xname)
-		httpCode = http.StatusNotImplemented
+		httpCode = http.StatusBadRequest
 	default:
 		logger.Errorf(
 			"Modifications for %s has not been implmented for hardware. type: %d, xname: %s",
 			attributeName.intel, biosCommon.manufacturerType, xname)
 		err = fmt.Errorf("Modifications not supported by BMC at %s", xname)
-		httpCode = http.StatusNotImplemented
+		httpCode = http.StatusBadRequest
 	}
 	return
 }
