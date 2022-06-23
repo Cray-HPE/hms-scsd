@@ -84,7 +84,9 @@ type BiosHpeRegistries struct {
 }
 
 type BiosIntel struct {
-	current *rfBiosIntel
+	current   *rfBiosIntel
+	future    *rfBiosIntel
+	futureUri string
 }
 
 type BiosTpmState struct {
@@ -153,12 +155,7 @@ type rfBios struct {
 }
 
 type rfBiosIntel struct {
-	Attributes rfBiosIntelAttributes
-}
-type rfBiosIntelAttributes struct {
-	TpmOperation       int
-	Tpm2Operation      int
-	Tpm2FwUpdateEnable int
+	Attributes map[string]interface{}
 }
 
 type rfBiosHpe struct {
@@ -1049,17 +1046,27 @@ func patchBiosCray(biosCommon *BiosCommon, attributeName PatchAttributeName, att
 
 func getBiosIntel(biosCommon *BiosCommon) (biosIntel *BiosIntel, err error, httpCode int) {
 	httpCode = http.StatusOK
+
 	biosIntel = &BiosIntel{}
+	biosIntel.current = &rfBiosIntel{}
+	biosIntel.future = &rfBiosIntel{}
+	biosIntel.futureUri = biosCommon.biosUri + "/Settings"
 
 	// ---- /redfish/v1/Systems/BQWF73500342/Bios ----
 
-	var current rfBiosIntel
 	err, httpCode = getRedfishAndParseResponse(
-		"Systems/*/Bios", biosCommon.bmcXname, biosCommon.targets, biosCommon.biosUri, &current)
+		"Systems/*/Bios", biosCommon.bmcXname, biosCommon.targets, biosCommon.biosUri, biosIntel.current)
 	if err != nil {
 		return
 	}
-	biosIntel.current = &current
+
+	// ---- /redfish/v1/Systems/BQWF73500342/Bios/Settings ----
+
+	err, httpCode = getRedfishAndParseResponse(
+		"Systems/*/Bios/Settings", biosCommon.bmcXname, biosCommon.targets, biosIntel.futureUri, biosIntel.future)
+	if err != nil {
+		return
+	}
 
 	return
 }
@@ -1245,19 +1252,63 @@ func toTpmStateCray(bios *BiosCray) BiosTpmState {
 	return state
 }
 
+func toInt(value interface{}, defaultValue int) int {
+	if value == nil {
+		return defaultValue
+	}
+	str := fmt.Sprintf("%v", value)
+	result, err := strconv.Atoi(str)
+	if err != nil {
+		return defaultValue
+	}
+	return result
+}
+
 func toTpmStateIntel(bios *BiosIntel) BiosTpmState {
 	state := BiosTpmState{
 		Current: TpmStateNotPresent,
 		Future:  TpmStateNotPresent,
 	}
-	// todo implement getting future state
-	tpmStateIntel := bios.current.Attributes.TpmOperation
-	if DisabledIntel == tpmStateIntel {
-		state.Current = TpmStateDisabled
-		state.Future = TpmStateNotPresent
-	} else if EnabledIntel == tpmStateIntel {
-		state.Current = TpmStateEnabled
-		state.Future = TpmStateNotPresent
+	// The interface{} values in the Attributes map will likely be float64
+	// but should only be either 0 or 1
+	foundCurrentValue := false
+	tpmOperation := -1
+	value, ok := bios.current.Attributes["TpmOperation"]
+	if ok {
+		foundCurrentValue = true
+		tpmOperation = toInt(value, tpmOperation)
+	}
+
+	tpm2Operation := -1
+	value, ok = bios.current.Attributes["Tpm2Operation"]
+	if ok {
+		foundCurrentValue = true
+		tpm2Operation = toInt(value, tpm2Operation)
+	}
+
+	tpmOperationFuture := tpmOperation
+	value, ok = bios.future.Attributes["TpmOperation"]
+	if ok {
+		tpmOperationFuture = toInt(value, tpmOperationFuture)
+	}
+
+	tpm2OperationFuture := tpm2Operation
+	value, ok = bios.future.Attributes["Tpm2Operation"]
+	if ok {
+		tpm2OperationFuture = toInt(value, tpm2OperationFuture)
+	}
+
+	if foundCurrentValue {
+		if EnabledIntel == tpmOperation || EnabledIntel == tpm2Operation {
+			state.Current = TpmStateEnabled
+		} else {
+			state.Current = TpmStateDisabled
+		}
+		if EnabledIntel == tpmOperationFuture || EnabledIntel == tpm2OperationFuture {
+			state.Future = TpmStateEnabled
+		} else {
+			state.Future = TpmStateDisabled
+		}
 	} else {
 		state.Current = TpmStateNotPresent
 		state.Future = TpmStateNotPresent

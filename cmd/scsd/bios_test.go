@@ -250,3 +250,31 @@ func TestValidateXname(t *testing.T) {
 		}
 	}
 }
+
+func TestToInt(t *testing.T) {
+	var value interface{}
+	defaultValue := 42
+
+	i := toInt(value, defaultValue)
+	if i != defaultValue {
+		t.Errorf("Expected %d but instead got %d for nil value", defaultValue, i)
+	}
+
+	value = 0
+	i = toInt(value, defaultValue)
+	if i == defaultValue || i != 0 {
+		t.Errorf("Expected %v but instead got %d for int 0", value, i)
+	}
+
+	value = 7.8
+	i = toInt(value, defaultValue)
+	if i != defaultValue {
+		t.Errorf("Expected %v but instead got %d for float %v", defaultValue, i, value)
+	}
+
+	value = "string-value"
+	i = toInt(value, defaultValue)
+	if i != defaultValue {
+		t.Errorf("Expected %v but instead got %d for the string '%v'", defaultValue, i, value)
+	}
+}
