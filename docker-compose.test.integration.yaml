@@ -26,7 +26,6 @@ services:
       - X_S5_HOST=x0c0s5b0
       - X_S5_PORT=80
     depends_on:
-      - cray-scsd
       - x0c0s0b0
       - x0c0s1b0
       - x0c0s2b0
@@ -138,37 +137,26 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.test.integration
-      args:
-        IN_SCSD_TEST_K8S_AUTH_URL: ${SCSD_TEST_K8S_AUTH_URL}
-        IN_SCSD_TEST_VAULT_PKI_URL: ${SCSD_TEST_VAULT_PKI_URL}
-        IN_SCSD_TEST_VAULT_CA_URL: ${SCSD_TEST_VAULT_CA_URL}
-        IN_CRAY_VAULT_JWT_FILE: ${CRAY_VAULT_JWT_FILE}
-        IN_CRAY_VAULT_ROLE_FILE: ${CRAY_VAULT_ROLE_FILE}
     environment:
       - SCSD_SMD_URL=http://cray-smd:27779/hsm/v2
       - SCSD_HTTP_LISTEN_PORT=25309
       - SCSD_LOCAL_MODE=true
       - SCSD_DEFAULT_HTTP=true
       - SCSD_LOG_LEVEL=TRACE
-      - VAULT_ENABLE=0
-      - IN_SCSD_TEST_K8S_AUTH_URL=:${SCSD_TEST_K8S_AUTH_URL}
-      - IN_SCSD_TEST_VAULT_PKI_URL=:${SCSD_TEST_VAULT_PKI_URL}
-      - IN_SCSD_TEST_VAULT_CA_URL=:${SCSD_TEST_VAULT_CA_URL}
-      - IN_CRAY_VAULT_JWT_FILE=:${CRAY_VAULT_JWT_FILE}
-      - IN_CRAY_VAULT_ROLE_FILE=:${CRAY_VAULT_ROLE_FILE}
+      - VAULT_ENABLE=1
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_TOKEN=hms
+      - VAULT_KEYPATH=hms-creds
+      # CRAY_VAULT_* used by hms-securestorage and hms-certs
+      - CRAY_VAULT_AUTH_PATH=auth/token/create
+      - CRAY_VAULT_ROLE_FILE=configs/namespace
+      - CRAY_VAULT_JWT_FILE=configs/token
     networks:
       - scsd
     depends_on:
       - cray-smd
-      - fake-vault
-
-  fake-vault:
-    build:
-      context: test/integration
-      dockerfile: Dockerfile.fake-vault
-    hostname: fake-vault
-    networks:
-      - scsd
+      - vault
+      - vault-kv-enabler
 
   vault:
     hostname: vault
@@ -183,11 +171,12 @@ services:
       - scsd
 
   vault-kv-enabler:
-    image: artifactory.algol60.net/csm-docker/stable/vault-kv-enabler:1.13.4
+    image: artifactory.algol60.net/csm-docker/stable/vault-kv-enabler:1.18.0
     environment:
-      - VAULT_ADDR=http://${COMPOSE_PROJECT_NAME}_vault_1:8200
+      - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=hms
-      - KV_STORES=hms-creds
+      - VAULT_PKI_ENABLE=true
+      - KV_STORES=hms-creds,secret/certs
     depends_on:
       - vault
     networks:
@@ -202,7 +191,7 @@ services:
       - CRAY_VAULT_AUTH_PATH=auth/token/create
       - CRAY_VAULT_ROLE_FILE=configs/namespace
       - CRAY_VAULT_JWT_FILE=configs/token
-      - VAULT_ADDR=http://${COMPOSE_PROJECT_NAME}_vault_1:8200
+      - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=hms
       - VAULT_KEYPATH=hms-creds
       - SMD_WVAULT=true

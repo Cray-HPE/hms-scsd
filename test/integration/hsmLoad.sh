@@ -58,5 +58,22 @@ if (( scode != 201 )); then
     exit 1
 fi
 
+echo "RedfishEndpoints:"
+cat hout
+
+for i in $(seq 0 5); do
+    pldx='{"ID":"X_S'${i}'_HOST", "Type":"NodeBMC", "Hostname":"10.10.255.'${i}'", "Domain":"local", "FQDN":"10.10.255.'${i}'", "Enabled":true, "UUID":"d4c6d22f-6983-42d8-8e6e-e1fd6d675c1'${i}'", "User":"root", "Password":"********", "RediscoverOnUpdate":true, "DiscoveryInfo":{"LastDiscoveryStatus":"DiscoverOK"}}'
+    pld=`portFix "$pldx"`
+
+    curl -D hout -X POST -d "$pld" http://${HSM}/hsm/v2/Inventory/RedfishEndpoints
+    echo " "
+
+    scode=`cat hout | grep HTTP | awk '{print $2}'`
+    if (( scode != 201 )); then
+        echo "Bad status code from HSM redfish endpoint load: ${scode}"
+        exit 1
+    fi
+done
+
 exit 0
 
