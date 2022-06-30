@@ -15,6 +15,9 @@ github.com/Cray-HPE/hms-securestorage
 github.com/Cray-HPE/hms-trs-app-api/pkg/trs_http_api
 # github.com/Cray-HPE/hms-trs-kafkalib v1.5.2
 github.com/Cray-HPE/hms-trs-kafkalib/pkg/trs-kafkalib
+# github.com/Cray-HPE/hms-xname v1.0.2
+## explicit
+github.com/Cray-HPE/hms-xname/xnametypes
 # github.com/Shopify/sarama v1.24.1
 github.com/Shopify/sarama
 # github.com/davecgh/go-spew v1.1.1
@@ -25,10 +28,14 @@ github.com/eapache/go-resiliency/breaker
 github.com/eapache/go-xerial-snappy
 # github.com/eapache/queue v1.1.0
 github.com/eapache/queue
+# github.com/frankban/quicktest v1.7.3
+## explicit
 # github.com/fsnotify/fsnotify v1.4.9
 github.com/fsnotify/fsnotify
 # github.com/golang/snappy v0.0.1
 github.com/golang/snappy
+# github.com/google/go-cmp v0.5.1
+## explicit
 # github.com/google/uuid v1.1.1
 github.com/google/uuid
 # github.com/gorilla/mux v1.8.0
@@ -38,7 +45,10 @@ github.com/gorilla/mux
 github.com/hashicorp/errwrap
 # github.com/hashicorp/go-cleanhttp v0.5.1
 github.com/hashicorp/go-cleanhttp
-# github.com/hashicorp/go-multierror v1.0.0
+# github.com/hashicorp/go-hclog v0.14.1
+## explicit
+# github.com/hashicorp/go-multierror v1.1.0
+## explicit
 github.com/hashicorp/go-multierror
 # github.com/hashicorp/go-retryablehttp v0.7.0
 github.com/hashicorp/go-retryablehttp
@@ -80,7 +90,8 @@ github.com/klauspost/compress/zstd/internal/xxhash
 github.com/mitchellh/go-homedir
 # github.com/mitchellh/mapstructure v1.3.0
 github.com/mitchellh/mapstructure
-# github.com/pierrec/lz4 v2.2.6+incompatible
+# github.com/pierrec/lz4 v2.4.1+incompatible
+## explicit
 github.com/pierrec/lz4
 github.com/pierrec/lz4/internal/xxh32
 # github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a
@@ -90,28 +101,38 @@ github.com/ryanuber/go-glob
 # github.com/sirupsen/logrus v1.8.1
 ## explicit
 github.com/sirupsen/logrus
-# golang.org/x/crypto v0.0.0-20190404164418-38d8ce5564a5
+# github.com/stretchr/testify v1.5.1
+## explicit
+# golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
+## explicit
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/ed25519/internal/edwards25519
 golang.org/x/crypto/md4
 golang.org/x/crypto/pbkdf2
-# golang.org/x/net v0.0.0-20190620200207-3b0461eec859
+# golang.org/x/net v0.0.0-20200813134508-3edf25e44fcc
+## explicit
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/internal/socks
 golang.org/x/net/proxy
-# golang.org/x/sys v0.0.0-20191026070338-33540a1f6037
+# golang.org/x/sys v0.0.0-20200817155316-9781c653f443
+## explicit
+golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/text v0.3.1-0.20181227161524-e6919f6577db
+# golang.org/x/text v0.3.3
+## explicit
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-# golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
+# golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e
+## explicit
 golang.org/x/time/rate
+# golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
+## explicit
 # gopkg.in/jcmturner/aescts.v1 v1.0.1
 gopkg.in/jcmturner/aescts.v1
 # gopkg.in/jcmturner/dnsutils.v1 v1.0.1
@@ -155,3 +176,5 @@ gopkg.in/square/go-jose.v2
 gopkg.in/square/go-jose.v2/cipher
 gopkg.in/square/go-jose.v2/json
 gopkg.in/square/go-jose.v2/jwt
+# gopkg.in/yaml.v2 v2.2.7
+## explicit
