@@ -2,7 +2,7 @@
 
 # MIT License
 #
-# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -27,10 +27,9 @@ if [ -z $SCSD ]; then
     exit 1
 fi
 
-
 # POST to get a dump of current configs
 
-pldx='{"Force":false,"Targets":["X_S0_HOST:XP0","X_S1_HOST:XP1"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
+pldx='{"Force":false,"Targets":["X_S0_HOST","X_S1_HOST"],"Params":{"NTPServerInfo":{"NTPServers":["sms-nnn-www1"],"Port":234,"ProtocolEnabled":true},"SyslogServerInfo":{"SyslogServers":["sms-mmm-yyy1"],"Port":567,"ProtocolEnabled":true},"SSHKey":"aabbccdd","SSHConsoleKey":"eeddffgg"}}'
 
 source portFix.sh
 pld=`portFix "$pldx"`
@@ -42,8 +41,8 @@ echo " "
 cat hout
 scode=`cat hout | grep HTTP | awk '{print $2}'`
 if (( scode != 200 )); then
-	echo "Bad status code from config load: ${scode}"
-	exit 1
+    echo "Bad status code from config load: ${scode}"
+    exit 1
 fi
 
 exit 0

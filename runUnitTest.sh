@@ -32,6 +32,6 @@ IMAGE="cray/hms-scsd-coverage"
 UNIQUE_TAG=$(echo ${IMAGE}_${GITSHA}_${TIMESTAMP} | tr '[:upper:]' '[:lower:]')
 # export NO_CACHE=--no-cache # this will cause docker build to run with no cache; off by default for local builds, enabled in jenkinsfile
 
-DOCKER_BUILDKIT=0 docker build $NO_CACHE -t $UNIQUE_TAG -f Dockerfile.testing .
+DOCKER_BUILDKIT=0 docker build $NO_CACHE -t $UNIQUE_TAG -f Dockerfile.test.unit .
 docker image rm $UNIQUE_TAG --force
 

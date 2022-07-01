@@ -831,7 +831,7 @@ func doBMCCreateCertsPost(w http.ResponseWriter, r *http.Request) {
 
 			for xx := 0; xx < len(domMap[k]); xx++ {
 				retData.DomainIDs[domMap[k][xx]].StatusCode = http.StatusInternalServerError
-				retData.DomainIDs[domMap[k][xx]].StatusMsg = fmt.Sprintf("Error creating cert for '%s', domain '%s: %v",
+				retData.DomainIDs[domMap[k][xx]].StatusMsg = fmt.Sprintf("Error creating cert for '%s', domain '%s': %v",
 					jdata.DomainIDs[domMap[k][xx]], jdata.Domain, err)
 			}
 			delete(domMap, k)

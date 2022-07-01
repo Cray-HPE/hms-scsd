@@ -2,7 +2,7 @@
 
 # MIT License
 #
-# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -32,7 +32,7 @@ pldx='{"Force":false, "Creds":{"Username":"root", "Password":"zzaabb"}}'
 source portFix.sh
 pld=`portFix "$pldx"`
 
-curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/creds/${X_S0_HOST}:${X_S0_PORT}
+curl -D hout -X POST -d "$pld" http://${SCSD}/v1/bmc/creds/${X_S0_HOST}
 echo " "
 
 scode=`cat hout | grep HTTP | awk '{print $2}'`

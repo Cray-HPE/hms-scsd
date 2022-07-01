@@ -2,7 +2,7 @@
 
 # MIT License
 #
-# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -27,7 +27,7 @@ if [ -z $HSM ]; then
     exit 1
 fi
 
-pldx='{"Components": [ {"ID":"X_S0_HOST:XP0","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S1_HOST:XP1","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S2_HOST:XP2","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S3_HOST:XP3","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"x0c0s4b0:XP4","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"x0c0s5b0:XP5","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"X_S6_HOST:XP6","Type":"NodeBMC","State":"On","Flag":"OK"},{"ID":"X_S7_HOST:XP7","Type":"NodeBMC","State":"On","Flag":"OK"} ]}'
+pldx='{"Components": [ {"ID":"X_S0_HOST","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S1_HOST","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S2_HOST","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S3_HOST","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S4_HOST","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"X_S5_HOST","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"x0c0s6b0","Type":"NodeBMC","State":"On","Flag":"OK"}, {"ID":"x0c0s7b0","Type":"NodeBMC","State":"On","Flag":"OK"}]}'
 
 source portFix.sh
 pld=`portFix "$pldx"`
@@ -38,25 +38,42 @@ echo " "
 echo "Components:"
 cat hout
 scode=`cat hout | grep HTTP | awk '{print $2}'`
-if (( scode != 200 )); then
-	echo "Bad status code from HSM component load: ${scode}"
-	exit 1
+if (( scode != 204 )); then
+    echo "Bad status code from HSM component load: ${scode}"
+    exit 1
 fi
 
-pldx='[{"label":"bmcgroup","description":"group of bmcs","tags":["bmctag"],"members":{"ids":["X_S6_HOST:XP6","X_S7_HOST:XP7"]}}]'
+pldx='{"label":"bmcgroup","description":"group of bmcs","tags":["bmctag"],"members":{"ids":["X_S4_HOST","X_S5_HOST"]}}'
 pld=`portFix "$pldx"`
 
 curl -D hout -X POST -d "$pld" http://${HSM}/hsm/v2/groups
 echo " "
 
-echo "Groups"
+echo "Groups:"
 cat hout
 
 scode=`cat hout | grep HTTP | awk '{print $2}'`
-if (( scode != 200 )); then
-	echo "Bad status code from HSM group load: ${scode}"
-	exit 1
+if (( scode != 201 )); then
+    echo "Bad status code from HSM group load: ${scode}"
+    exit 1
 fi
+
+echo "RedfishEndpoints:"
+cat hout
+
+for i in $(seq 0 5); do
+    pldx='{"ID":"X_S'${i}'_HOST", "Type":"NodeBMC", "Hostname":"10.10.255.'${i}'", "Domain":"local", "FQDN":"10.10.255.'${i}'", "Enabled":true, "UUID":"d4c6d22f-6983-42d8-8e6e-e1fd6d675c1'${i}'", "User":"root", "Password":"********", "RediscoverOnUpdate":true, "DiscoveryInfo":{"LastDiscoveryStatus":"DiscoverOK"}}'
+    pld=`portFix "$pldx"`
+
+    curl -D hout -X POST -d "$pld" http://${HSM}/hsm/v2/Inventory/RedfishEndpoints
+    echo " "
+
+    scode=`cat hout | grep HTTP | awk '{print $2}'`
+    if (( scode != 201 )); then
+        echo "Bad status code from HSM redfish endpoint load: ${scode}"
+        exit 1
+    fi
+done
 
 exit 0
 

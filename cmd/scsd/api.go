@@ -1,6 +1,6 @@
 // MIT License
 //
-// (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -102,6 +102,7 @@ const (
 	API_FETCH_CERTS = API_ROOT + "/bmc/fetchcerts"
 	API_SET_CERTS   = API_ROOT + "/bmc/setcerts"
 	API_SET_CERT    = API_ROOT + "/bmc/setcert"
+	API_BIOS        = API_ROOT + "/bmc/bios"
 	API_HEALTH      = API_ROOT + "/health"
 	API_LIVENESS    = API_ROOT + "/liveness"
 	API_READINESS   = API_ROOT + "/readiness"
@@ -115,6 +116,9 @@ const (
 	RFROOT_API       = "/redfish/v1/"
 	RFCHASSIS_API    = "/redfish/v1/Chassis"
 	IS_MT_API        = "/redfish/v1/Chassis/Enclosure"
+	RFMANAGERS_API   = "/redfish/v1/Managers"
+	RFSYSTEMS_API    = "/redfish/v1/Systems"
+	RFREGISTRIES_API = "/redfish/v1/Registries"
 	MT_NWP_API       = "/redfish/v1/Managers/BMC/NetworkProtocol"
 	RV_NWP_API       = "/redfish/v1/Managers/Self/NetworkProtocol"
 	ACCTSVC_API      = "/redfish/v1/Account"
@@ -223,6 +227,16 @@ func generateRoutes() Routes {
 			strings.ToUpper("Post"),
 			API_SET_CERT + "/{xname}",
 			doBMCSetCertsPostSingle,
+		},
+		Route{"doBiosTpmStateGet",
+			strings.ToUpper("Get"),
+			API_BIOS + "/{xname}/tpmstate",
+			doBiosTpmStateGet,
+		},
+		Route{"doBiosTpmStatePatch",
+			strings.ToUpper("Patch"),
+			API_BIOS + "/{xname}/tpmstate",
+			doBiosTpmStatePatch,
 		},
 		Route{"doHealthGet",
 			strings.ToUpper("Get"),
@@ -515,7 +529,6 @@ func doHSMPutPostPatchDel(url string, method string, pld []byte) ([]byte, error)
 
 	return rspPayload, nil
 }
-
 
 // Given an HSM state returns if it is a viable state.
 

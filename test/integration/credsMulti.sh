@@ -2,7 +2,7 @@
 
 # MIT License
 #
-# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -27,7 +27,7 @@ if [ -z $SCSD ]; then
     exit 1
 fi
 
-pldx='{ "Force":false, "Targets": [ { "Xname": "X_S0_HOST:XP0", "Creds": { "Username":"root", "Password":"aaaaaa" } }, { "Xname": "X_S1_HOST:XP1", "Creds": { "Username":"root", "Password":"bbbbbb" } }, { "Xname": "X_S2_HOST:XP2", "Creds": { "Username":"root", "Password":"cccccc" } }, { "Xname": "X_S3_HOST:XP3", "Creds": { "Username":"root", "Password":"dddddd" } }, { "Xname": "X_S6_HOST:XP6", "Creds": { "Username":"root", "Password":"eeeeee" } } ] }'
+pldx='{ "Force":false, "Targets": [ { "Xname": "X_S0_HOST", "Creds": { "Username":"root", "Password":"aaaaaa" } }, { "Xname": "X_S1_HOST", "Creds": { "Username":"root", "Password":"bbbbbb" } }, { "Xname": "X_S2_HOST", "Creds": { "Username":"root", "Password":"cccccc" } }, { "Xname": "X_S3_HOST", "Creds": { "Username":"root", "Password":"dddddd" } }, { "Xname": "X_S4_HOST", "Creds": { "Username":"root", "Password":"eeeeee" } } ] }'
 
 source portFix.sh
 pld=`portFix "$pldx"`
@@ -40,9 +40,13 @@ echo " "
 cat hout
 scode=`cat hout | grep HTTP | awk '{print $2}'`
 scode2=`cat out.txt | grep StatusCode | grep -v 200`
-if [[ $scode -ne 200 || "${scode2}" != "" ]]; then
+if [[ $scode -ne 200 ]]; then
 	echo "Bad status code from multi creds load: ${scode}"
 	exit 1
+elif [[ "${scode2}" != "" ]]; then
+    echo "Bad status code(s) from multi creds load:"
+    echo "${scode2}"
+    exit 1
 fi
 
 exit 0
