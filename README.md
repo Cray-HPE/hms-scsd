@@ -1,6 +1,6 @@
 # System Configuration Tool
 
-Various BMC parameters are set during the system HW discovery process.   There will be times, however, when certain parameters need to be set outside of the discovery process.  Parameters commonly needing to be set:
+Various BMC parameters are set during the system HW discovery process.  There will be times, however, when certain parameters need to be set outside of the discovery process.  Parameters commonly needing to be set:
 
 * SSH keys
 * NTP server
@@ -10,16 +10,17 @@ Various BMC parameters are set during the system HW discovery process.   There w
 
 **SCSD** is a service which allow these sorts of parameters to be set (or read) at any time.  SCSD can be accessed via its REST API or via the *cray* command-line tool.
 
+
 ## Operation
 
 ![SCSD Block Diagram](scsd_block_diagram.png "HBTD Block Diagram")
-
 
 The SCSD service will present a REST API to facilitate parameter get/set operations.  It will typically contact the Hardware State Manager to verify targets as being correct and in a valid state.  Once it has a list of targets, SCSD will perform the needed Redfish operations in parallel.  Any credentials needed will be fetched from Vault secure storage.
 
 *NOTE: in all POST operation payloads there is an optional "Force" field.  If present, and set to 'true', then the Hardware State Manager will not be utilized; the Redfish operations will be attempted without verifying they are present or in a good state.   If the "Force" field is not present or is present but set to 'false', target states will be verified, and any targets not in acceptable states will not be included in the operation.*
 
 The specified targets can be BMC XNames, or Hardware State Manager Group IDs.  If BMCs are grouped in the Hardware State Manager, the usage of this tool becomes much easier since single targets can be used rather than long lists.
+
 
 ## Network Protocol Parameters
 
@@ -103,18 +104,18 @@ Please refer to the swagger doc in this repo: api/openapi.yaml, in the
 
 ## CLI
 
-The SCSD CLI will be the standard Cray CLI based on the Swagger specification for the service.  Thus, all of the usual syntaxes apply for things like authentication, etc.   This style of CLI will make the use of SCSD consistent with all other Cray CLIs.
+The SCSD CLI will be the standard Cray CLI based on the Swagger specification for the service.  Thus, all of the usual syntaxes apply for things like authentication, etc.  This style of CLI will make the use of SCSD consistent with all other Cray CLIs.
 
 Since the Cray CLI for SCSD is the same as all other CLIs, and is self-documenting, its usage will not be outlined in this document.
 
-Quick Example:   cray scsd syslog update --syslog sms-ncn-w001:514 x0c0s0b0
+Quick Example:  cray scsd syslog update --syslog sms-ncn-w001:514 x0c0s0b0
 
 This updates the syslog server info on BMC x0c0s0b0, having it now point to sms-ncn-w001 port 514.
 
 
 ## Use Cases
 
-Following are various use cases for SCSD.   Many of them require a list of valid BMCs, which can be obtained via the following script:
+Following are various use cases for SCSD.  Many of them require a list of valid BMCs, which can be obtained via the following script:
 
 ```bash
 #!/bin/bash
@@ -193,6 +194,7 @@ bmc_creds_glb.json
 ```
 
 If the above cray cli command has any components that do not have the status of "OK", these must be retried until they work, or retries are exhausted and noted as failures.  Failed modules need to be taken out of the system until they are fixed.
+
 
 ### Set BMC Redfish Credentials: All BMCs Have Different Creds
 
@@ -427,9 +429,10 @@ Execute SCSD to set the certs on the target BMCs:
 }
 ```
 
+
 ### TLS Certs: TLS Cert and CA Trust Bundle Rolling
 
-At any point the TLS certs can be re-generated and replaced on Redfish BMCs.   The CA trust bundle can also be modified at any time.
+At any point the TLS certs can be re-generated and replaced on Redfish BMCs.  The CA trust bundle can also be modified at any time.
 
 When this is to be done, the following steps are needed:
 
@@ -438,8 +441,10 @@ When this is to be done, the following steps are needed:
 3. Re-generate the TLS cabinet-level certs as in step 1 above.
 Place the TLS certs onto the Redfish BMCs as in step 2 above.
 
+
 ### SCSD CT Testing
 
-This repository builds and publishes hms-scsd-ct-test RPMs along with the service itself containing tests that verify SCSD on the
-NCNs of live Shasta systems. The tests require the hms-ct-test-base RPM to also be installed on the NCNs in order to execute.
-The version of the test RPM installed on the NCNs should always match the version of SCSD deployed on the system.
+In addition to the service itself, this repository builds and publishes cray-scsd-test images containing tests that verify SCSD
+on live Shasta systems. The tests are invoked via helm test as part of the Continuous Test (CT) framework during CSM installs and
+upgrades. The version of the cray-scsd-test image (vX.Y.Z) should match the version of the cray-scsd image being tested, both of
+which are specified in the helm chart for the service.
