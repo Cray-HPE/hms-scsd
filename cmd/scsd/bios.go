@@ -111,7 +111,7 @@ const (
 type BiosAttributeName string
 
 const (
-	TpmStateAttributeCray     BiosAttributeName = "TPM State" // todo change to real name once it is known
+	TpmStateAttributeCray     BiosAttributeName = "TPM Control"
 	TpmStateAttributeGigabyte BiosAttributeName = "TPM State"
 	TpmStateAttributeHpe      BiosAttributeName = "TpmState"
 	TpmStateAttributeIntel    BiosAttributeName = "TpmOperation"
@@ -129,10 +129,6 @@ const (
 	EnabledIntel     int    = 1
 	DisabledIntel    int    = 0
 )
-
-type rfManagers struct {
-	Members []rfManagersMembers
-}
 
 type rfManagersMembers struct {
 	ID string `json:"@odata.id"`
@@ -222,17 +218,53 @@ type rfBiosSDGigabyte struct {
 	Attributes map[string]interface{} `json:"Attributes"` // this can be nil. the values can be either string or int
 }
 
+/*
+Example for rfBiosCray
+{
+  "@odata.etag": "W/\"1665087620\"",
+  "@odata.id": "/redfish/v1/Systems/Node0/Bios",
+  "Attributes": {
+    "TPM Control": {
+      "AllowableValues": [
+        "Disabled",
+        "Enabled"
+      ],
+      "DataType": "string",
+      "current_value": "Enabled",
+      "default_value": "Enabled",
+      "menu_type": "Debug",
+      "reset_type": "Cold"
+    }
+  },
+  "Id": "Bios",
+  "Name": "Current BIOS Settings"
+}
+*/
 type rfBiosCray struct {
 	ETag       string                         `json:"@odata.etag"`
 	Attributes map[string]rfBiosAttributeCray `json:"Attributes"`
 }
 
 type rfBiosAttributeCray struct {
-	AllowedValues []interface{} `json:"AllowedValues"`
-	DataType      string        `json:"DataType"`
-	CurrentValue  interface{}   `json:"current_value"`
+	AllowableValues []interface{} `json:"AllowableValues"`
+	DataType        string        `json:"DataType"`
+	CurrentValue    interface{}   `json:"current_value"`
 }
 
+/*
+Example for rfBiosSDCray
+{
+  "@odata.etag": "W/\"1668554829\"",
+  "@odata.id": "/redfish/v1/Systems/Node0/Bios/SD",
+  "@odata.type": "#Bios.v1_0_2.Bios",
+  "Attributes": {
+    "TPM Control": "Enabled"
+  },
+  "Description": "Future BIOS Settings",
+  "Id": "SD",
+  "Name": "Future BIOS Settings"
+}
+*/
 type rfBiosSDCray struct {
 	ETag       string                 `json:"@odata.etag"`
 	Attributes map[string]interface{} `json:"Attributes"`
@@ -249,10 +281,6 @@ type rfSettingsObject struct {
 
 type rfRegistries struct {
 	Members []rfManagersMembers
-}
-
-type rfRegistriesMembers struct {
-	ID string `json:"@odata.id"`
 }
 
 type rfBiosAttributesRegistries struct {
@@ -341,7 +369,7 @@ func getManufacturerType(chassis *rfChassis) manufacturerType {
 }
 
 func getRedfish(targets []targInfo, uri string) (tasks []trsapi.HttpTask, err error, httpCode int) {
-	tasks, _, err, httpCode = getRedfishNoCheck(targets, uri)
+	tasks, _, _, _ = getRedfishNoCheck(targets, uri)
 
 	err = checkStatusCodes(tasks)
 	if err != nil {
@@ -992,6 +1020,9 @@ func getBiosCray(biosCommon *BiosCommon) (biosCray *BiosCray, err error, httpCod
 
 func patchBiosCray(biosCommon *BiosCommon, attributeName PatchAttributeName, attrbiuteValue PatchAttributeValue) (err error, httpCode int) {
 	biosCray, err, httpCode := getBiosCray(biosCommon)
+	if err != nil {
+		return
+	}
 
 	name := string(attributeName.cray)
 	futureValue := fmt.Sprintf("%v", attrbiuteValue.cray)
@@ -1004,7 +1035,7 @@ func patchBiosCray(biosCommon *BiosCommon, attributeName PatchAttributeName, att
 	}
 
 	foundValueDefined := false
-	for _, value := range attribute.AllowedValues {
+	for _, value := range attribute.AllowableValues {
 		if value == futureValue {
 			foundValueDefined = true
 			break
@@ -1013,7 +1044,7 @@ func patchBiosCray(biosCommon *BiosCommon, attributeName PatchAttributeName, att
 	if !foundValueDefined {
 		logger.Errorf(
 			"Tried to set %s with redfish value %s, but redfish only supports %v",
-			name, futureValue, attribute.AllowedValues)
+			name, futureValue, attribute.AllowableValues)
 		err = fmt.Errorf("BIOS %s value %s is not supported", name, futureValue)
 		httpCode = http.StatusMethodNotAllowed
 		return
@@ -1024,7 +1055,7 @@ func patchBiosCray(biosCommon *BiosCommon, attributeName PatchAttributeName, att
 	etag := biosCray.future.ETag
 	if etag == "" {
 		// when SD (i.e. the future settings) is not avialble the If-Match header should match anything
-		// gigabyte will reject any patch request that does not have a If-Match header
+		// This is not strictly required because cray hardware does not currently require the etag
 		etag = "*"
 	}
 	tasks, err, httpCode := patchRedfishEtag(biosCommon.targets, biosCray.futureUri, []byte(rfRequestBody), []string{etag})
@@ -1122,15 +1153,7 @@ func patchBios(r *http.Request, attributeName PatchAttributeName, attributeValue
 
 	switch biosCommon.manufacturerType {
 	case cray:
-		// todo implement once castle supports showing tpm via the redfish bios interface
-		logger.Errorf(
-			"Modifications for %s has not been implmented for cray hardware. xname: %s",
-			attributeName.cray, xname)
-		err = fmt.Errorf("Modifications not supported by BMC at %s", xname)
-		httpCode = http.StatusBadRequest
-
-		// todo here is the code that likely implements this
-		// err, httpCode = patchBiosCray(biosCommon, attributeName, attributeValue)
+		err, httpCode = patchBiosCray(biosCommon, attributeName, attributeValue)
 	case gigabyte:
 		err, httpCode = patchBiosGigabyte(biosCommon, attributeName, attributeValue)
 	case hpe:
@@ -1240,11 +1263,11 @@ func toTpmStateCray(bios *BiosCray) BiosTpmState {
 	tpmStateKey := string(TpmStateAttributeCray)
 	attribute, ok := bios.current.Attributes[tpmStateKey]
 	if ok {
-		state.Current = toTpmStateValueGigabyte(attribute.CurrentValue)
+		state.Current = toTpmStateValueCray(attribute.CurrentValue)
 
 		attributeFuture, okFuture := bios.future.Attributes[tpmStateKey]
 		if okFuture {
-			state.Future = toTpmStateValueGigabyte(attributeFuture)
+			state.Future = toTpmStateValueCray(attributeFuture)
 		} else {
 			state.Future = state.Current
 		}
