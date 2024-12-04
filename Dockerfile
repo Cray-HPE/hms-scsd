@@ -1,6 +1,6 @@
 # MIT License
 #
-# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2021,2024] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -24,7 +24,7 @@
 
 ### Build Base Stage ###
 
-FROM artifactory.algol60.net/docker.io/library/golang:1.16-alpine AS build-base
+FROM artifactory.algol60.net/docker.io/library/golang:1.23-alpine AS build-base
 
 RUN set -ex \
     && apk -U upgrade \
@@ -46,7 +46,7 @@ FROM base AS builder
 
 # Now build
 RUN set -ex \
-    && go build -v -i -o scsd github.com/Cray-HPE/hms-scsd/cmd/scsd
+    && go build -v -o scsd github.com/Cray-HPE/hms-scsd/cmd/scsd
 
 ### Final Stage ###
 

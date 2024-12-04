@@ -1,6 +1,6 @@
 module github.com/Cray-HPE/hms-scsd
 
-go 1.16
+go 1.23
 
 require (
 	github.com/Cray-HPE/hms-base v1.15.1
@@ -8,7 +8,7 @@ require (
 	github.com/Cray-HPE/hms-compcredentials v1.11.3
 	github.com/Cray-HPE/hms-securestorage v1.13.0
 	github.com/Cray-HPE/hms-trs-app-api v1.6.2
-	github.com/Cray-HPE/hms-xname v1.0.2
+	github.com/Cray-HPE/hms-xname v1.4.0
 	github.com/frankban/quicktest v1.7.3 // indirect
 	github.com/google/go-cmp v0.5.1 // indirect
 	github.com/gorilla/mux v1.8.0
