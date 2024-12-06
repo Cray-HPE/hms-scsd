@@ -31,7 +31,7 @@ RUN go env -w GO111MODULE=auto
 
 COPY fake-rfep.go ${GOPATH}/src/fake-rfep/
 
-RUN set -ex && go build -v -i -o /usr/local/bin/fake-rfep fake-rfep
+RUN set -ex && go build -v -o /usr/local/bin/fake-rfep fake-rfep
 
 ### Final Stage ###
 
