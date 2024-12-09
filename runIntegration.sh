@@ -2,7 +2,7 @@
 
 # MIT License
 #
-# (C) Copyright [2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2022,2024] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -42,7 +42,7 @@ echo "COMPOSE_FILE: ${COMPOSE_FILE}"
 args="-f $COMPOSE_FILE -p $COMPOSE_PROJECT_NAME"
 
 function cleanup() {
-    docker-compose $args down
+    docker compose $args down
     if [[ $? -ne 0 ]]; then
         echo "Failed to decompose environment!"
         exit 1
@@ -53,16 +53,16 @@ function cleanup() {
 
 # Get the base containers running
 echo "Starting containers..."
-docker-compose $args build --build-arg SCSD_VERSION=${SCSD_VERSION}
-docker-compose $args up -d cray-scsd
-docker-compose $args up --exit-code-from integration-tests integration-tests
+docker compose $args build --build-arg SCSD_VERSION=${SCSD_VERSION}
+docker compose $args up -d cray-scsd
+docker compose $args up --exit-code-from integration-tests integration-tests
 
 test_result=$?
 
 # Clean up
 echo "Cleaning up containers..."
 if [[ $test_result -ne 0 ]]; then
-    docker-compose $args logs > ${LOG_FILE} 2>&1
+    docker compose $args logs > ${LOG_FILE} 2>&1
     echo "================================================="
     echo "LOGS:"
     cat ${LOG_FILE}

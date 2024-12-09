@@ -3,7 +3,7 @@
 #
 # MIT License
 #
-# (C) Copyright [2022] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2022,2024] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -41,7 +41,7 @@ echo "COMPOSE_FILE: $COMPOSE_FILE"
 args="-f $COMPOSE_FILE -p $COMPOSE_PROJECT_NAME"
 
 function cleanup() {
-  docker-compose $args down
+  docker compose $args down
   if ! [[ $? -eq 0 ]]; then
     echo "Failed to decompose environment!"
     exit 1
@@ -52,12 +52,12 @@ function cleanup() {
 
 # Get the base containers running
 echo "Starting containers..."
-docker-compose $args build --no-cache
-docker-compose $args up -d cray-scsd
-docker-compose $args up -d ct-tests-functional-wait-for-smd
+docker compose $args build --no-cache
+docker compose $args up -d cray-scsd
+docker compose $args up -d ct-tests-functional-wait-for-smd
 docker wait ${COMPOSE_PROJECT_NAME}_ct-tests-functional-wait-for-smd_1
 docker logs ${COMPOSE_PROJECT_NAME}_ct-tests-functional-wait-for-smd_1
-docker-compose $args up --exit-code-from ct-tests-smoke ct-tests-smoke
+docker compose $args up --exit-code-from ct-tests-smoke ct-tests-smoke
 test_result=$?
 echo "Cleaning up containers..."
 if [[ $test_result -ne 0 ]]; then
@@ -65,7 +65,7 @@ if [[ $test_result -ne 0 ]]; then
   cleanup 1
 fi
 
-#docker-compose up --exit-code-from ct-tests-functional ct-tests-functional
+#docker compose up --exit-code-from ct-tests-functional ct-tests-functional
 #test_result=$?
 # Clean up
 #echo "Cleaning up containers..."
