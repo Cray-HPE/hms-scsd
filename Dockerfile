@@ -1,6 +1,6 @@
 # MIT License
 #
-# (C) Copyright [2020-2021,2024] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2021,2024-2025] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -44,9 +44,15 @@ COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-scsd/vendor
 
 FROM base AS builder
 
-# Now build
-RUN set -ex \
-    && go build -v -o scsd github.com/Cray-HPE/hms-scsd/cmd/scsd
+# Set profiling to disabled by default
+ARG ENABLE_PPROF=true
+
+# Conditionally build with the pprof tag if profiling is enabled
+RUN if [ "$ENABLE_PPROF" = "true" ]; then \
+        set -ex && go build -v -tags pprof -o scsd github.com/Cray-HPE/hms-scsd/cmd/scsd; \
+    else \
+        set -ex && go build -v -o scsd github.com/Cray-HPE/hms-scsd/cmd/scsd; \
+    fi
 
 ### Final Stage ###
 
