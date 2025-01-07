@@ -1,6 +1,6 @@
 # MIT License
 #
-# (C) Copyright [2020-2021,2024] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2021,2024-2025] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -20,7 +20,8 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-# Dockerfile for building HMS SCSD.
+# Dockerfile for building HMS SCSD with pprof support.
+# The only difference from primary dockerfile is building with the pprof tag
 
 ### Build Base Stage ###
 
@@ -44,9 +45,7 @@ COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-scsd/vendor
 
 FROM base AS builder
 
-# Now build
-RUN set -ex \
-    && go build -v -o scsd github.com/Cray-HPE/hms-scsd/cmd/scsd
+RUN set -ex && go build -v -tags pprof -o scsd github.com/Cray-HPE/hms-scsd/cmd/scsd
 
 ### Final Stage ###
 
