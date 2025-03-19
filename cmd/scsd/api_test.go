@@ -1,6 +1,6 @@
 // MIT License
 //
-// (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020-2021,2025] Hewlett Packard Enterprise Development LP
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -30,7 +30,7 @@ import (
 	"testing"
 	"time"
 
-	base "github.com/Cray-HPE/hms-base"
+	base "github.com/Cray-HPE/hms-base/v2"
 	"github.com/Cray-HPE/hms-certs/pkg/hms_certs"
 	trsapi "github.com/Cray-HPE/hms-trs-app-api/pkg/trs_http_api"
 )

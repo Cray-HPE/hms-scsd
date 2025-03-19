@@ -1,6 +1,6 @@
 // MIT License
 //
-// (C) Copyright [2020-2022,2024] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020-2022,2024-2025] Hewlett Packard Enterprise Development LP
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -35,8 +35,9 @@ import (
 	"strings"
 	"time"
 
-	base "github.com/Cray-HPE/hms-base"
+	base "github.com/Cray-HPE/hms-base/v2"
 	trsapi "github.com/Cray-HPE/hms-trs-app-api/pkg/trs_http_api"
+	"github.com/Cray-HPE/hms-xname/xnametypes"
 	"github.com/gorilla/mux"
 )
 
@@ -856,7 +857,7 @@ func doCredsPostOne(w http.ResponseWriter, r *http.Request) {
 	var retData cfgSingleRsp
 
 	mvars := mux.Vars(r)
-	XName := base.NormalizeHMSCompID(mvars["xname"])
+	XName := xnametypes.NormalizeHMSCompID(mvars["xname"])
 
 	var discoveryTargets []string
 	discoveryTargets = append(discoveryTargets, XName)
@@ -997,7 +998,7 @@ func doCredsGet(w http.ResponseWriter, r *http.Request) {
 
 		//Verify the name formats
 		for ii := 0; ii < len(xlist); ii++ {
-			xn := base.VerifyNormalizeCompID(xlist[ii])
+			xn := xnametypes.VerifyNormalizeCompID(xlist[ii])
 			if xn == "" {
 				logger.Errorf("Invalid XName: '%s'", xlist[ii])
 				elist = append(elist, xlist[ii])
@@ -1024,7 +1025,7 @@ func doCredsGet(w http.ResponseWriter, r *http.Request) {
 				r.URL.Path, http.StatusBadRequest)
 			return
 		}
-		compType = base.VerifyNormalizeType(toks[0])
+		compType = xnametypes.VerifyNormalizeType(toks[0])
 		if compType == "" {
 			sendErrorRsp(w, "Invalid query parameter 'type'",
 				"ERROR: URL query parameter 'type' is invalid component type.",
@@ -1085,7 +1086,7 @@ func doCredsGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for ii := 0; ii < len(compData.Components); ii++ {
-		if base.IsHMSTypeController(base.GetHMSType(compData.Components[ii].ID)) {
+		if xnametypes.IsHMSTypeController(xnametypes.GetHMSType(compData.Components[ii].ID)) {
 			if goodHSMState(compData.Components[ii].State) {
 				retXnames = append(retXnames, compData.Components[ii].ID)
 			}

@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).\
 
+## [1.21.0] - 2025-03-21
+
+### Security
+
+- Updated image and module dependencies for security updates
+- Various code changes to accomodate module updates
+- Updated Go vo v1.24
+- Resolved build warnings in Dockerfiles and docker compose files
+- Stopped using legacy Bocker builder
+- Internal tracking ticket: CASMHMS-6418
+
 ## [1.20.0] - 2023-12-03
 
 ### Changed

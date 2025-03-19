@@ -1,6 +1,6 @@
 // MIT License
 //
-// (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020-2021,2025] Hewlett Packard Enterprise Development LP
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -32,8 +32,8 @@ import (
 
 	"github.com/gorilla/mux"
 
-	base "github.com/Cray-HPE/hms-base"
 	trsapi "github.com/Cray-HPE/hms-trs-app-api/pkg/trs_http_api"
+	"github.com/Cray-HPE/hms-xname/xnametypes"
 )
 
 // Used by loadcfg, dumpcfg, and cfg/{xname}
@@ -744,7 +744,7 @@ func doCfgPost(w http.ResponseWriter, r *http.Request) {
 	var rdata cfgSingleRsp
 
 	vars := mux.Vars(r)
-	targ := base.NormalizeHMSCompID(vars["xname"])
+	targ := xnametypes.NormalizeHMSCompID(vars["xname"])
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
