@@ -372,8 +372,8 @@ func fetchTargAccount(taskList []trsapi.HttpTask, username []string, retEtags *[
 		err := doOp(taskList)
 		if err != nil {
 			emsg := fmt.Sprintf("Problem fetching valid account URL: %v", err)
-			logger.Errorf(emsg)
-			return fmt.Errorf(emsg)
+			logger.Errorf("%s", emsg)
+			return fmt.Errorf("%s", emsg)
 		}
 		err = checkStatusCodes(taskList)
 		if err != nil {
@@ -650,7 +650,7 @@ func doDiscreetCredsPost(w http.ResponseWriter, r *http.Request) {
 			errStr := updateCreds(targ, unArray[ii], pwArray[ii])
 			if errStr != "" {
 				tdMap[targ].statusCode = http.StatusPreconditionFailed
-				tdMap[targ].err = fmt.Errorf(errStr)
+				tdMap[targ].err = fmt.Errorf("%s", errStr)
 				//TODO: NOTE: if we can't store creds, then the HW and the cred
 				//store are out of sync.  Will need to be able to un-do this
 				//at some point.
@@ -659,8 +659,8 @@ func doDiscreetCredsPost(w http.ResponseWriter, r *http.Request) {
 		} else {
 			emsg := fmt.Sprintf("ERROR: RF cred set operation failed for '%s'/'%s', creds unchanged.",
 				targ, taskList[ii].Request.URL.Path)
-			logger.Errorf(emsg)
-			tdMap[targ].err = fmt.Errorf(emsg)
+			logger.Errorf("%s", emsg)
+			tdMap[targ].err = fmt.Errorf("%s", emsg)
 			numBad++
 		}
 
@@ -801,7 +801,7 @@ func doGlobalCredsPost(w http.ResponseWriter, r *http.Request) {
 			discoveryTargets = append(discoveryTargets, targ)
 			errStr := updateCreds(targ, jdata.Username, jdata.Password)
 			if errStr != "" {
-				logger.Errorf(errStr)
+				logger.Errorf("%s", errStr)
 				//TODO: NOTE: if we can't store creds, then the HW and the cred
 				//store are out of sync.  Will need to be able to un-do this
 				//at some point.
@@ -937,7 +937,7 @@ func doCredsPostOne(w http.ResponseWriter, r *http.Request) {
 		logger.Infof("INFO: RF creds for '%s' successfully updated.", targ)
 		errStr := updateCreds(targ, jdata.Creds.Username, jdata.Creds.Password)
 		if errStr != "" {
-			logger.Errorf(errStr)
+			logger.Errorf("%s", errStr)
 			//TODO: NOTE: if we can't store creds, then the HW and the cred
 			//store are out of sync.  Will need to be able to un-do this
 			//at some point.

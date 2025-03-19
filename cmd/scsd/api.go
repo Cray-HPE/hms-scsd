@@ -465,7 +465,7 @@ func populateTaskList(taskList []trsapi.HttpTask, targs []string, urlTail string
 // Convienience func to send an HTTP error response.
 
 func sendErrorRsp(w http.ResponseWriter, title string, emsg string, url string, ecode int) {
-	logger.Errorf(emsg)
+	logger.Errorf("%s", emsg)
 	pdet := base.NewProblemDetails("about:blank", title, emsg, url, ecode)
 	base.SendProblemDetails(w, pdet, 0)
 }
