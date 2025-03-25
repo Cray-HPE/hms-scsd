@@ -2,7 +2,7 @@
 
 # MIT License
 #
-# (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2021,2025] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -32,6 +32,6 @@ IMAGE="cray/hms-scsd-coverage"
 UNIQUE_TAG=$(echo ${IMAGE}_${GITSHA}_${TIMESTAMP} | tr '[:upper:]' '[:lower:]')
 # export NO_CACHE=--no-cache # this will cause docker build to run with no cache; off by default for local builds, enabled in jenkinsfile
 
-DOCKER_BUILDKIT=0 docker build $NO_CACHE -t $UNIQUE_TAG -f Dockerfile.test.unit .
+docker build $NO_CACHE -t $UNIQUE_TAG -f Dockerfile.test.unit .
 docker image rm $UNIQUE_TAG --force
 

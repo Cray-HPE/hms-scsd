@@ -1,6 +1,6 @@
 # MIT License
 #
-# (C) Copyright [2020-2022,2024] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2022,2024-2025] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -25,7 +25,7 @@
 # Author: mpkelly
 # Date: 26-February 2020
 
-FROM artifactory.algol60.net/docker.io/library/golang:1.23-alpine AS builder
+FROM artifactory.algol60.net/docker.io/library/golang:1.24-alpine AS builder
 LABEL maintainer="Hewlett Packard Enterprise"
 
 RUN go env -w GO111MODULE=auto

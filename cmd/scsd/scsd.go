@@ -1,6 +1,6 @@
 // MIT License
 //
-// (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020-2022,2025] Hewlett Packard Enterprise Development LP
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -34,7 +34,7 @@ import (
 	"syscall"
 	"time"
 
-	base "github.com/Cray-HPE/hms-base"
+	base "github.com/Cray-HPE/hms-base/v2"
 	"github.com/Cray-HPE/hms-certs/pkg/hms_certs"
 	compcreds "github.com/Cray-HPE/hms-compcredentials"
 	sstorage "github.com/Cray-HPE/hms-securestorage"

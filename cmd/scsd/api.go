@@ -1,6 +1,6 @@
 // MIT License
 //
-// (C) Copyright [2020-2022] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020-2022,2025] Hewlett Packard Enterprise Development LP
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -32,8 +32,9 @@ import (
 	"net/http"
 	"strings"
 
-	base "github.com/Cray-HPE/hms-base"
+	base "github.com/Cray-HPE/hms-base/v2"
 	trsapi "github.com/Cray-HPE/hms-trs-app-api/pkg/trs_http_api"
+	"github.com/Cray-HPE/hms-xname/xnametypes"
 	"github.com/gorilla/mux"
 )
 
@@ -464,7 +465,7 @@ func populateTaskList(taskList []trsapi.HttpTask, targs []string, urlTail string
 // Convienience func to send an HTTP error response.
 
 func sendErrorRsp(w http.ResponseWriter, title string, emsg string, url string, ecode int) {
-	logger.Errorf(emsg)
+	logger.Errorf("%s", emsg)
 	pdet := base.NewProblemDetails("about:blank", title, emsg, url, ecode)
 	base.SendProblemDetails(w, pdet, 0)
 }
@@ -572,7 +573,7 @@ func hsmVerify(inList []targInfo, force bool, expGroups bool) ([]targInfo, error
 		for ii := 0; ii < len(inList); ii++ {
 			logger.Tracef("hsmVerify, inList[%d]: '%v'", ii, inList[ii])
 			hstate := base.StateUnknown
-			xn := base.VerifyNormalizeCompID(stripPort(inList[ii].target))
+			xn := xnametypes.VerifyNormalizeCompID(stripPort(inList[ii].target))
 			if xn != "" {
 				hstate = base.StateReady
 			}
@@ -588,7 +589,7 @@ func hsmVerify(inList []targInfo, force bool, expGroups bool) ([]targInfo, error
 	checkGroups := false
 
 	for ii := 0; ii < len(inList); ii++ {
-		xn := base.VerifyNormalizeCompID(stripPort(inList[ii].target))
+		xn := xnametypes.VerifyNormalizeCompID(stripPort(inList[ii].target))
 		logger.Tracef("hsmVerify() xn: '%s', targ: '%s'", xn, inList[ii].target)
 		if xn == "" {
 			checkGroups = true
@@ -643,8 +644,8 @@ func hsmVerify(inList []targInfo, force bool, expGroups bool) ([]targInfo, error
 				//In some cases there can be :port especially for testing.
 				//Gotta lop that off before checking for valid type.
 				targ := stripPort(groupData[ii].Members.IDS[jj])
-				ctype := base.GetHMSType(targ)
-				if (ctype != base.HMSTypeInvalid) && base.IsHMSTypeController(ctype) {
+				ctype := xnametypes.GetHMSType(targ)
+				if (ctype != xnametypes.HMSTypeInvalid) && xnametypes.IsHMSTypeController(ctype) {
 					expGroupTargs = append(expGroupTargs, targInfo{
 						target: groupData[ii].Members.IDS[jj],
 						group:  groupData[ii].Label,

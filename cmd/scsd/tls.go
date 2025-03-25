@@ -32,9 +32,9 @@ import (
 	"strings"
 	"time"
 
-	base "github.com/Cray-HPE/hms-base"
 	"github.com/Cray-HPE/hms-certs/pkg/hms_certs"
 	trsapi "github.com/Cray-HPE/hms-trs-app-api/pkg/trs_http_api"
+	"github.com/Cray-HPE/hms-xname/xnametypes"
 	"github.com/gorilla/mux"
 )
 
@@ -1219,7 +1219,7 @@ func doBMCSetCertsPostSingle(w http.ResponseWriter, r *http.Request) {
 
 	funcName := "doBMCSetCertsPostSingle"
 	vars := mux.Vars(r)
-	targ := base.NormalizeHMSCompID(vars["xname"])
+	targ := xnametypes.NormalizeHMSCompID(vars["xname"])
 
 	force, cdom := getRFPostParams(r)
 

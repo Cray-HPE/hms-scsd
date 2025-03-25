@@ -1,6 +1,6 @@
 // MIT License
 //
-// (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020-2021,2025] Hewlett Packard Enterprise Development LP
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -32,8 +32,8 @@ import (
 
 	"github.com/gorilla/mux"
 
-	base "github.com/Cray-HPE/hms-base"
 	trsapi "github.com/Cray-HPE/hms-trs-app-api/pkg/trs_http_api"
+	"github.com/Cray-HPE/hms-xname/xnametypes"
 )
 
 // Used by loadcfg, dumpcfg, and cfg/{xname}
@@ -302,38 +302,38 @@ func getNWP(pmList []string, targData []targInfo) (dumpCfgPostRsp, error) {
 		}
 		if (taskList[ii].Request.Response == nil) || (taskList[ii].Request.Response.ContentLength == 0) {
 			emsg := "ERROR: No payload from NWProtocol GET operation."
-			logger.Errorf(emsg)
+			logger.Errorf("%s", emsg)
 			rsp := dumpCfgPostRspElem{StatusCode: http.StatusPreconditionFailed,
 				Xname: targ}
 			rsp.StatusMsg = "Target contains no NWProtocol data."
 			rspData.Targets = append(rspData.Targets, rsp)
 			tdMap[targ].statusCode = http.StatusPreconditionFailed
-			tdMap[targ].err = fmt.Errorf(emsg)
+			tdMap[targ].err = fmt.Errorf("%s", emsg)
 			continue
 		}
 
 		body, berr := ioutil.ReadAll(taskList[ii].Request.Response.Body)
 		if berr != nil {
 			emsg := fmt.Sprintf("ERROR: Problem reading GET response: '%v'", berr)
-			logger.Errorf(emsg)
+			logger.Errorf("%s", emsg)
 			rsp := dumpCfgPostRspElem{StatusCode: http.StatusInternalServerError,
 				StatusMsg: "Error reading response from server.",
 				Xname:     targ}
 			rspData.Targets = append(rspData.Targets, rsp)
 			tdMap[targ].statusCode = http.StatusInternalServerError
-			tdMap[targ].err = fmt.Errorf(emsg)
+			tdMap[targ].err = fmt.Errorf("%s", emsg)
 			continue
 		}
 		err := json.Unmarshal(body, &jdata)
 		if err != nil {
 			emsg := fmt.Sprintf("ERROR: Problem unmarshaling GET response: '%v'", err)
-			logger.Errorf(emsg)
+			logger.Errorf("%s", emsg)
 			rsp := dumpCfgPostRspElem{StatusCode: http.StatusInternalServerError,
 				StatusMsg: "Error umnarshalling server data.",
 				Xname:     targ}
 			rspData.Targets = append(rspData.Targets, rsp)
 			tdMap[targ].statusCode = http.StatusInternalServerError
-			tdMap[targ].err = fmt.Errorf(emsg)
+			tdMap[targ].err = fmt.Errorf("%s", emsg)
 			continue
 		}
 
@@ -434,8 +434,8 @@ func setNWP(nwp cfgParams, targData []targInfo) (loadCfgPostRsp, error) {
 	if baerr != nil {
 		emsg := fmt.Sprintf("ERROR: Problem marshaling NWProtocol data: '%v'",
 			baerr)
-		logger.Errorf(emsg)
-		return rspData, fmt.Errorf(emsg)
+		logger.Errorf("%s", emsg)
+		return rspData, fmt.Errorf("%s", emsg)
 	}
 
 	logger.Tracef("setNWP() NWP info: '%s'", string(ba))
@@ -451,7 +451,7 @@ func setNWP(nwp cfgParams, targData []targInfo) (loadCfgPostRsp, error) {
 	if len(tlist) == 0 {
 		emsg := fmt.Sprintf("ERROR: No valid targets.")
 		logger.Errorf("setNWP(): %s", emsg)
-		return rspData, fmt.Errorf(emsg)
+		return rspData, fmt.Errorf("%s", emsg)
 	}
 
 	//Check if the RF service root is there to weed out bad targ URLs/ctlrs.
@@ -744,7 +744,7 @@ func doCfgPost(w http.ResponseWriter, r *http.Request) {
 	var rdata cfgSingleRsp
 
 	vars := mux.Vars(r)
-	targ := base.NormalizeHMSCompID(vars["xname"])
+	targ := xnametypes.NormalizeHMSCompID(vars["xname"])
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {

@@ -1,6 +1,6 @@
 # MIT License
 #
-# (C) Copyright [2020-2021,2024] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2020-2021,2024-2025] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -24,7 +24,7 @@
 
 ### Build Base Stage ###
 
-FROM artifactory.algol60.net/docker.io/library/golang:1.23-alpine AS build-base
+FROM artifactory.algol60.net/docker.io/library/golang:1.24-alpine AS build-base
 
 RUN set -ex \
     && apk -U upgrade \
@@ -46,11 +46,11 @@ FROM base AS builder
 
 # Now build
 RUN set -ex \
-    && go build -v -o scsd github.com/Cray-HPE/hms-scsd/cmd/scsd
+    && go build -v -tags musl -o scsd github.com/Cray-HPE/hms-scsd/cmd/scsd
 
 ### Final Stage ###
 
-FROM artifactory.algol60.net/csm-docker/stable/docker.io/library/alpine:3.15
+FROM artifactory.algol60.net/csm-docker/stable/docker.io/library/alpine:3.21
 LABEL maintainer="Hewlett Packard Enterprise"
 STOPSIGNAL SIGTERM
 EXPOSE 25309
@@ -75,4 +75,4 @@ COPY .version /var/run/scsd_version.txt
 USER 65534:65534
 
 # Set up the command to start the service, the run the init script.
-CMD scsd
+CMD ["scsd"]
