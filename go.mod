@@ -9,7 +9,7 @@ require (
 	github.com/Cray-HPE/hms-certs v1.6.0
 	github.com/Cray-HPE/hms-compcredentials v1.14.0
 	github.com/Cray-HPE/hms-securestorage v1.16.0
-	github.com/Cray-HPE/hms-trs-app-api v1.6.2
+	github.com/Cray-HPE/hms-trs-app-api v1.6.3
 	github.com/Cray-HPE/hms-xname v1.4.0
 	github.com/gorilla/mux v1.8.1
 	github.com/sirupsen/logrus v1.9.3
@@ -47,7 +47,7 @@ require (
 	github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
-	golang.org/x/net v0.37.0 // indirect
+	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
