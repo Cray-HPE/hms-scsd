@@ -8,8 +8,8 @@ github.com/Cray-HPE/hms-compcredentials v1.14.0 h1:w/R1oDYN9FZrE2bJAKxyDWa8Rehen
 github.com/Cray-HPE/hms-compcredentials v1.14.0/go.mod h1:LmlHH6dyuRjaOcT1oyIQ3qNTOxQd6wlm8SVoQd3QwxU=
 github.com/Cray-HPE/hms-securestorage v1.16.0 h1:WCK4gWvgJqiUzDRQl5TEezVTvorTsd2K7kxyIn+ZLIk=
 github.com/Cray-HPE/hms-securestorage v1.16.0/go.mod h1:N8rXzrA44XszKAqhWeFAU3j2/nU6Cz1a5tuF3hm6Vbw=
-github.com/Cray-HPE/hms-trs-app-api v1.6.2 h1:yzf2E+8QM0+S7AFc47JIyu4yTLM/HKvY1BHtdGSEXFY=
-github.com/Cray-HPE/hms-trs-app-api v1.6.2/go.mod h1:RbB2pYCrZ5N3d0ho4nzTAz9ifI2GYpAdf4Qeco748KQ=
+github.com/Cray-HPE/hms-trs-app-api v1.6.3 h1:aES3CLgDWGFv36A2VUh3uuJLNggtOv50L1cDGma5fgM=
+github.com/Cray-HPE/hms-trs-app-api v1.6.3/go.mod h1:RbB2pYCrZ5N3d0ho4nzTAz9ifI2GYpAdf4Qeco748KQ=
 github.com/Cray-HPE/hms-trs-kafkalib v1.5.2 h1:MhV6SE0HmEcMnuAb/dVclfXd+49udbVCYr2ze0CDXoI=
 github.com/Cray-HPE/hms-trs-kafkalib v1.5.2/go.mod h1:jo5bCP12PYVHeyaSa9okvz36pgwwY1czjZzUi96Ryjg=
 github.com/Cray-HPE/hms-xname v1.4.0 h1:i47YmE8rbSfJ64simKCCC6ZVcGid3rDIX6/jfVbISAM=
@@ -126,8 +126,8 @@ golang.org/x/crypto v0.0.0-20190404164418-38d8ce5564a5/go.mod h1:WFFai1msRO1wXaE
 golang.org/x/crypto v0.36.0 h1:AnAEvhDddvBdpY+uR+MyHmuZzzNqXSe/GvuDeob5L34=
 golang.org/x/crypto v0.36.0/go.mod h1:Y4J0ReaxCR1IMaabaSMugxJES1EpwhBHhv2bDHklZvc=
 golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3/go.mod h1:t9HGtf8HONx5eT2rtn7q6eTqICYqUVnKs3thJo3Qplg=
-golang.org/x/net v0.37.0 h1:1zLorHbz+LYj7MQlSf1+2tPIIgibq2eL5xkrGk6f+2c=
-golang.org/x/net v0.37.0/go.mod h1:ivrbrMbzFq5J41QOQh0siUuly180yBYtLp+CKbEaFx8=
+golang.org/x/net v0.38.0 h1:vRMAPTMaeGqVhG5QyLJHqNDwecKTomGeqbnfZyKlBI8=
+golang.org/x/net v0.38.0/go.mod h1:ivrbrMbzFq5J41QOQh0siUuly180yBYtLp+CKbEaFx8=
 golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20190403152447-81d4e9dc473e/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20190422165155-953cdadca894/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
