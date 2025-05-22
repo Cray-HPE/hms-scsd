@@ -297,11 +297,6 @@ func main() {
 	}
 
 	//Fetch the service instance name
-logger.Trace("JW_DEBUG: Trace")
-logger.Debug("JW_DEBUG: Debug")
-logger.Info("JW_DEBUG: Info")
-logger.Warn("JW_DEBUG: Warn")
-logger.Error("JW_DEBUG: Error")
 
 	serviceName, err = base.GetServiceInstanceName()
 	if err != nil {
