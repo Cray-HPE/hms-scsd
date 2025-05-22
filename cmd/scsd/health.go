@@ -1,6 +1,6 @@
 // MIT License
 //
-// (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020-2021,2025] Hewlett Packard Enterprise Development LP
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -23,11 +23,13 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"net/http"
 	"strings"
+
+	base "github.com/Cray-HPE/hms-base/v2"
 )
 
 type healthData struct {
@@ -44,6 +46,8 @@ type versionData struct {
 // /v1/params GET
 
 func doParamsGet(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
+
 	ba,baerr := json.Marshal(appParams)
 	if (baerr != nil) {
 		emsg := fmt.Sprintf("ERROR: Problem marshal params data: %v",baerr)
@@ -61,6 +65,8 @@ func doParamsGet(w http.ResponseWriter, r *http.Request) {
 
 func doParamsPatch(w http.ResponseWriter, r *http.Request) {
 	var jdata opParams
+
+	defer base.DrainAndCloseRequestBody(r)
 
 	body,err := ioutil.ReadAll(r.Body)
 	if (err != nil) {
@@ -128,6 +134,8 @@ func doParamsPatch(w http.ResponseWriter, r *http.Request) {
 func doHealthGet(w http.ResponseWriter, r *http.Request) {
 	var health healthData
 
+	defer base.DrainAndCloseRequestBody(r)
+
 	alive,err := tloc.Alive()
 	if ((err == nil) && alive) {
 		health.TaskRunnerStatus = "Running"
@@ -170,12 +178,15 @@ func doHealthGet(w http.ResponseWriter, r *http.Request) {
 // /v1/liveness GET
 
 func doLivenessGet(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
 	w.WriteHeader(http.StatusNoContent)
 }
 
 // /v1/readiness GET
 
 func doReadinessGet(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
+
 	ready := true
 
 	alive,err := tloc.Alive()
@@ -200,6 +211,8 @@ func doReadinessGet(w http.ResponseWriter, r *http.Request) {
 
 func doVersionGet(w http.ResponseWriter, r *http.Request) {
 	var ver versionData
+
+	defer base.DrainAndCloseRequestBody(r)
 
 	content,err := ioutil.ReadFile("/var/run/scsd_version.txt")
 	if (err != nil) {

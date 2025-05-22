@@ -1,6 +1,6 @@
 // MIT License
 //
-// (C) Copyright [2022] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2022,2025] Hewlett Packard Enterprise Development LP
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -30,6 +30,7 @@ import (
 	"strings"
 	"time"
 
+	base "github.com/Cray-HPE/hms-base/v2"
 	trsapi "github.com/Cray-HPE/hms-trs-app-api/pkg/trs_http_api"
 	"github.com/Cray-HPE/hms-xname/xnametypes"
 	"github.com/gorilla/mux"
@@ -1342,6 +1343,8 @@ func toTpmStateIntel(bios *BiosIntel) BiosTpmState {
 func doBiosTpmStateGet(w http.ResponseWriter, r *http.Request) {
 	title := "Get BIOS TPM State"
 
+	defer base.DrainAndCloseRequestBody(r)
+
 	bios, err, httpCode := getBios(r)
 	if err != nil {
 		sendErrorRsp(w, title, err.Error(), r.URL.Path, httpCode)
@@ -1376,6 +1379,8 @@ func doBiosTpmStateGet(w http.ResponseWriter, r *http.Request) {
 
 func doBiosTpmStatePatch(w http.ResponseWriter, r *http.Request) {
 	title := "Patch BIOS TPM State"
+
+	defer base.DrainAndCloseRequestBody(r)
 
 	var requestBody BiosTpmStatePatch
 

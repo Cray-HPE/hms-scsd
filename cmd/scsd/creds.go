@@ -529,6 +529,8 @@ func doDiscreetCredsPost(w http.ResponseWriter, r *http.Request) {
 	var jdata credsPost
 	var retData loadCfgPostRsp
 
+	defer base.DrainAndCloseRequestBody(r)
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		emsg := fmt.Sprintf("ERROR: Problem reading request body: %v", err)
@@ -710,6 +712,8 @@ func doGlobalCredsPost(w http.ResponseWriter, r *http.Request) {
 	var jdata globalCredsPost
 	var retData loadCfgPostRsp
 
+	defer base.DrainAndCloseRequestBody(r)
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		emsg := fmt.Sprintf("ERROR: Problem reading request body: %v", err)
@@ -856,6 +860,8 @@ func doCredsPostOne(w http.ResponseWriter, r *http.Request) {
 	var jdata credsPostSingle
 	var retData cfgSingleRsp
 
+	defer base.DrainAndCloseRequestBody(r)
+
 	mvars := mux.Vars(r)
 	XName := xnametypes.NormalizeHMSCompID(mvars["xname"])
 
@@ -970,6 +976,8 @@ func doCredsGet(w http.ResponseWriter, r *http.Request) {
 	var xnames, retXnames []string
 	var compType string
 	var retData bmcCredsReturn
+
+	defer base.DrainAndCloseRequestBody(r)
 
 	if (appParams.VaultEnable == nil) || !(*appParams.VaultEnable) {
 		logger.Tracef("doCredsGet(), Vault is disabled, no creds available.")
@@ -1165,6 +1173,7 @@ func doHSMDiscover(xnames []string) ([]byte, error) {
 	base.SetHTTPUserAgent(req, serviceName)
 	req.Header.Add("Content-Type", "application/json")
 	rsp, err := hsmClient.Do(req)
+	defer base.DrainAndCloseResponseBody(rsp)
 	if err != nil {
 		logger.Errorf("Problem contacting state manager: %v", err)
 		return nil, err

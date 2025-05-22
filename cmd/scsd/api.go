@@ -488,6 +488,7 @@ func doHSMGet(url string) ([]byte, error) {
 	req, _ := http.NewRequest("GET", url, nil)
 	base.SetHTTPUserAgent(req, serviceName)
 	rsp, err := hsmClient.Do(req)
+	defer base.DrainAndCloseResponseBody(rsp)
 	if err != nil {
 		logger.Errorf("Problem contacting state manager: %v", err)
 		return nil, err
@@ -516,6 +517,7 @@ func doHSMPutPostPatchDel(url string, method string, pld []byte) ([]byte, error)
 	req, _ := http.NewRequest(strings.ToUpper(method), url, bytes.NewBuffer(pld))
 	base.SetHTTPUserAgent(req, serviceName)
 	rsp, err := hsmClient.Do(req)
+	defer base.DrainAndCloseResponseBody(rsp)
 	if err != nil {
 		logger.Errorf("Problem contacting state manager: %v", err)
 		return nil, err

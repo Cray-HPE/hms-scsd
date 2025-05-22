@@ -32,6 +32,7 @@ import (
 
 	"github.com/gorilla/mux"
 
+	base "github.com/Cray-HPE/hms-base/v2"
 	trsapi "github.com/Cray-HPE/hms-trs-app-api/pkg/trs_http_api"
 	"github.com/Cray-HPE/hms-xname/xnametypes"
 )
@@ -505,6 +506,8 @@ func setNWP(nwp cfgParams, targData []targInfo) (loadCfgPostRsp, error) {
 func doDumpCfgPost(w http.ResponseWriter, r *http.Request) {
 	var jdata dumpCfgPost
 
+	defer base.DrainAndCloseRequestBody(r)
+
 	// Decode the JSON to see what we are to return
 
 	body, err := ioutil.ReadAll(r.Body)
@@ -587,6 +590,8 @@ func doDumpCfgPost(w http.ResponseWriter, r *http.Request) {
 func doLoadCfgPost(w http.ResponseWriter, r *http.Request) {
 	var jdata loadCfgPost
 
+	defer base.DrainAndCloseRequestBody(r)
+
 	// Decode the JSON to see what we are to return
 
 	body, err := ioutil.ReadAll(r.Body)
@@ -649,6 +654,9 @@ func doLoadCfgPost(w http.ResponseWriter, r *http.Request) {
 func doCfgGet(w http.ResponseWriter, r *http.Request) {
 	var qvstr string
 	var qvals []string
+
+	defer base.DrainAndCloseRequestBody(r)
+
 	queryValues := r.URL.Query()
 	qvstr = queryValues.Get("params")
 	if len(qvstr) == 0 {
@@ -742,6 +750,8 @@ func doCfgGet(w http.ResponseWriter, r *http.Request) {
 func doCfgPost(w http.ResponseWriter, r *http.Request) {
 	var jdata cfgSingle
 	var rdata cfgSingleRsp
+
+	defer base.DrainAndCloseRequestBody(r)
 
 	vars := mux.Vars(r)
 	targ := xnametypes.NormalizeHMSCompID(vars["xname"])

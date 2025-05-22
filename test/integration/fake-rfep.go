@@ -1,17 +1,17 @@
 // MIT License
-// 
-// (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
-// 
+//
+// (C) Copyright [2020-2021,2025] Hewlett Packard Enterprise Development LP
+//
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
 // and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included
 // in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -23,16 +23,18 @@
 package main
 
 import (
-	"encoding/json"
-	"net/http"
-	"fmt"
-	"log"
-	"io/ioutil"
-	"os"
-	"strings"
-	"strconv"
-	"time"
 	"context"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+
+	base "github.com/Cray-HPE/hms-base/v2"
 )
 
 // Disclaimer: this code is relatively awful, and does a huge amount of stuff.
@@ -40,7 +42,7 @@ import (
 //
 // This is an app that exposes a fake collection Redfish endpoints.  This
 // allows the functional testing of SCSD's API.  Lots of environment variables
-// are used to steer the app's behavior -- how to display various URIs, 
+// are used to steer the app's behavior -- how to display various URIs,
 // data payloads, etc., as follows:
 //
 // BMCURL  Determines how /redfish/v1/Managers and its members look.  Typically
@@ -61,11 +63,9 @@ import (
 //
 // BADACCT Used for debugging, to force AccountService data to be incorrect.
 //
-// HTTPS   Not set: use http.  
-//         1: use https, don't replace certs.  
+// HTTPS   Not set: use http.
+//         1: use https, don't replace certs.
 //         2: use https, replace certs and restart server
-
-
 
 //NWP data struct
 
@@ -336,6 +336,8 @@ func printReqHdrs(fname string, r *http.Request) {
 // RF CertificateService
 
 func (p *httpStuff) certificateService(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
+
 	pld := certSvcCrayPld
 
 	if (r.Method != "GET") {
@@ -352,6 +354,8 @@ func (p *httpStuff) certificateService(w http.ResponseWriter, r *http.Request) {
 
 
 func (p *httpStuff) certificateLocations(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
+
 	pld := `{
   "@odata.context": "/redfish/v1/$metadata#CertificateLocations.CertificateLocations",
   "@odata.id": "/redfish/v1/CertificateService/CertificateLocations",
@@ -380,6 +384,8 @@ func (p *httpStuff) certificateLocations(w http.ResponseWriter, r *http.Request)
 }
 
 func (p *httpStuff) certificateReplace(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
+
 	if (r.Method != "POST") {
         fmt.Printf("ERROR: request is not a POST.\n")
         w.WriteHeader(http.StatusMethodNotAllowed)
@@ -425,6 +431,8 @@ func (p *httpStuff) certificateReplace(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *httpStuff) Chassis(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
+
 	crayPld := `{
   "@odata.context": "/redfish/v1/$metadata#ChassisCollection.ChassisCollection",
   "@odata.etag": "W/\"1592448856\"",
@@ -493,6 +501,8 @@ func restartServer() {
 //Chassis, pretends to be a mountain endpoint
 
 func (p *httpStuff) chassisEnclosure(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
+
 	printReqHdrs("chassisEnclosure",r)
 	pld := `{"Architecture":"This_Is_Mountain"}`
 	w.Header().Set("Content-Type","application/json")
@@ -503,6 +513,8 @@ func (p *httpStuff) chassisEnclosure(w http.ResponseWriter, r *http.Request) {
 //Chassis, pretends to be a river intel endpoint
 
 func (p *httpStuff) chassisRackmount(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
+
 	printReqHdrs("chassisRackmount",r)
 	pld := `{"Architecture":"This_Is_River_Intel"}`
 	w.Header().Set("Content-Type","application/json")
@@ -513,6 +525,8 @@ func (p *httpStuff) chassisRackmount(w http.ResponseWriter, r *http.Request) {
 //Chassis, pretends to be a river GB endpoint
 
 func (p *httpStuff) chassisSelf(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
+
 	printReqHdrs("chassisSelf",r)
 	pld := `{"Architecture":"This_Is_River_Gigabyte"}`
 	w.Header().Set("Content-Type","application/json")
@@ -523,6 +537,8 @@ func (p *httpStuff) chassisSelf(w http.ResponseWriter, r *http.Request) {
 // Redfish root
 
 func (p *httpStuff) rfroot(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
+
 	//OK this is hokey.  Since we're using the simple HTTP hookups,
 	//if we get a bad URL, we somehow respond to the last handler
 	//func, which is for /redfish/v1/.  THEREFORE, if the URL we
@@ -588,6 +604,8 @@ func dc(dest,src *RedfishNWProtocol) {
 }
 
 func (p *httpStuff) acctService(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
+
     if (r.Method == "GET") {
         rdat := `{
            "@odata.context" : "/redfish/v1/$metadata#AccountService.AccountService",
@@ -640,6 +658,9 @@ func (p *httpStuff) acctService(w http.ResponseWriter, r *http.Request) {
 
 func (p *httpStuff) acctAccounts(w http.ResponseWriter, r *http.Request) {
 	var rdat string
+
+	defer base.DrainAndCloseRequestBody(r)
+
 	rdat1 := `{
    "Description" : "BMC User Accounts",
    "Name" : "Accounts Collection",
@@ -709,6 +730,8 @@ func doAccount(num int, w http.ResponseWriter, r *http.Request) {
 	var ap *acctData
 	var vacp acctData
 	var envstr string
+
+	defer base.DrainAndCloseRequestBody(r)
 
 	envstr = os.Getenv("BADACCT")
 	if (envstr != "") {
@@ -805,23 +828,29 @@ func doAccount(num int, w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *httpStuff) targAccount1(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
 	doAccount(1,w,r)
 }
 
 func (p *httpStuff) targAccount2(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
 	doAccount(2,w,r)
 }
 
 func (p *httpStuff) targAccount3(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
 	doAccount(3,w,r)
 }
 
 func (p *httpStuff) targAccount4(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
 	doAccount(4,w,r)
 }
 
 
 func (p *httpStuff) Managers(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
+
 	if (r.Method != "GET") {
         fmt.Printf("ERROR: request is not a GET.\n")
         w.WriteHeader(http.StatusMethodNotAllowed)
@@ -849,6 +878,8 @@ func (p *httpStuff) Managers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *httpStuff) ManagersBMC(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
+
 	if (r.Method != "GET") {
         fmt.Printf("ERROR: request is not a GET.\n")
         w.WriteHeader(http.StatusMethodNotAllowed)
@@ -875,6 +906,8 @@ func (p *httpStuff) ManagersBMC(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *httpStuff) hpeSecurityService(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
+
 	if (r.Method != "GET") {
         fmt.Printf("ERROR: request is not a GET.\n")
         w.WriteHeader(http.StatusMethodNotAllowed)
@@ -889,6 +922,8 @@ func (p *httpStuff) hpeSecurityService(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *httpStuff) hpeSecurityServiceHttpsCert(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
+
 	if (r.Method != "GET") {
         fmt.Printf("ERROR: request is not a GET.\n")
         w.WriteHeader(http.StatusMethodNotAllowed)
@@ -911,6 +946,8 @@ func (p *httpStuff) hpeSecurityServiceHttpsCert(w http.ResponseWriter, r *http.R
 }
 
 func (p *httpStuff) hpeImportCert(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
+
 	if (r.Method != "POST") {
         fmt.Printf("ERROR: request is not a POST.\n")
         w.WriteHeader(http.StatusMethodNotAllowed)
@@ -932,6 +969,8 @@ func (p *httpStuff) hpeImportCert(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *httpStuff) nwp_rcv(w http.ResponseWriter, r *http.Request) {
+	defer base.DrainAndCloseRequestBody(r)
+
 	printReqHdrs("nwp_rcv",r)
     if (r.Method == "PATCH") {
 		var jdata RedfishNWProtocol

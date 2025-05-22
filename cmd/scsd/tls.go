@@ -1,6 +1,6 @@
 // MIT License
 //
-// (C) Copyright [2020-2021] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2020-2021,2025] Hewlett Packard Enterprise Development LP
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -32,6 +32,7 @@ import (
 	"strings"
 	"time"
 
+	base "github.com/Cray-HPE/hms-base/v2"
 	"github.com/Cray-HPE/hms-certs/pkg/hms_certs"
 	trsapi "github.com/Cray-HPE/hms-trs-app-api/pkg/trs_http_api"
 	"github.com/Cray-HPE/hms-xname/xnametypes"
@@ -774,6 +775,8 @@ func doBMCCreateCertsPost(w http.ResponseWriter, r *http.Request) {
 	var retData bmcManageCertPostRsp
 	funcName := "doBMCCreateCertsPost"
 
+	defer base.DrainAndCloseRequestBody(r)
+
 	err := getReqData(funcName, r, &jdata)
 	if err != nil {
 		emsg := fmt.Sprintf("ERROR: Problem getting request data: %v", err)
@@ -879,6 +882,8 @@ func doBMCDeleteCertsPost(w http.ResponseWriter, r *http.Request) {
 	var retData bmcManageCertPostRsp
 	funcName := "doBMCDeleteCertsPost"
 
+	defer base.DrainAndCloseRequestBody(r)
+
 	err := getReqData(funcName, r, &jdata)
 	if err != nil {
 		emsg := fmt.Sprintf("ERROR: Problem getting request data: %v", err)
@@ -959,6 +964,8 @@ func doBMCFetchCerts(w http.ResponseWriter, r *http.Request) {
 	var jdata bmcManageCertPost
 	var retData bmcManageCertPostRsp
 	funcName := "doBMCFetchCerts"
+
+	defer base.DrainAndCloseRequestBody(r)
 
 	err := getReqData(funcName, r, &jdata)
 	if err != nil {
@@ -1048,6 +1055,8 @@ func doBMCSetCertsPost(w http.ResponseWriter, r *http.Request) {
 	var jdata rfCertPost
 	var retData rfCertPostRsp
 	var certDomain string
+
+	defer base.DrainAndCloseRequestBody(r)
 
 	funcName := "doBMCSetCertsPost"
 
@@ -1216,6 +1225,8 @@ func getRFPostParams(r *http.Request) (bool, string) {
 func doBMCSetCertsPostSingle(w http.ResponseWriter, r *http.Request) {
 	var certDomain string
 	var retData rfCertPostRsp
+
+	defer base.DrainAndCloseRequestBody(r)
 
 	funcName := "doBMCSetCertsPostSingle"
 	vars := mux.Vars(r)

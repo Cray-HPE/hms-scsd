@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated image and module dependencies
 - Explicitly closed all request and response bodies using hms-base functions
+- Fixed bug in three places where response bodies were not being closed
 - Internal tracking ticket: CASMHMS-6398
 
 ## [1.22.0] - 2025-04-03
