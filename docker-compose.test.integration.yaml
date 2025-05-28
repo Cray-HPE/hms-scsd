@@ -169,7 +169,7 @@ services:
       - scsd
 
   vault-kv-enabler:
-    image: artifactory.algol60.net/csm-docker/stable/vault-kv-enabler:1.25.0
+    image: artifactory.algol60.net/csm-docker/stable/vault-kv-enabler:1.29.0
     environment:
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=hms
@@ -181,7 +181,7 @@ services:
       - scsd
 
   cray-smd:
-    image: artifactory.algol60.net/csm-docker/stable/cray-smd:2.35.0
+    image: artifactory.algol60.net/csm-docker/stable/cray-smd:2.38.0
     environment:
       - POSTGRES_HOST=hmsds-postgres
       - POSTGRES_PORT=5432
@@ -203,7 +203,7 @@ services:
       - scsd
 
   cray-smd-init:
-    image: artifactory.algol60.net/csm-docker/stable/cray-smd:2.35.0
+    image: artifactory.algol60.net/csm-docker/stable/cray-smd:2.38.0
     environment:
       - SMD_DBHOST=hmsds-postgres
       - SMD_DBPORT=5432
